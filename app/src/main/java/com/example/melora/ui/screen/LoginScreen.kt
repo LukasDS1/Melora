@@ -19,31 +19,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun LoginScreen() {
-    val bg = MaterialTheme.colorScheme.tertiaryContainer
+@Composable // Pantalla Login (solo navegación, sin formularios)
+fun LoginScreen(
+    onLoginOk: () -> Unit,   // Acción para “volver” a Home
+    onGoRegister: () -> Unit // Acción para ir a Registro
+) {
+    val bg = MaterialTheme.colorScheme.secondaryContainer // Fondo distinto para contraste
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxSize() // Ocupa todo
+            .background(bg) // Fondo
+            .padding(16.dp), // Margen
+        contentAlignment = Alignment.Center // Centro
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally // Centrado horizontal
+        ) {
             Text(
                 text = "Login",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall // Título
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp)) // Separación
             Text(
-                text = "Pantalla de Login (demo)",
-                textAlign = TextAlign.Center
+                text = "Pantalla de Login (demo). Usa la barra superior, el menú lateral o los botones.",
+                textAlign = TextAlign.Center // Alineación centrada
             )
-            Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = {}) { Text("Ir a Home")}
-                OutlinedButton(onClick = {}) { Text("Ir a Registro")}
+            Spacer(Modifier.height(20.dp)) // Separación
+
+            // Fila de botones para practicar Row
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // Espaciado
+                Button(onClick = onLoginOk) { Text("Ir a Home") } // Navega a Home
+                OutlinedButton(onClick = onGoRegister) { Text("Ir a Registro") } // A Registro
             }
         }
     }

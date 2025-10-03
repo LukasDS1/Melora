@@ -20,7 +20,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(
+    onRegistered: () -> Unit,
+    onGoLogin: () -> Unit
+) {
     val bg = MaterialTheme.colorScheme.tertiaryContainer
 
     Box(
@@ -30,22 +33,22 @@ fun RegisterScreen() {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally){
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Registro",
                 style = MaterialTheme.typography.headlineSmall
             )
-            Spacer(Modifier.height(12.dp)) // Separación
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = "Pantalla de Registro (demo)",
+                text = "Pantalla de Registro (demo). Practica navegación con botones.",
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(50.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // Espacio entre botónes
-                Button(onClick = {  }) { Text("Ir al Login")}
-                OutlinedButton(onClick = {  }) { Text("Volver a Login")}
+            Spacer(Modifier.height(20.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = onRegistered) { Text("Ir a Login") }
+                OutlinedButton(onClick = onGoLogin) { Text("Volver a Login") }
             }
         }
     }
-
 }
