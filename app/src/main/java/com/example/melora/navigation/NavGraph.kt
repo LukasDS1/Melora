@@ -6,12 +6,14 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.melora.ui.components.AppDrawer
 import com.example.melora.ui.components.AppTopBar
 import com.example.melora.ui.components.defaultDrawerItems
@@ -52,14 +54,20 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
     ) {
+
+        val navBackStackEntry by navController.currentBackStackEntryAsState() // Guarda la pantalla que está encima de la "pila" de pantallas
+        val currentRoute = navBackStackEntry?.destination?.route // Guarda el string de la ruta actual
+
         Scaffold(
             topBar = {
-                AppTopBar(
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onHome = goHome,
-                    onLogin = goLogin,
-                    onRegister = goRegister
-                )
+                if (currentRoute != Route.Login.path) {
+                    AppTopBar(
+                        onOpenDrawer = { scope.launch { drawerState.open() } },
+                        onHome = goHome,
+                        onLogin = goLogin,
+                        onRegister = goRegister
+                    )
+                }
             }
         ) { innerPadding ->
             NavHost(
