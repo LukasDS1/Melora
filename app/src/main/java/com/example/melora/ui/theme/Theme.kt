@@ -33,6 +33,10 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+private val Lightcolors = lightColorScheme(
+    primary = Resaltado
+)
+
 @Composable
 fun MeloraTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

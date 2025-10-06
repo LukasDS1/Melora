@@ -60,7 +60,7 @@ fun AppNavGraph(navController: NavHostController) {
 
         Scaffold(
             topBar = {
-                if (currentRoute != Route.Login.path) {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
                     AppTopBar(
                         onOpenDrawer = { scope.launch { drawerState.open() } },
                         onHome = goHome,

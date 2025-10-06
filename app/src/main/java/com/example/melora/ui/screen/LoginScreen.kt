@@ -89,7 +89,7 @@ fun LoginScreen(
                         errorMessage = "Email or password incorrect."
                     }
                 } else {
-                    errorMessage = "Por favor completa todos los campos"
+                    errorMessage = "Por favor ingrese todos los campos."
                 }
             }) {
                 Text("Iniciar Sesión")
