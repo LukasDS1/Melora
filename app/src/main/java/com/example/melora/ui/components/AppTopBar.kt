@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,23 +34,14 @@ fun AppTopBar(
     onHome: () -> Unit,       // Navega a Home
     onLogin: () -> Unit,      // Navega a Login
     onRegister: () -> Unit,// Navega a Registro
-    textFieldState: TextFieldState,
-    searchResults: List<String>,
-    onSearch: (String) -> Unit,
 ) {
 
     CenterAlignedTopAppBar( // Barra alineada al centro
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = Color(0xFF5D8374)
         ),
-        title = { // Slot del título
-            SearchView(
-                textFieldState = textFieldState,
-                onSearch = onSearch,
-                searchResults = searchResults,
-                modifier = Modifier.fillMaxWidth()
-
-            )
+        title = {
+           Text(text = "Melora", color = Color(0xFFFFFFFF))
         },
         navigationIcon = { // Ícono a la izquierda (hamburguesa)
             IconButton(onClick = onOpenDrawer) { // Al presionar, abre drawer
@@ -57,14 +49,8 @@ fun AppTopBar(
             }
         },
         actions = {
-            IconButton(onClick = onHome) { // Ir a Home
-                Icon(Icons.Filled.Home, contentDescription = "Home") // Ícono Home
-            }
-            IconButton(onClick = onLogin) { // Ir a Login
-                Icon(Icons.Filled.AccountCircle, contentDescription = "Login") // Ícono Login
-            }
-            IconButton(onClick = onRegister) { // Ir a Registro
-                Icon(Icons.Filled.Person, contentDescription = "Registro") // Ícono Registro
+            IconButton(onClick = onLogin) {
+                Icon(Icons.Filled.AccountCircle, contentDescription = "Login")
             }
         }
     )

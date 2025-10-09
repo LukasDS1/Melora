@@ -23,20 +23,15 @@ import com.example.melora.ui.components.defaultDrawerItems
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.RegisterScreen
+import com.example.melora.ui.screen.UploadScreen
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    val textFieldState = remember { TextFieldState() }
-    val searchResults = remember { listOf<String>() }
-    val onSearch: (String) -> Unit = { query ->
-        println("Buscando: $query")
-
-    }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
+    val goUpload : () -> Unit = {navController.navigate(Route.Upload.path)} // ir a upload
     val goHome: () -> Unit    = { navController.navigate(Route.Home.path) }    // Ir a Home
     val goLogin: () -> Unit   = { navController.navigate(Route.Login.path) }   // Ir a Login
     val goRegister: () -> Unit = { navController.navigate(Route.Register.path) } // Ir a Registro
@@ -66,16 +61,10 @@ fun AppNavGraph(navController: NavHostController) {
         Scaffold(
             topBar = {
                 AppTopBar(
-                    textFieldState = textFieldState,
-                    searchResults = searchResults,
-                    onSearch = { query ->
-                        // Aquí manejas la búsqueda
-                        println("Buscando: $query")
-                    },
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
                     onHome = goHome,
                     onLogin = goLogin,
                     onRegister = goRegister,
+                    onOpenDrawer = goLogin
                 )
             }, bottomBar = {
                 AppNavigationBar( navController = navController)
@@ -89,19 +78,26 @@ fun AppNavGraph(navController: NavHostController) {
                 composable (Route.Home.path) {
                     HomeScreen(
                         onGoLogin = goLogin,
-                        onGoRegister = goRegister
+                        onGoRegister = goRegister,
+                        onGoUpload = goUpload
                     )
                 }
                 composable(Route.Login.path) { // Destino Login
                     LoginScreen(
-                        onLoginOk = goHome,      // Botón para volver al Home
-                        onGoRegister = goRegister // Botón para ir a Registro
+                        onLoginOk = goHome,
+                        onGoRegister = goRegister
                     )
                 }
-                composable(Route.Register.path) { // Destino Registro
+                composable(Route.Register.path) {
                     RegisterScreen(
-                        onRegistered = goLogin, // Botón para ir a Login
-                        onGoLogin = goLogin     // Botón alternativo a Login
+                        onRegistered = goLogin,
+                        onGoLogin = goLogin
+                    )
+                }
+                composable (Route.Upload.path){
+                    UploadScreen(
+                        onRegistered = goLogin,
+                        onGoLogin =  goLogin
                     )
                 }
             }

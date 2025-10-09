@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,9 +41,9 @@ fun AppNavigationBar(
     modifier: Modifier = Modifier
 ) {
     val destinations = listOf(
-        Destination("home", "Inicio", Icons.Filled.Home, "Página de inicio"),
-        Destination("login", "Login", Icons.Filled.AddCircle, "Ir a login"),
-        Destination("register", "Registro", Icons.Filled.Home, "Ir a registro")
+        Destination("upload", "Upload", Icons.Filled.AddCircle, "Página de subida de musica"),
+        Destination("login", "Search", Icons.Filled.Search, "Ir a buscar"),
+        Destination("register", "Library", Icons.Filled.Star, "Ir a la bibloteca" +"")
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
