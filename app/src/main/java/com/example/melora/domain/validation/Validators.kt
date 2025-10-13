@@ -17,7 +17,7 @@ fun validateNickname(nickname: String): String? {
     return null
 }
 
-fun validatePassword(pass: String): Strnig? {
+fun validatePassword(pass: String): String? {
     if (pass.isBlank()) return "La contraseña es obligatoria."
     if (pass.length < 8) return "Mínimo 8 caracteres."
     if (!pass.any { it.isUpperCase() }) return "Debe incluir al menos una mayúscula."
