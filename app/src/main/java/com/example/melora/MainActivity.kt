@@ -17,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.melora.navigation.AppNavGraph
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.RegisterScreen
-import com.example.melora.ui.screen.Screen
 import com.example.melora.ui.theme.MeloraTheme
 
 class MainActivity : ComponentActivity() {
