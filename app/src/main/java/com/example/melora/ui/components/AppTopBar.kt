@@ -38,13 +38,13 @@ fun AppTopBar(
 
     CenterAlignedTopAppBar( // Barra alineada al centro
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFF5D8374)
+            containerColor = Color(0xFF393939)
         ),
         title = {
            Text(text = "Melora", color = Color(0xFFFFFFFF))
         },
         navigationIcon = { // Ícono a la izquierda (hamburguesa)
-            IconButton(onClick = onOpenDrawer) { // Al presionar, abre drawer
+            IconButton(onClick = onOpenDrawer) {
                 Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menú") // Ícono
             }
         },
