@@ -38,6 +38,7 @@ import com.example.melora.R
 
 @Composable
 fun UploadScreenVm(
+    vm: UploadViewModel,
     onGoSucces: () -> Unit
 ) {
     val context = LocalContext.current
@@ -50,13 +51,11 @@ fun UploadScreenVm(
     }
 
     UploadScreen(
-        artistName = state.artistName,
         song = state.song,
         songName = state.songName,
         songDescription = state.songDescription,
         releaseDate = state.releaseDate,
         coverArt = state.coverArt,
-        artistNameError = state.artistNameError,
         songNameError = state.songNameError,
         coverArtError = state.coverArtError,
         songError = state.songError,
@@ -65,7 +64,6 @@ fun UploadScreenVm(
         success = state.success,
         errorMsg = state.errorMsg,
         onSongNameChange = vm::onSongNameChange,
-        onArtistNameChange = vm::onArtistNameChange,
         onSongDescription = vm::onSongDescriptionChange,
         onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
         onSongChange = { uri -> vm.onSongChange(context, uri) },
@@ -75,13 +73,11 @@ fun UploadScreenVm(
 
 @Composable
 private fun UploadScreen(
-    artistName: String,
     songName: String,
     songDescription: String?,
     releaseDate: Date,
     coverArt: Uri?,
     song: Uri?,
-    artistNameError: String?,
     songNameError: String?,
     coverArtError: String?,
     songError: String?,
@@ -90,7 +86,6 @@ private fun UploadScreen(
     success: Boolean,
     errorMsg: String?,
     onSongNameChange: (String) -> Unit,
-    onArtistNameChange: (String) -> Unit,
     onSongDescription: (String) -> Unit,
     onSongCoverChange: (Uri?) -> Unit,
     onSongChange: (Uri?) -> Unit,
@@ -99,21 +94,17 @@ private fun UploadScreen(
     val bg = Color(0xFF4b4b4b)
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
-    var selectedAudio by remember { mutableStateOf<Uri?>(null) }
-    var selectedPhoto by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        selectedAudio = uri
         onSongChange(uri)
     }
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
+   val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        selectedPhoto = uri
         onSongCoverChange(uri)
     }
 
@@ -167,15 +158,14 @@ private fun UploadScreen(
 
                     Spacer(Modifier.height(10.dp))
 
-                    if (selectedAudio != null) {
+                    if (song != null) {
                         Text(
-                            text = selectedAudio?.lastPathSegment ?: "Audio Name",
+                            text = song.lastPathSegment ?: "Audio Name",
                             style = MaterialTheme.typography.bodySmall
                         )
-
-                        LaunchedEffect(selectedAudio) {
+                        LaunchedEffect(song) {
                             mediaPlayer?.release()
-                            mediaPlayer = MediaPlayer.create(context, selectedAudio)
+                            mediaPlayer = MediaPlayer.create(context, song)
                         }
 
                         DisposableEffect(Unit) {
@@ -227,9 +217,9 @@ private fun UploadScreen(
 
                     Spacer(Modifier.height(10.dp))
 
-                    if (selectedPhoto != null) {
+                    if (coverArt != null) {
                         AsyncImage(
-                            model = selectedPhoto,
+                            model = coverArt,
                             contentDescription = "Cover Art",
                             modifier = Modifier
                                 .height(150.dp)
@@ -237,26 +227,6 @@ private fun UploadScreen(
                         )
                     } else {
                         Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center)
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-                    // Artist name
-                    OutlinedTextField(
-                        value = artistName,
-                        onValueChange = onArtistNameChange,
-                        label = { Text("Artist Name", color = Color.White) },
-                        singleLine = true,
-                        isError = artistNameError != null,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.White)
-                    )
-                    if (artistNameError != null) {
-                        Text(
-                            artistNameError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall
-                        )
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -302,7 +272,6 @@ private fun UploadScreen(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         if (isSubmitting) {
-                            ButtonColors(containerColor = Color(0xFF6650a4), contentColor = Color.White, disabledContentColor = Color.Black, disabledContainerColor = Color.Gray)
                             CircularProgressIndicator(
                                 strokeWidth = 2.dp,
                                 modifier = Modifier.size(18.dp),
