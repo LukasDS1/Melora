@@ -1,10 +1,5 @@
 package com.example.melora.ui.screen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,21 +13,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -43,33 +36,85 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.ContentType
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalAutofillManager
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen(
+fun RegisterScreenVm(
     onRegistered: () -> Unit,
     onGoLogin: () -> Unit
 ) {
-    // Variables
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    val passwordState = rememberTextFieldState()
-    val confirmPasswordState = rememberTextFieldState()
-    var focusedField by remember { mutableStateOf<String?>(null)}
+    val vm: AuthViewModel = viewModel()
+    val state by vm.register.collectAsStateWithLifecycle() // Observa estado en tiempo real
 
-    // Autofill and color of background
-    val autofillManager = LocalAutofillManager.current
+    if (state.success) {
+        vm.clearRegisterResult()
+        onRegistered()
+    }
+
+    RegisterScreen(
+        nickname = state.nickname,
+        email = state.email,
+        pass = state.pass,
+        confirmPass = state.confirmPass,
+
+        nicknameError = state.nicknameError,
+        emailError = state.emailError,
+        passError = state.passError,
+        confirmPassError = state.confirmPassError,
+
+        canSubmit = state.canSubmit,
+        isSubmitting = state.isSubmitting,
+        errorMessage = state.errorMessage,
+
+        onNicknameChange = vm::onNicknameChange,
+        onEmailChange = vm::onRegisterEmailChange,
+        onPassChange = vm::onRegisterPassChange,
+        onConfirmPassChange = vm::onConfirmChange,
+
+        onSubmit = vm::submitRegister,
+        onGoLogin = onGoLogin
+    )
+}
+
+@Composable
+fun RegisterScreen(
+    nickname: String,
+    email: String,
+    pass: String,
+    confirmPass: String,
+
+    nicknameError: String?,
+    emailError: String?,
+    passError: String?,
+    confirmPassError: String?,
+
+    canSubmit: Boolean,
+    isSubmitting: Boolean,
+    errorMessage: String?,
+
+    onNicknameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPassChange: (String) -> Unit,
+    onConfirmPassChange: (String) -> Unit,
+
+    onSubmit: () -> Unit,
+    onGoLogin: () -> Unit
+) {
     val bg = PrimaryBg
+    var showPass by remember { mutableStateOf(false) }
+    var showConfirm by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -87,6 +132,7 @@ fun RegisterScreen(
                 "Hello!",
                 textAlign = TextAlign.Left,
                 style = MaterialTheme.typography.headlineLarge,
+                fontFamily = FontFamily.SansSerif,
                 modifier = Modifier
                     .fillMaxWidth()
             )
@@ -151,10 +197,11 @@ fun RegisterScreen(
 
                 // Nombre de usuario
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it }, // use inputTransformation and output Transformation instead
+                    value = nickname,
+                    onValueChange = onNicknameChange,
                     placeholder = { Text("Username")},
                     singleLine = true,
+                    isError = nicknameError != null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
@@ -162,32 +209,21 @@ fun RegisterScreen(
                         focusedIndicatorColor = Resaltado,
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .semantics { ContentType.EmailAddress }
-                        .onFocusChanged { focus ->
-                            focusedField = if (focus.isFocused) "username" else null
-                        }
-                )
-
-                AnimatedVisibility(visible = focusedField == "username") {
-                    ConstraintList(
-                        title = "Username must contain;",
-                        constraints = listOf(
-                            "At least 6 characters" to (username.length >= 6),
-                            "Only letters or digits" to (username.all { it.isLetterOrDigit() }),
-                            "Start with a letter" to (username.firstOrNull()?.isLetter() == true)
-                        )
                     )
-                }
+                )
+                Spacer(Modifier.height(10.dp))
+                if (nicknameError != null) {
+                    Text(nicknameError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+            }
 
                 Spacer(Modifier.height(20.dp))
 
                 // Correo electrónico
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it}, // use inputTransformation and output Transformation instead
+                    onValueChange = onEmailChange, // use inputTransformation and output Transformation instead
                     placeholder = { Text("Email")},
+                    isError = emailError != null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     shape = RoundedCornerShape(30.dp),
@@ -196,20 +232,22 @@ fun RegisterScreen(
                         focusedIndicatorColor = Resaltado,
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White
-                    ),
-                    modifier = Modifier.semantics { ContentType.EmailAddress }
+                    )
                 )
+                Spacer(Modifier.height(10.dp))
+                if (emailError != null) {
+                    Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
 
                 Spacer(Modifier.height(20.dp))
 
                 // Contraseña
-                OutlinedSecureTextField(
-                    state = passwordState,
-                    placeholder = { Text("Password")},
-                    supportingText = {
-                        Text("Password must be at least 12 characters")
-                    },
-                    isError = passwordState.text.length in 1..7,
+                OutlinedTextField(
+                    value = pass,
+                    onValueChange = onPassChange,
+                    placeholder = { Text("Password") },
+                    isError = passError != null,
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
@@ -218,18 +256,29 @@ fun RegisterScreen(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White
                     ),
-                    modifier = Modifier.semantics { ContentType.NewPassword }
+                    visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton( onClick = { showPass = !showPass }) {
+                            Icon(
+                                imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (showPass) "Ocultar contraseña" else "Mostrar contraseña"
+                            )
+                        }
+                    }
                 )
+                Spacer(Modifier.height(10.dp))
+                if (passError != null) {
+                    Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
 
                 Spacer(Modifier.height(20.dp))
 
                 // Confirmar contraseña
-                OutlinedSecureTextField(
-                    state = confirmPasswordState,
+                OutlinedTextField(
+                    value = confirmPass,
+                    onValueChange = onConfirmPassChange,
                     placeholder = { Text("Confirm Password")},
-                    supportingText = { Text("Passwords must match.") },
-                    isError = confirmPasswordState.text.isNotEmpty() &&
-                            confirmPasswordState.text != passwordState.text,
+                    isError = confirmPassError != null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
@@ -238,8 +287,27 @@ fun RegisterScreen(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White
                     ),
-                    modifier = Modifier.semantics { ContentType.NewPassword }
+                    visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton( onClick = { showConfirm = !showConfirm }) {
+                            Icon(
+                                imageVector = if (showConfirm) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (showConfirm) "Ocultar contraseña" else "Mostrar contraseña"
+                            )
+                        }
+                    }
                 )
+                Spacer(Modifier.height(10.dp))
+                if (confirmPassError != null) {
+                    Text(confirmPassError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                if (errorMessage != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                }
 
                 Spacer(Modifier.height(16.dp))
 
@@ -247,67 +315,11 @@ fun RegisterScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Resaltado
                     ),
-                    onClick = {
-                    if (email.isNotBlank() && passwordState.text.isNotBlank()) {
-                        autofillManager?.commit()
-                        onRegistered()
-                    }
-                    },
-                    enabled = passwordState.text.length >= 12
+                    onClick = onSubmit,
+                    enabled = canSubmit && !isSubmitting,
                 ) {
                     Text("Registrarse")
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ConstraintList(
-    title: String,
-    constraints: List<Pair<String, Boolean>>
-) {
-    Column(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp)
-    ) {
-        Text(
-            title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(4.dp))
-        constraints.forEach { (text, valid) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 2.dp)
-            ) {
-                Icon(
-                    imageVector = if (valid)
-                        Icons.Filled.CheckCircle
-                    else
-                        Icons.Filled.Cancel,
-                    contentDescription = null,
-                    tint = if (valid)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.error
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = text,
-                    color = if (valid)
-                        MaterialTheme.colorScheme.onSurface
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
         }
     }

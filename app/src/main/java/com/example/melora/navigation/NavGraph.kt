@@ -20,6 +20,7 @@ import com.example.melora.ui.components.defaultDrawerItems
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.RegisterScreen
+import com.example.melora.ui.screen.RegisterScreenVm
 import kotlinx.coroutines.launch
 
 @Composable
@@ -88,7 +89,7 @@ fun AppNavGraph(navController: NavHostController) {
                     )
                 }
                 composable(Route.Register.path) { // Destino Registro
-                    RegisterScreen(
+                    RegisterScreenVm(
                         onRegistered = goLogin, // Botón para ir a Login
                         onGoLogin = goLogin     // Botón alternativo a Login
                     )
