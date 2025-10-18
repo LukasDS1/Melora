@@ -1,5 +1,8 @@
 package com.example.melora.ui.components
 
+import android.widget.SearchView
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
@@ -20,6 +23,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,59 +33,24 @@ fun AppTopBar(
     onOpenDrawer: () -> Unit, // Abre el drawer (hamburguesa)
     onHome: () -> Unit,       // Navega a Home
     onLogin: () -> Unit,      // Navega a Login
-    onRegister: () -> Unit    // Navega a Registro
+    onRegister: () -> Unit,// Navega a Registro
 ) {
-    //lo que hace es crear una variable de estado recordada que le dice a la interfaz
-    // si el menú desplegable de 3 puntitos debe estar visible (true) o oculto (false).
-    var showMenu by remember { mutableStateOf(false) } // Estado del menú overflow
 
     CenterAlignedTopAppBar( // Barra alineada al centro
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = Color(0xFF393939)
         ),
-        title = { // Slot del título
-            Text(
-                text = "Demo Navegación Compose", // Título visible
-                style = MaterialTheme.typography.titleLarge, // Estilo grande
-                maxLines = 1,              // asegura una sola línea Int.MAX_VALUE   // permite varias líneas
-                overflow = TextOverflow.Ellipsis // agrega "..." si no cabe
-
-            )
+        title = {
+           Text(text = "Melora", color = Color(0xFFFFFFFF))
         },
         navigationIcon = { // Ícono a la izquierda (hamburguesa)
-            IconButton(onClick = onOpenDrawer) { // Al presionar, abre drawer
+            IconButton(onClick = onOpenDrawer) {
                 Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menú") // Ícono
             }
         },
-        actions = { // Acciones a la derecha (íconos + overflow)
-            IconButton(onClick = onHome) { // Ir a Home
-                Icon(Icons.Filled.Home, contentDescription = "Home") // Ícono Home
-            }
-            IconButton(onClick = onLogin) { // Ir a Login
-                Icon(Icons.Filled.AccountCircle, contentDescription = "Login") // Ícono Login
-            }
-            IconButton(onClick = onRegister) { // Ir a Registro
-                Icon(Icons.Filled.Person, contentDescription = "Registro") // Ícono Registro
-            }
-            IconButton(onClick = { showMenu = true }) { // Abre menú overflow
-                Icon(Icons.Filled.MoreVert, contentDescription = "Más") // Ícono 3 puntitos
-            }
-            DropdownMenu(
-                expanded = showMenu, // Si está abierto
-                onDismissRequest = { showMenu = false } // Cierra al tocar fuera
-            ) {
-                DropdownMenuItem( // Opción Home
-                    text = { Text("Home") },
-                    onClick = { showMenu = false; onHome() } // Navega y cierra
-                )
-                DropdownMenuItem(
-                    text = { Text("Login") },
-                    onClick = { showMenu = false; onLogin() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Registro") },
-                    onClick = { showMenu = false; onRegister() }
-                )
+        actions = {
+            IconButton(onClick = onLogin) {
+                Icon(Icons.Filled.AccountCircle, contentDescription = "Login")
             }
         }
     )
