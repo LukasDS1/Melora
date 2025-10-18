@@ -5,11 +5,13 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.melora.ui.components.AppDrawer
 import com.example.melora.ui.components.AppNavigationBar
 import com.example.melora.ui.components.AppTopBar
@@ -20,6 +22,7 @@ import com.example.melora.ui.screen.RegisterScreen
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
+import com.example.melora.ui.screen.RegisterScreenVm
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,6 +59,10 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
             )
         }
     ) {
+
+        val navBackStackEntry by navController.currentBackStackEntryAsState() // Guarda la pantalla que está encima de la "pila" de pantallas
+        val currentRoute = navBackStackEntry?.destination?.route // Guarda el string de la ruta actual
+
         Scaffold(
             topBar = {
                 AppTopBar(
@@ -66,6 +73,14 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
                 )
             }, bottomBar = {
                 AppNavigationBar( navController = navController)
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                    AppTopBar(
+                        onOpenDrawer = { scope.launch { drawerState.open() } },
+                        onHome = goHome,
+                        onLogin = goLogin,
+                        onRegister = goRegister
+                    )
+                }
             }
         ) { innerPadding ->
             NavHost(
@@ -102,6 +117,10 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
                     SuccesUpload (
                         onLoginOk = goLogin,
                         onGoUpload = goUpload
+                composable(Route.Register.path) { // Destino Registro
+                    RegisterScreenVm(
+                        onRegistered = goLogin, // Botón para ir a Login
+                        onGoLogin = goLogin     // Botón alternativo a Login
                     )
                 }
             }
