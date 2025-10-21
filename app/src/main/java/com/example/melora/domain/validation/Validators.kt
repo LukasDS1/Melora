@@ -45,7 +45,6 @@ fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
     } catch (e: Exception){
         "Cant be process the image"
     }
-
 }
 
 fun validateEmail(email: String): String? {

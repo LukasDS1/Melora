@@ -1,17 +1,37 @@
 package com.example.melora.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,70 +40,185 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.AuthViewModel
 
-@Composable
-fun LoginScreen(
-    onLoginOk: () -> Unit,   // Acción para “volver” a Home
-    onGoRegister: () -> Unit // Acción para ir a Registro
+@Composable                                                  // Pantalla Login conectada al VM
+fun LoginScreenVm(
+    vm: AuthViewModel,                            // MOD: recibimos el VM desde NavGraph
+    onLoginOk: () -> Unit,                       // Navega a Home cuando el login es exitoso
+    onGoRegister: () -> Unit                                 // Navega a Registro
 ) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val state by vm.login.collectAsStateWithLifecycle()      // Observa el StateFlow en tiempo real
+
+    if (state.success) {                                     // Si login fue exitoso…
+        vm.clearLoginResult()                                // Limpia banderas
+        onLoginOk()                              // Navega a Home
+    }
+
+    LoginScreen(                                             // Delegamos a UI presentacional
+        email = state.email,                                 // Valor de email
+        pass = state.pass,                                   // Valor de password
+        emailError = state.emailError,                       // Error de email
+        passError = state.passError,                         // (Opcional) error de pass en login
+        canSubmit = state.canSubmit,                         // Habilitar botón
+        isSubmitting = state.isSubmitting,                   // Loading
+        errorMessage = state.errorMessage,                           // Error global
+        onEmailChange = vm::onLoginEmailChange,              // Handler email
+        onPassChange = vm::onLoginPassChange,                // Handler pass
+        onSubmit = vm::submitLogin,                          // Acción enviar
+        onGoRegister = onGoRegister                          // Ir a Registro
+    )
+}
+@Composable
+fun LoginScreen(
+    email: String,                                           // Campo email
+    pass: String,                                            // Campo contraseña
+    emailError: String?,                                     // Error de email
+    passError: String?,                                      // Error de password (opcional)
+    canSubmit: Boolean,                                      // Habilitar botón
+    isSubmitting: Boolean,                                   // Flag loading
+    errorMessage: String?,                                       // Error global (credenciales)
+    onEmailChange: (String) -> Unit,                         // Handler cambio email
+    onPassChange: (String) -> Unit,                          // Handler cambio password
+    onSubmit: () -> Unit,                                    // Acción enviar
+    onGoRegister: () -> Unit                                 // Acción ir a registro
+) {
+    var showPass by remember { mutableStateOf(false)}
     val bg = MaterialTheme.colorScheme.secondaryContainer // Fondo distinto para contraste
 
     Box(
         modifier = Modifier
-            .fillMaxSize() // Ocupa
-            .background(bg) // Fondo
-            .padding(16.dp), // Margen
-        contentAlignment = Alignment.Center // Centro
+            .fillMaxSize()
+            .background(bg),
+//            .padding(16.dp)
+        contentAlignment = Alignment.Center
     ) {
-
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally // Centrado horizontal
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 40.dp, bottom = 650.dp)
         ) {
             Text(
-                text = "Iniciar Sesión",
-                style = MaterialTheme.typography.headlineMedium // Título
+                "Hello!",
+                textAlign = TextAlign.Left,
+                style = MaterialTheme.typography.headlineLarge,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier
+                    .fillMaxWidth()
             )
-            Spacer(Modifier.height(12.dp)) // Separación
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email")},
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()                         // Usa to.do el ancho de la pantalla
+                .align(Alignment.BottomCenter)         // Alinea el card abajo y centrado
+                .heightIn(min = 200.dp, max = 700.dp) // Limita el alto
+                .padding(top = 100.dp),              // Controla que tanto puede subir la card
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = SecondaryBg
             )
-            Spacer(Modifier.height(20.dp)) // Separación
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password")},
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(it, color = Color.Red)
-            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Iniciar sesión",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Resaltado,
+                    textAlign = TextAlign.Left,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 15.dp)
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(32.dp))
 
-            Button(onClick = {
-                if (email.isNotBlank() && password.isNotBlank()) {
-                    if (email == "test@example.com" && password == "1234") {
-                        onLoginOk()
-                    } else {
-                        errorMessage = "Email or password incorrect."
-                    }
-                } else {
-                    errorMessage = "Por favor ingrese todos los campos."
+                // Email
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = onEmailChange,
+                    placeholder = { Text("Correo electrónico")},
+                    singleLine = true,
+                    isError = emailError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = SecondaryBg,
+                        focusedIndicatorColor = Resaltado,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
+                )
+                Spacer(Modifier.height(10.dp))
+                if (emailError != null) {
+                    Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
-            }) {
-                Text("Iniciar Sesión")
+
+                Spacer(Modifier.height(20.dp))
+
+                // Contraseña
+                OutlinedTextField(
+                    value = pass,
+                    onValueChange = onPassChange,
+                    placeholder = { Text("Password") },
+                    isError = passError != null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = SecondaryBg,
+                        focusedIndicatorColor = Resaltado,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    ),
+                    visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton( onClick = { showPass = !showPass }) {
+                            Icon(
+                                imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (showPass) "Ocultar contraseña" else "Mostrar contraseña"
+                            )
+                        }
+                    }
+                )
+                Spacer(Modifier.height(10.dp))
+                if (passError != null) {
+                    Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                if (errorMessage != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Resaltado
+                    ),
+                    onClick = onSubmit,
+                    enabled = canSubmit && !isSubmitting,
+                ) {
+                    Text("Registrarse")
+                }
             }
         }
     }
