@@ -10,9 +10,9 @@ data class SongEntity(
     @PrimaryKey(autoGenerate = true)
     val songId: Long = 0L,
     val songName: String,
-    val songDescription: String?,
-    val songPath: String,     //guardamos la url donde esta la cancion
-    val coverArt: ByteArray, // despues sql lo convierte en un blob
-    val durationSong: Int,
-    val creationDate: Date,
+    val songDescription: String? = null,
+    val songPath: String,      //guardamos la url donde esta la cancion
+    val coverArt: String? = null,
+    val durationSong: Int   ,
+    val creationDate: Long =  System.currentTimeMillis(),
 )

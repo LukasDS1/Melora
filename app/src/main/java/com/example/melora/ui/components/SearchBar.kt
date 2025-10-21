@@ -28,22 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.melora.data.local.song.SongEntity
-import com.example.melora.ui.screen.SongItem
 import com.example.melora.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimpleSearchBar(
+fun SearchBar(
     textFieldState: TextFieldState,
     onSearch: (String) -> Unit,
-    searchResults: List<String>,
+    searchResults: List<SongEntity>,
     modifier: Modifier = Modifier,
-
-) {
-    val vm : SearchViewModel = viewModel()
+    ) {
     // Controls expansion state of the search bar
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val songs by vm.songs.collectAsStateWithLifecycle()
 
     Box(
         modifier
@@ -51,12 +47,12 @@ fun SimpleSearchBar(
     ) {
         SearchBar(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .semantics { traversalIndex = 0f },
+                .align(Alignment.TopCenter),
             inputField = {
                 SearchBarDefaults.InputField(
                     query = textFieldState.text.toString(),
-                    onQueryChange = { textFieldState.edit { replace(0, length, it) } },
+                    onQueryChange = { new -> textFieldState.edit { replace(0, length, new) }
+                    onSearch(new)                },
                     onSearch = {
                         onSearch(textFieldState.text.toString())
                         expanded = false
@@ -69,21 +65,19 @@ fun SimpleSearchBar(
             expanded = expanded,
             onExpandedChange = { expanded = it },
         ) {
-            // Display search results in a scrollable column
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                searchResults.forEach { result ->
-                    LazyColumn (modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
-                    ){
-                        items(songs){
-                                song ->
+            LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        items(searchResults) { song ->
                             SongItem(song = song)
                         }
                     }
-                }
             }
         }
     }
-}
+
 
 
 @Composable

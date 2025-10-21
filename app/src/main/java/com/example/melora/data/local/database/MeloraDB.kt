@@ -21,7 +21,7 @@ import java.sql.Date
         SongEntity::class,
         UploadEntity::class
     ],
-    version = 1,
+    version = 6,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
@@ -29,7 +29,6 @@ abstract class MeloraDB : RoomDatabase() {
     // Exponemos los DAO de canciones y subidas
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
-
     companion object {
         @Volatile
         private var INSTANCE: MeloraDB? = null              // Instancia singleton
@@ -56,21 +55,20 @@ abstract class MeloraDB : RoomDatabase() {
                                 val seedSongs = listOf(
                                     SongEntity(
                                         songName = "Canción de Ejemplo 1",
-                                        songDescription = "Una canción de demostración",
+                                        songDescription = "Canción de Ejemplo 1",
                                         songPath = "https://example.com/song1.mp3",
-                                        coverArt = byteArrayOf(0x01, 0x02, 0x03),
+                                        coverArt = "https://example.com/song1.mp3",
                                         durationSong = 180,
-                                        creationDate = Date(System.currentTimeMillis())
+                                        creationDate = System.currentTimeMillis()
                                     ),
                                     SongEntity(
-                                        songName = "Melodía Test",
-                                        songDescription = "Para pruebas de la aplicación",
+                                        songName = "Canción de Ejemplo 2",
+                                        songDescription = "Canción de Ejemplo 2",
                                         songPath = "https://example.com/song2.mp3",
-                                        coverArt = byteArrayOf(0x04, 0x05, 0x06),
+                                        coverArt =  "https://example.com/song2.mp3",
                                         durationSong = 210,
-                                        creationDate = Date(System.currentTimeMillis())
+                                        creationDate = System.currentTimeMillis())
                                     )
-                                )
 
                                 // Inserta canciones sólo si la tabla está vacía
                                 if (songDao.getAllSong().isEmpty()) {

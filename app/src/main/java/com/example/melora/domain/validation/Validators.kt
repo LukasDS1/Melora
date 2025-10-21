@@ -3,6 +3,7 @@ package com.example.melora.domain.validation
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Patterns
 
 fun songNameValidation(songName:String):String?{
     return if(songName.isBlank()) "The song name cant be empty" else null
@@ -46,7 +47,6 @@ fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
     }
 
 }
-import android.util.Patterns
 
 fun validateEmail(email: String): String? {
     if (email.isBlank()) return "El email es obligatorio."

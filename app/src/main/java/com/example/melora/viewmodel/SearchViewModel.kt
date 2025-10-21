@@ -1,18 +1,33 @@
 package com.example.melora.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.melora.data.local.song.SongEntity
+import com.example.melora.data.repository.SongRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
+class SearchViewModel (private val repository: SongRepository): ViewModel(){
+    private val _songs = MutableStateFlow<List<SongEntity>>(emptyList())
+    val songs: StateFlow<List<SongEntity>> = _songs
 
-
-class SearchViewModel : ViewModel(){
-    private val _query = MutableStateFlow("")
-    val query = _query.asStateFlow()
-
-    fun onQueryChanged(newValue:String){
-        _query.value = newValue
+    fun loadAllSongs() {
+        viewModelScope.launch {
+            _songs.value = repository.getAllSongs()
+        }
     }
 
-
+    fun search(query: String) {
+        viewModelScope.launch {
+            _songs.value = if (query.isBlank()) {
+                repository.getAllSongs()
+            } else {
+                val result = repository.searchSong(query)
+                result.getOrElse { emptyList() }
+            }
+        }
+    }
 }

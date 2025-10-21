@@ -44,7 +44,7 @@ fun AppNavigationBar(
 ) {
     val destinations = listOf(
         Destination("uploadForm", "Upload", Icons.Filled.AddCircle, "Página de subida de musica"),
-        Destination("login", "Search", Icons.Filled.Search, "Ir a buscar"),
+        Destination("SearchView", "Search", Icons.Filled.Search, "Ir a buscar"),
         Destination("register", "Library", Icons.Filled.Star, "Ir a la bibloteca" +"")
     )
 

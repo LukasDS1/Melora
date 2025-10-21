@@ -6,4 +6,5 @@ sealed class Route(val path: String) {
     data object Register : Route("register")
     data object UploadScreenForm : Route("uploadForm")
     data object SuccesUpload : Route("succesUpload")
+    data object SearchView : Route("SearchView")
 }

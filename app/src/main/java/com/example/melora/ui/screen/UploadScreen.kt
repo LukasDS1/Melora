@@ -1,11 +1,10 @@
 package com.example.melora.ui.screen
-
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,28 +12,43 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.melora.viewmodel.UploadViewModel
+import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Date
-import com.example.melora.R
+import java.util.Locale
+
+
+private fun createTempImageFile(context: Context): File{
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val storageDir = File(context.cacheDir,"images").apply {
+        if(!exists()) mkdirs()
+    }
+    return File(storageDir,"IMG_$timeStamp.jpg")
+}
+
+private fun getImageUriFile(context: Context,file: File):Uri{
+    val authority = "${context.packageName}.fileprovider"
+    return FileProvider.getUriForFile(context,authority,file)
+}
 
 @Composable
 fun UploadScreenVm(
@@ -42,7 +56,6 @@ fun UploadScreenVm(
     onGoSucces: () -> Unit
 ) {
     val context = LocalContext.current
-    val vm: UploadViewModel = viewModel()
     val state by vm.upload.collectAsStateWithLifecycle()
 
     if (state.success) {
@@ -92,9 +105,14 @@ private fun UploadScreen(
     submitMusic: () -> Unit
 ) {
     val bg = Color(0xFF4b4b4b)
+
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
     var isPlaying by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+
+
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -104,10 +122,20 @@ private fun UploadScreen(
 
    val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        onSongCoverChange(uri)
+    ) { uri: Uri? -> uri?.let { selec ->try {
+       val inputStream = context.contentResolver.openInputStream(selec)
+       val tempFile = createTempImageFile(context)
+       inputStream?.use { input ->
+           tempFile.outputStream().use { output -> input.copyTo(output)
+           }
+       }
+       val savedUri = getImageUriFile(context,tempFile)
+       onSongCoverChange(savedUri)
+    }catch (e: Exception){
+       Toast.makeText(context,"Error canceled upload", Toast.LENGTH_SHORT).show()
     }
-
+   }
+   }
 
     Box( Modifier.background(bg)
     ) {
@@ -211,8 +239,8 @@ private fun UploadScreen(
                         textAlign = TextAlign.Center
                     )
                     // Cover art
-                    Button(onClick = { photoPickerLauncher.launch("image/*") }) {
-                        Icon(Icons.Filled.Add, "Upload your CoverArt")
+                    Button(onClick = {photoPickerLauncher.launch("image/*")}) {
+                        Icon(Icons.Filled.Add, "Upload your covert Art")
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -222,8 +250,9 @@ private fun UploadScreen(
                             model = coverArt,
                             contentDescription = "Cover Art",
                             modifier = Modifier
-                                .height(150.dp)
-                                .fillMaxWidth()
+                                .height(250.dp)
+                                .fillMaxWidth(),
+                            contentScale = ContentScale.Crop
                         )
                     } else {
                         Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center)

@@ -10,7 +10,7 @@ interface SongDao {
 
     //insertar canciones
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(song: SongEntity): Long
+    suspend fun insert(songs: SongEntity): Long
 
     //buscar canciones por nombre
     @Query("SELECT * FROM songs WHERE LOWER(songName) LIKE '%' || LOWER(:query) || '%'")

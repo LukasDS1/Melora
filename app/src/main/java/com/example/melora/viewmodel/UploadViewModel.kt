@@ -86,7 +86,7 @@ class UploadViewModel( private  val repository: SongRepository): ViewModel(){
                 coverArt = s.coverArt,
                 songDescription = s.songDescription,
                 durationSong = 0,
-                creationDate = java.sql.Date(System.currentTimeMillis())
+                creationDate = Date().time
             )
 
             _upload.update {

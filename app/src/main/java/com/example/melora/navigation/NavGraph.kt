@@ -18,25 +18,32 @@ import com.example.melora.ui.components.AppTopBar
 import com.example.melora.ui.components.defaultDrawerItems
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
-import com.example.melora.ui.screen.RegisterScreen
+import com.example.melora.ui.screen.RegisterScreenVm
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
-import com.example.melora.ui.screen.RegisterScreenVm
+import com.example.melora.ui.screen.SearchViewScreen
+import com.example.melora.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewModel) {
-
+fun AppNavGraph(
+    navController: NavHostController,
+    uploadViewModel: UploadViewModel,
+    searchViewModel: SearchViewModel
+) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val goUpload : () -> Unit = {navController.navigate(Route.UploadScreenForm.path)}
-    val goHome: () -> Unit    = { navController.navigate(Route.Home.path) }    // Ir a Home
-    val goLogin: () -> Unit   = { navController.navigate(Route.Login.path) }   // Ir a Login
-    val goRegister: () -> Unit = { navController.navigate(Route.Register.path) } // Ir a Registro
-    val goSucces: () -> Unit = {navController.navigate(Route.SuccesUpload.path)} // ir a la pagina de succes
+    // ---- Navegaciones ----
+    val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path) }
+    val goHome: () -> Unit = { navController.navigate(Route.Home.path) }
+    val goLogin: () -> Unit = { navController.navigate(Route.Login.path) }
+    val goRegister: () -> Unit = { navController.navigate(Route.Register.path) }
+    val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
+    val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
 
+    // ---- Drawer lateral ----
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -48,31 +55,22 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
                         goHome()
                     },
                     onLogin = {
-                        scope.launch { drawerState.close() } // Cierra drawer
+                        scope.launch { drawerState.close() }
                         goLogin()
                     },
                     onRegister = {
-                        scope.launch { drawerState.close() } // Cierra drawer
+                        scope.launch { drawerState.close() }
                         goRegister()
                     }
                 )
             )
         }
     ) {
-
-        val navBackStackEntry by navController.currentBackStackEntryAsState() // Guarda la pantalla que está encima de la "pila" de pantallas
-        val currentRoute = navBackStackEntry?.destination?.route // Guarda el string de la ruta actual
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
 
         Scaffold(
             topBar = {
-                AppTopBar(
-                    onHome = goHome,
-                    onLogin = goLogin,
-                    onRegister = goRegister,
-                    onOpenDrawer = goLogin
-                )
-            }, bottomBar = {
-                AppNavigationBar( navController = navController)
                 if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
                     AppTopBar(
                         onOpenDrawer = { scope.launch { drawerState.open() } },
@@ -81,6 +79,11 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
                         onRegister = goRegister
                     )
                 }
+            },
+            bottomBar = {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                    AppNavigationBar(navController = navController)
+                }
             }
         ) { innerPadding ->
             NavHost(
@@ -88,40 +91,39 @@ fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewMod
                 startDestination = Route.Home.path,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable (Route.Home.path) {
+                composable(Route.Home.path) {
                     HomeScreen(
                         onGoLogin = goLogin,
                         onGoRegister = goRegister,
-                        onGoUpload = goUpload
+                        onGoUpload = goUpload,
                     )
                 }
-                composable(Route.Login.path) { // Destino Login
+                composable(Route.Login.path) {
                     LoginScreen(
                         onLoginOk = goHome,
                         onGoRegister = goRegister
                     )
                 }
                 composable(Route.Register.path) {
-                    RegisterScreen(
-                        onRegistered = goLogin,
-                        onGoLogin = goLogin
+                    RegisterScreenVm(
+                        onGoLogin = goLogin,
+                        onRegistered = goRegister
                     )
                 }
-                composable (Route.UploadScreenForm.path){
+                composable(Route.UploadScreenForm.path) {
                     UploadScreenVm(
                         vm = uploadViewModel,
                         onGoSucces = goSucces
                     )
                 }
-                composable (Route.SuccesUpload.path){
-                    SuccesUpload (
+                composable(Route.SuccesUpload.path) {
+                    SuccesUpload(
                         onLoginOk = goLogin,
                         onGoUpload = goUpload
-                composable(Route.Register.path) { // Destino Registro
-                    RegisterScreenVm(
-                        onRegistered = goLogin, // Botón para ir a Login
-                        onGoLogin = goLogin     // Botón alternativo a Login
                     )
+                }
+                composable(Route.SearchView.path) {
+                    SearchViewScreen(searchViewModel)
                 }
             }
         }

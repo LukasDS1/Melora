@@ -10,14 +10,13 @@ import java.sql.Date
 
 @Dao
 interface UploadDao {
-
     //insert para el registro de subida
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(upload: UploadEntity): Long
     //Para banear una cancion
-    @Query("UPDATE upload SET BanReason = :reason, BanDate = :banDate WHERE uploadId = :uploadId")
-    suspend fun banUpload(uploadId: Long, reason: String, banDate: Date)
-    //Para buscar canciones baneadas
-    @Query("SELECT uploadId FROM upload WHERE BanReason IS NOT NULL ")
+    @Query("UPDATE upload SET banReason = :reason, banDate = :banDate WHERE uploadId = :uploadId")
+    suspend fun banUpload(uploadId: Long, reason: String, banDate: Long)
+    //para buscar canciones baneadas
+    @Query("SELECT uploadId FROM upload WHERE banReason IS NOT NULL")
     suspend fun getBannedUploads(): List<Long>
 }
