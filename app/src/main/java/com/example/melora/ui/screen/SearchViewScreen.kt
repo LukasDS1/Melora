@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import com.example.melora.viewmodel.SearchViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.melora.ui.components.SearchBar
+import com.example.melora.ui.theme.Resaltado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,7 +23,7 @@ fun SearchViewScreen(
 
     val textState = remember { TextFieldState() }
     val onSearch: (String) -> Unit = { query -> vm.search(query) }
-    val bg = Color(0xFF4b4b4b)
+    val bg = (Resaltado)
     val songs by vm.songs.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize().background(bg)
