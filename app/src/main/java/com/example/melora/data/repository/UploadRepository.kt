@@ -11,7 +11,7 @@ class UploadRepository (
         try {
             val uploadEntity = UploadEntity(
                 userId = userID,
-                songId = songID,
+                idSong = songID,
                 uploadDate = Date().time ,
                 stateId = stateId)
 

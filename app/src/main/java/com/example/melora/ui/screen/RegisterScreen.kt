@@ -53,9 +53,9 @@ import com.example.melora.viewmodel.AuthViewModel
 @Composable
 fun RegisterScreenVm(
     onRegistered: () -> Unit,
-    onGoLogin: () -> Unit
+    onGoLogin: () -> Unit,
+    vm: AuthViewModel
 ) {
-    val vm: AuthViewModel = viewModel()
     val state by vm.register.collectAsStateWithLifecycle() // Observa estado en tiempo real
 
     if (state.success) {

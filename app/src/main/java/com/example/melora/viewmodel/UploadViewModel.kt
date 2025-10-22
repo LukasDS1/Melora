@@ -8,7 +8,6 @@ import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.domain.validation.songCoverArtValidation
 import com.example.melora.domain.validation.songValidation
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -33,8 +32,7 @@ data class  UploadUiState(
     val errorMsg: String? = null
 )
 
-
-class UploadViewModel( private  val repository: SongRepository): ViewModel(){
+class UploadViewModel( private  val repository: SongRepository,private val uploadRepository: UploadRepository,): ViewModel(){
     //Flujos de estados
     private val _upload = MutableStateFlow(UploadUiState())
     val upload: StateFlow<UploadUiState> = _upload //pagina visible, solo lectura
@@ -73,38 +71,54 @@ class UploadViewModel( private  val repository: SongRepository): ViewModel(){
         _upload.update { it.copy(songDescription = value.ifBlank { null }) }
     }
 
-    fun submitMusic(){
+    fun submitMusic(userId: Long = 1L) {
         val s = _upload.value
-        if(!s.canSubmit || s.isSubmitting) return
+        if (!s.canSubmit || s.isSubmitting) return
+
         viewModelScope.launch {
             _upload.update { it.copy(isSubmitting = true, errorMsg = null, success = false) }
-            delay(700)
 
-            val result = repository.uploadMusic(
+            val songResult = repository.uploadMusic(
                 songName = s.songName,
                 songPath = s.song,
                 coverArt = s.coverArt,
                 songDescription = s.songDescription,
                 durationSong = 0,
-                creationDate = Date().time
+                creationDate = s.releaseDate.time
             )
 
-            _upload.update {
-                if(result.isSuccess){
-                    it.copy(isSubmitting = false, success = true, errorMsg = null)
-                }else{
-                    it.copy(isSubmitting = false, success = false, errorMsg = result.exceptionOrNull()?.message?: "Cannot upload your Music :(")
+            if (songResult.isSuccess) {
+                val songId = songResult.getOrNull()!!
+                val uploadResult = uploadRepository.insertUpload(
+                    userID = userId,
+                    songID = songId,
+                    stateId = 1
+                )
+                //upload
+                _upload.update {
+                    if (uploadResult.isSuccess) {
+                        it.copy(isSubmitting = false, success = true)
+                    } else {
+                        it.copy(isSubmitting = false, errorMsg = "Error")
+                    }
                 }
+            } else {
+                _upload.update { it.copy(isSubmitting = false, errorMsg = "Error uploading song") }
             }
         }
     }
 
-    //funcion para limpiar banderas
+    fun clearForm(){
+        _upload.value = UploadUiState()
+    }
     fun clearUpload(){
         _upload.update { it.copy(success = false, errorMsg = null) }
     }
 
 }
+
+
+
 
 
 

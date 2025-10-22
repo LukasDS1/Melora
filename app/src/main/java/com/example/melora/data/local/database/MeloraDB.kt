@@ -9,6 +9,8 @@ import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.upload.UploadDao
 import com.example.melora.data.local.upload.UploadEntity
+import com.example.melora.data.local.users.UserDao
+import com.example.melora.data.local.users.UserEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,9 +21,10 @@ import java.sql.Date
 @Database(
     entities = [
         SongEntity::class,
-        UploadEntity::class
+        UploadEntity::class,
+        UserEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
@@ -29,6 +32,8 @@ abstract class MeloraDB : RoomDatabase() {
     // Exponemos los DAO de canciones y subidas
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
+
+    abstract fun userDao(): UserDao
     companion object {
         @Volatile
         private var INSTANCE: MeloraDB? = null              // Instancia singleton
@@ -49,32 +54,104 @@ abstract class MeloraDB : RoomDatabase() {
                             super.onCreate(db)
                             // Corrutina en hilo IO para precargar datos iniciales
                             CoroutineScope(Dispatchers.IO).launch {
-                                val songDao = getInstance(context).songDao()
+
+                                val instance = getInstance(context)
+                                val songDao = instance.songDao()
+                                val userDao = instance.userDao()
+                                val uploadDao = instance.uploadDao()
+
+                                val seedUsers = listOf(
+                                    UserEntity(
+                                        email = "user1@email.com",
+                                        nickname = "UserOne",
+                                        pass = "PASSUSER1",
+                                        profilePicture = "/example.com/user1.png"
+                                    ),
+                                    UserEntity(
+                                        email = "user2@email.com",
+                                        nickname = "UserTwo",
+                                        pass = "PASSUSER2",
+                                        profilePicture = "/example.com/user2.png"
+                                    ),
+                                    UserEntity(
+                                        email = "user3@email.com",
+                                        nickname = "UserThree",
+                                        pass = "PASSUSER3",
+                                        profilePicture = "/example.com/user3.png"
+                                    )
+                                )
+
+                                if (userDao.getAllUser().isEmpty()) {
+                                    seedUsers.forEach { userDao.upsertUser(it) }
+                                }
+
+                                val userIds = mutableListOf<Long>()
+                                seedUsers.forEach { user ->
+                                    val id = userDao.upsertUser(user)
+                                    userIds.add(id)
+                                }
+
 
                                 // Precarga de canciones de ejemplo
                                 val seedSongs = listOf(
                                     SongEntity(
-                                        songName = "Canción de Ejemplo 1",
-                                        songDescription = "Canción de Ejemplo 1",
-                                        songPath = "https://example.com/song1.mp3",
-                                        coverArt = "https://example.com/song1.mp3",
+                                        songName = "Cielo Azul",
+                                        songDescription = "Canción tranquila de ejemplo",
+                                        songPath = "/example.com/song1.mp3",
+                                        coverArt = "/example.com/song1cover.png",
                                         durationSong = 180,
                                         creationDate = System.currentTimeMillis()
                                     ),
                                     SongEntity(
-                                        songName = "Canción de Ejemplo 2",
-                                        songDescription = "Canción de Ejemplo 2",
-                                        songPath = "https://example.com/song2.mp3",
-                                        coverArt =  "https://example.com/song2.mp3",
+                                        songName = "Lluvia de Verano",
+                                        songDescription = "Canción con ritmo alegre",
+                                        songPath = "/example.com/song2.mp3",
+                                        coverArt = "/example.com/song2cover.png",
                                         durationSong = 210,
-                                        creationDate = System.currentTimeMillis())
+                                        creationDate = System.currentTimeMillis()
+                                    ),
+                                    SongEntity(
+                                        songName = "Noches Lentas",
+                                        songDescription = "Canción suave y relajante",
+                                        songPath = "/example.com/song3.mp3",
+                                        coverArt = "/example.com/song3cover.png",
+                                        durationSong = 240,
+                                        creationDate = System.currentTimeMillis()
                                     )
+                                )
 
                                 // Inserta canciones sólo si la tabla está vacía
                                 if (songDao.getAllSong().isEmpty()) {
                                     seedSongs.forEach { songDao.insert(it) }
                                 }
+
+                                val songIds = mutableListOf<Long>()
+                                seedSongs.forEach { song ->
+                                    val id = songDao.insert(song)
+                                    songIds.add(id)
+                                }
+
+                                val seedUploads = listOf(
+                                    UploadEntity(
+                                        userId = userIds[0],
+                                        idSong = songIds[0],
+                                        stateId = 1
+                                    ),
+                                    UploadEntity(
+                                        userId = userIds[1],
+                                        idSong = songIds[1],
+                                        stateId = 1
+                                    ),
+                                    UploadEntity(
+                                        userId = userIds[2],
+                                        idSong = songIds[2],
+                                        stateId = 1
+                                    )
+                                )
+
+                                seedUploads.forEach { uploadDao.insert(it) }
                             }
+
                         }
                     })
                     // Si cambias la versión sin migraciones, destruye y recrea (modo educativo)

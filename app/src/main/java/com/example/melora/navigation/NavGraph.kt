@@ -16,13 +16,16 @@ import com.example.melora.ui.components.AppDrawer
 import com.example.melora.ui.components.AppNavigationBar
 import com.example.melora.ui.components.AppTopBar
 import com.example.melora.ui.components.defaultDrawerItems
+import com.example.melora.ui.screen.ArtistProfileScreen
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
+import com.example.melora.ui.screen.LoginScreenVm
 import com.example.melora.ui.screen.RegisterScreenVm
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.ui.screen.SearchViewScreen
+import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -30,7 +33,8 @@ import kotlinx.coroutines.launch
 fun AppNavGraph(
     navController: NavHostController,
     uploadViewModel: UploadViewModel,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    authViewModel: AuthViewModel
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -42,6 +46,7 @@ fun AppNavGraph(
     val goRegister: () -> Unit = { navController.navigate(Route.Register.path) }
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
+    val goArtistProfile: () -> Unit = {navController.navigate(Route.ArtistProfile.path)}
 
     // ---- Drawer lateral ----
     ModalNavigationDrawer(
@@ -99,15 +104,17 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.Login.path) {
-                    LoginScreen(
+                    LoginScreenVm(
                         onLoginOk = goHome,
-                        onGoRegister = goRegister
+                        onGoRegister = goRegister,
+                        vm = authViewModel
                     )
                 }
                 composable(Route.Register.path) {
                     RegisterScreenVm(
                         onGoLogin = goLogin,
-                        onRegistered = goRegister
+                        onRegistered = goRegister,
+                        vm = authViewModel
                     )
                 }
                 composable(Route.UploadScreenForm.path) {
@@ -123,7 +130,11 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.SearchView.path) {
-                    SearchViewScreen(searchViewModel)
+                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile )
+                }
+                composable(Route.ArtistProfile.path) {
+                    ArtistProfileScreen()
+
                 }
             }
         }
