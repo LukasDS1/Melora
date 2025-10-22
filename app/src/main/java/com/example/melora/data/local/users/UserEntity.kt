@@ -10,5 +10,5 @@ data class UserEntity(
     val nickname: String,
     val email: String,
     val pass: String,
-    val profilePicture: ByteArray? = null // podría ser un bytearray
+    val profilePicture: String? = null
 )

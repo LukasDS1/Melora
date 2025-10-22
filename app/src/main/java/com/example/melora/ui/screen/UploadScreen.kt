@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -59,6 +60,7 @@ fun UploadScreenVm(
     val state by vm.upload.collectAsStateWithLifecycle()
 
     if (state.success) {
+        vm.clearForm()
         vm.clearUpload()
         onGoSucces()
     }
@@ -104,15 +106,13 @@ private fun UploadScreen(
     onSongChange: (Uri?) -> Unit,
     submitMusic: () -> Unit
 ) {
-    val bg = Color(0xFF4b4b4b)
+    val bg = Resaltado
 
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
     var isPlaying by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-
-
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -162,8 +162,8 @@ private fun UploadScreen(
                 shape = MaterialTheme.shapes.large,
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = Color(0xFF414141),
-                    contentColor = Color(0xFF6650a4)
+                    containerColor = SecondaryBg,
+                    contentColor = Color(0xFF03000A)
                 )
             ) {
                 Column(
@@ -264,12 +264,12 @@ private fun UploadScreen(
                     OutlinedTextField(
                         value = songName,
                         onValueChange = onSongNameChange,
-                        label = { Text("Song name", color = Color.White) },
+                        label = { Text("Song name", color = Color.Black) },
                         singleLine = true,
                         isError = songNameError != null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.White)
+                        textStyle = TextStyle(color = Color.Black)
                     )
                     if (songNameError != null) {
                         Text(
@@ -278,24 +278,22 @@ private fun UploadScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
-
                     Spacer(Modifier.height(10.dp))
-
                     // Description
                     OutlinedTextField(
                         value = songDescription ?: "",
                         onValueChange = onSongDescription,
-                        label = { Text("Song description (optional)", color = Color.White) },
+                        label = { Text("Song description (optional)", color = Color.Black) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.White)
+                        textStyle = TextStyle(color = Color.Black)
                     )
-
                     Spacer(Modifier.height(16.dp))
-
                     // Submit button
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Resaltado),
                         onClick = submitMusic,
                         enabled = canSubmit && !isSubmitting,
                         modifier = Modifier.fillMaxWidth(),
@@ -307,10 +305,12 @@ private fun UploadScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text("Uploading Music...")
+                            Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
                         } else {
                             Text("Upload")
                         }
                     }
+
                 }
             }
         }

@@ -16,7 +16,8 @@ import com.example.melora.ui.components.SearchBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchViewScreen(
-    vm: SearchViewModel
+    vm: SearchViewModel,
+    goArtistProfile: () -> Unit
 ) {
 
     val textState = remember { TextFieldState() }
@@ -26,7 +27,7 @@ fun SearchViewScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(bg)
     ){
-        SearchBar(textFieldState = textState,onSearch,songs)
+        SearchBar(textFieldState = textState,onSearch,songs, goArtistProfile = goArtistProfile)
     }
 
 

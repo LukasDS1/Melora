@@ -6,11 +6,9 @@ import android.net.Uri
 import android.util.Patterns
 
 fun songNameValidation(songName:String):String?{
-    return if(songName.isBlank()) "The song name cant be empty" else null
+    return if(songName.trim().isBlank()) "The song name cant be empty" else null
 }
-fun artistNameValidation(artistName:String):String?{
-    return if(artistName.isBlank()) "The artist name cant be empty" else null
-}
+
 
 fun songValidation(context: Context,songUri:Uri?):String?{
     if(songUri == null) return  "The song cant be empty"

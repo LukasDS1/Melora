@@ -14,9 +14,14 @@ interface UserDao {
     @Query("UPDATE users SET nickname = :nickname WHERE idUser = :id")
     suspend fun updateUserName(id: Long, nickname: String)
 
-    @Query("UPDATE users SET profilePicture = :bytes WHERE idUser = :id")
-    suspend fun updateProfilePicture(id: Long, bytes: ByteArray)
+    @Query("UPDATE users SET profilePicture = :profilePicture WHERE idUser = :id")
+    suspend fun updateProfilePicture(id: Long, profilePicture:String)
 
     @Query("DELETE FROM users")
     suspend fun clearUser()
+
+    @Query("SELECT * FROM users")
+    suspend fun getAllUser(): List<UserEntity>
+
+
 }

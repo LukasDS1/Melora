@@ -16,6 +16,7 @@ import com.example.melora.ui.components.AppDrawer
 import com.example.melora.ui.components.AppNavigationBar
 import com.example.melora.ui.components.AppTopBar
 import com.example.melora.ui.components.defaultDrawerItems
+import com.example.melora.ui.screen.ArtistProfileScreen
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.LoginScreenVm
@@ -45,6 +46,7 @@ fun AppNavGraph(
     val goRegister: () -> Unit = { navController.navigate(Route.Register.path) }
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
+    val goArtistProfile: () -> Unit = {navController.navigate(Route.ArtistProfile.path)}
 
     // ---- Drawer lateral ----
     ModalNavigationDrawer(
@@ -111,7 +113,7 @@ fun AppNavGraph(
                 composable(Route.Register.path) {
                     RegisterScreenVm(
                         onGoLogin = goLogin,
-                        onRegistered = goLogin,
+                        onRegistered = goRegister,
                         vm = authViewModel
                     )
                 }
@@ -128,7 +130,11 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.SearchView.path) {
-                    SearchViewScreen(searchViewModel)
+                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile )
+                }
+                composable(Route.ArtistProfile.path) {
+                    ArtistProfileScreen()
+
                 }
             }
         }

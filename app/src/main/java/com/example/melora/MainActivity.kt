@@ -1,19 +1,11 @@
 package com.example.melora
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
@@ -21,9 +13,6 @@ import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
 import com.example.melora.navigation.AppNavGraph
-import com.example.melora.ui.screen.LoginScreen
-import com.example.melora.ui.screen.RegisterScreen
-import com.example.melora.ui.theme.MeloraTheme
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
@@ -51,7 +40,7 @@ fun AppRoot() {
 
     val uploadDao = db.uploadDao()
 
-    val userDao = db.userDao()
+    val  userDao = db.userDao()
 
     val songRepository = SongRepository(songDao)
 
@@ -59,12 +48,12 @@ fun AppRoot() {
 
     val loginRepository = UserRepository(userDao)
 
-    val loginViewModel: AuthViewModel = viewModel(
+    val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(loginRepository)
     )
 
     val uploadViewModel: UploadViewModel = viewModel(
-        factory = UploadViewModelFactory(songRepository)
+        factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
 
     val searchViewModel: SearchViewModel = viewModel(
@@ -79,7 +68,7 @@ fun AppRoot() {
                 navController = navController,
                 uploadViewModel = uploadViewModel,
                 searchViewModel = searchViewModel,
-                authViewModel = loginViewModel
+                authViewModel =  authViewModel,
             )
         }
     }

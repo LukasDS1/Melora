@@ -19,4 +19,5 @@ interface UploadDao {
     //para buscar canciones baneadas
     @Query("SELECT uploadId FROM upload WHERE banReason IS NOT NULL")
     suspend fun getBannedUploads(): List<Long>
+
 }
