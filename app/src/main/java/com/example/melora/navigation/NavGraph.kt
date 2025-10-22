@@ -74,7 +74,7 @@ fun AppNavGraph(
 
         Scaffold(
             topBar = {
-                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path && currentRoute != Route.ForgotPassword.path) {
                     AppTopBar(
                         onOpenDrawer = { scope.launch { drawerState.open() } },
                         onHome = goHome,
@@ -114,6 +114,9 @@ fun AppNavGraph(
                         onRegistered = goLogin,
                         vm = authViewModel
                     )
+                }
+                composable(Route.ForgotPassword.path) {
+
                 }
                 composable(Route.UploadScreenForm.path) {
                     UploadScreenVm(
