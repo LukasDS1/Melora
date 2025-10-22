@@ -2,6 +2,7 @@ package com.example.melora.data.local.users
 
 import androidx.room.*
 
+@Dao
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -10,8 +11,8 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE email = :email")
     suspend fun getByEmail(email: String): UserEntity?
 
-    @Query("UPDATE users SET name = :name, lname = :lname WHERE idUser = :id")
-    suspend fun updateUserName(id: Long, name: String, lname: String)
+    @Query("UPDATE users SET nickname = :nickname WHERE idUser = :id")
+    suspend fun updateUserName(id: Long, nickname: String)
 
     @Query("UPDATE users SET profilePicture = :bytes WHERE idUser = :id")
     suspend fun updateProfilePicture(id: Long, bytes: ByteArray)

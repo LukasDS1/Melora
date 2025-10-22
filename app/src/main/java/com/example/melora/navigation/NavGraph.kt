@@ -18,11 +18,13 @@ import com.example.melora.ui.components.AppTopBar
 import com.example.melora.ui.components.defaultDrawerItems
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
+import com.example.melora.ui.screen.LoginScreenVm
 import com.example.melora.ui.screen.RegisterScreenVm
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.ui.screen.SearchViewScreen
+import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -30,7 +32,8 @@ import kotlinx.coroutines.launch
 fun AppNavGraph(
     navController: NavHostController,
     uploadViewModel: UploadViewModel,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    authViewModel: AuthViewModel
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -99,15 +102,17 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.Login.path) {
-                    LoginScreen(
+                    LoginScreenVm(
                         onLoginOk = goHome,
-                        onGoRegister = goRegister
+                        onGoRegister = goRegister,
+                        vm = authViewModel
                     )
                 }
                 composable(Route.Register.path) {
                     RegisterScreenVm(
                         onGoLogin = goLogin,
-                        onRegistered = goRegister
+                        onRegistered = goLogin,
+                        vm = authViewModel
                     )
                 }
                 composable(Route.UploadScreenForm.path) {

@@ -9,6 +9,8 @@ import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.upload.UploadDao
 import com.example.melora.data.local.upload.UploadEntity
+import com.example.melora.data.local.users.UserDao
+import com.example.melora.data.local.users.UserEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +21,8 @@ import java.sql.Date
 @Database(
     entities = [
         SongEntity::class,
-        UploadEntity::class
+        UploadEntity::class,
+        UserEntity::class
     ],
     version = 6,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
@@ -29,6 +32,7 @@ abstract class MeloraDB : RoomDatabase() {
     // Exponemos los DAO de canciones y subidas
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
+    abstract fun userDao(): UserDao
     companion object {
         @Volatile
         private var INSTANCE: MeloraDB? = null              // Instancia singleton
@@ -50,6 +54,8 @@ abstract class MeloraDB : RoomDatabase() {
                             // Corrutina en hilo IO para precargar datos iniciales
                             CoroutineScope(Dispatchers.IO).launch {
                                 val songDao = getInstance(context).songDao()
+
+                                val userDao = getInstance(context).userDao()
 
                                 // Precarga de canciones de ejemplo
                                 val seedSongs = listOf(

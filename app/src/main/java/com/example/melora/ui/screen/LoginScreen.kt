@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -31,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,9 +51,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
+import com.example.melora.R
 
 @Composable                                                  // Pantalla Login conectada al VM
 fun LoginScreenVm(
@@ -94,34 +100,53 @@ fun LoginScreen(
     onGoRegister: () -> Unit                                 // Acción ir a registro
 ) {
     var showPass by remember { mutableStateOf(false)}
-    val bg = MaterialTheme.colorScheme.secondaryContainer // Fondo distinto para contraste
+    val bg = PrimaryBg
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(bg),
-//            .padding(16.dp)
         contentAlignment = Alignment.Center
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 40.dp, bottom = 650.dp)
+                .align(Alignment.TopCenter)
+                .padding(top = 100.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "Hello!",
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.headlineLarge,
-                fontFamily = FontFamily.SansSerif,
-                modifier = Modifier
-                    .fillMaxWidth()
+            Icon(
+                painter = painterResource(R.drawable.melora_icon),
+                contentDescription = "Melora icon",
+                tint = Color.White,
+                modifier = Modifier.size(48.dp)
             )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Glad you're back,",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontFamily = FontFamily.SansSerif,
+                    color = Color.White
+                )
+                Text(
+                    text = "Ready to jam?",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontFamily = FontFamily.SansSerif,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()                         // Usa to.do el ancho de la pantalla
                 .align(Alignment.BottomCenter)         // Alinea el card abajo y centrado
-                .heightIn(min = 200.dp, max = 700.dp) // Limita el alto
+                .heightIn(min = 200.dp, max = 650.dp) // Limita el alto
                 .padding(top = 100.dp),              // Controla que tanto puede subir la card
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -137,13 +162,13 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Iniciar sesión",
+                    text = "Sign in",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Resaltado,
                     textAlign = TextAlign.Left,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 15.dp)
+                        .padding( top = 30.dp, start = 15.dp)
                 )
 
                 Spacer(Modifier.height(32.dp))
@@ -153,6 +178,13 @@ fun LoginScreen(
                     value = email,
                     onValueChange = onEmailChange,
                     placeholder = { Text("Correo electrónico")},
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Email,
+                            contentDescription = "Email icon",
+                            tint = Color.Gray
+                        )
+                    },
                     singleLine = true,
                     isError = emailError != null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -176,6 +208,13 @@ fun LoginScreen(
                     value = pass,
                     onValueChange = onPassChange,
                     placeholder = { Text("Password") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = "Lock icon",
+                            tint = Color.Gray
+                        )
+                    },
                     isError = passError != null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -201,6 +240,9 @@ fun LoginScreen(
                     Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
 
+
+
+
                 Spacer(Modifier.height(20.dp))
 
                 if (errorMessage != null) {
@@ -216,8 +258,27 @@ fun LoginScreen(
                     ),
                     onClick = onSubmit,
                     enabled = canSubmit && !isSubmitting,
+                    shape = RoundedCornerShape(30.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(56.dp)
                 ) {
-                    Text("Registrarse")
+                    Text(
+                        text = "Sign in",
+                        style = MaterialTheme.typography.bodyLarge)
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp, end = 10.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { /* acción */ } // TODO CREAR SCREEN DE FORGOTTEN PASSWORD
+                    ) {
+                        Text("Forgot password?", color = Resaltado)
+                    }
                 }
             }
         }
