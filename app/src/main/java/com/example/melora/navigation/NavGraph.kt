@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,12 +21,15 @@ import com.example.melora.ui.screen.ArtistProfileScreen
 import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.LoginScreenVm
+import com.example.melora.ui.screen.MusicPlayerVm
 import com.example.melora.ui.screen.RegisterScreenVm
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.ui.screen.SearchViewScreen
 import com.example.melora.viewmodel.AuthViewModel
+import com.example.melora.viewmodel.MusicPlayerViewModel
+import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -47,6 +51,7 @@ fun AppNavGraph(
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
     val goArtistProfile: () -> Unit = {navController.navigate(Route.ArtistProfile.path)}
+    val goMusicPlayer: () -> Unit = {navController.navigate(Route.Player.path)}
 
     // ---- Drawer lateral ----
     ModalNavigationDrawer(
@@ -135,6 +140,10 @@ fun AppNavGraph(
                 composable(Route.ArtistProfile.path) {
                     ArtistProfileScreen()
 
+                }
+                composable(Route.Player.path) {
+                    MusicPlayerVm(
+                        val context = LocalContext
                 }
             }
         }

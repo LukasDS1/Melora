@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
@@ -13,8 +14,11 @@ import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
 import com.example.melora.navigation.AppNavGraph
+import com.example.melora.ui.screen.PlayerScreen
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.MusicPlayerViewModel
+import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadViewModel
@@ -25,14 +29,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppRoot()
+            val vm = MusicPlayerViewModel = viewModel (
+                factory = MusicPlayerViewModelFactory
+            )
+            PlayerScreen(vm)
         }
     }
 }
 
 @Composable
 fun AppRoot() {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     val db = MeloraDB.getInstance(context)
 
