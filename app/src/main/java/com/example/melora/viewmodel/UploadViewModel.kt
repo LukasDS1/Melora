@@ -2,6 +2,7 @@ package com.example.melora.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.repository.SongRepository
@@ -52,7 +53,6 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
         recomputeUpdateCanSubmit()
     }
     fun onSongChange(context: Context, value: Uri?) {
-        //actualizar estado
         _upload.update {
             it.copy(song = value, songError = songValidation(context, value))
         }

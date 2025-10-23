@@ -11,11 +11,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
 import com.example.melora.navigation.AppNavGraph
-import com.example.melora.ui.screen.PlayerScreen
+import com.example.melora.viewmodel.ArtistProfileViewModel
+import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
@@ -30,12 +32,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val context = LocalContext.current
-            val application = context.applicationContext as Application
-            val vm : MusicPlayerViewModel = viewModel (
-                factory = MusicPlayerViewModelFactory(application)
-            )
-            PlayerScreen(vm)
+           AppRoot()
         }
     }
 }
@@ -43,7 +40,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppRoot() {
     val context = LocalContext.current
-
+    val application = context.applicationContext as Application
     val db = MeloraDB.getInstance(context)
 
     val songDao = db.songDao()
@@ -54,9 +51,13 @@ fun AppRoot() {
 
     val songRepository = SongRepository(songDao)
 
+    val userRepository = UserRepository(userDao)
+
     val uploadRepository = UploadRepository(uploadDao)
 
     val loginRepository = UserRepository(userDao)
+
+    val artistRepository = ArtistRepository(userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(loginRepository)
@@ -65,11 +66,16 @@ fun AppRoot() {
     val uploadViewModel: UploadViewModel = viewModel(
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
-
-    val searchViewModel: SearchViewModel = viewModel(
-        factory = SearchViewModelFactory(songRepository)
+    val artistProfileViewModel: ArtistProfileViewModel = viewModel(
+        factory = ArtistProfileViewModelFactory(artistRepository)
     )
 
+    val searchViewModel: SearchViewModel = viewModel(
+        factory = SearchViewModelFactory(songRepository,userRepository)
+    )
+    val musicPlayerViewModel: MusicPlayerViewModel = viewModel (
+        factory = MusicPlayerViewModelFactory(application,songRepository)
+    )
     val navController = rememberNavController()
 
     MaterialTheme {
@@ -79,6 +85,8 @@ fun AppRoot() {
                 uploadViewModel = uploadViewModel,
                 searchViewModel = searchViewModel,
                 authViewModel =  authViewModel,
+                artistModel = artistProfileViewModel,
+                musicModel = musicPlayerViewModel,
             )
         }
     }

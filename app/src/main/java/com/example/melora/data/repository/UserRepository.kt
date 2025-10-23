@@ -1,12 +1,22 @@
 package com.example.melora.data.repository
 
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserDao
 import com.example.melora.data.local.users.UserEntity
 
 class UserRepository(
-
     private val userDao : UserDao
 ) {
+
+
+    suspend fun searchByNickname(query: String): Result<List<UserEntity>> {
+        return try {
+            val users = userDao.getByName(query)
+            Result.success(users)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun login(email: String, password: String): Result<UserEntity> {
         val user = userDao.getByEmail(email)

@@ -6,27 +6,34 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.player.MusicPlayerManager
+import com.example.melora.data.repository.SongRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MusicPlayerViewModel(
-    app: Application
+    app: Application,
+    private val songRepository: SongRepository
 ): AndroidViewModel(app) {
 
     private val playerManager = MusicPlayerManager(app)
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
-    private val _current_song = MutableStateFlow<SongEntity?>(null)
-    val currentSong: StateFlow<SongEntity?> = _current_song
+    private val _current_song = MutableStateFlow<SongDetailed?>(null)
+    val currentSong: StateFlow<SongDetailed?> = _current_song
 
-    fun play(song: SongEntity) {
-        _current_song.value = song
-        playerManager.playSong(song)
-        _isPlaying.value = true
+
+    fun play(songId:Long) {
+        viewModelScope.launch {
+            val song = songRepository.playSongByID(songId)
+            _current_song.value = song
+            playerManager.playSongPath(song.songPath)
+            _isPlaying.value = true
+        }
     }
 
     fun pause() {

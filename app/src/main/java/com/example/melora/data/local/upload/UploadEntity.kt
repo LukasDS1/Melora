@@ -2,6 +2,7 @@ package com.example.melora.data.local.upload
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.users.UserEntity
@@ -20,6 +21,10 @@ import java.sql.Date
             childColumns = ["idSong"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["userId"]),
+        Index(value = ["idSong"])
     ])
 
 data class UploadEntity(

@@ -8,11 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
+import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.ui.components.AppDrawer
 import com.example.melora.ui.components.AppNavigationBar
 import com.example.melora.ui.components.AppTopBar
@@ -27,9 +31,9 @@ import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.ui.screen.SearchViewScreen
+import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModel
-import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -39,11 +43,17 @@ fun AppNavGraph(
     uploadViewModel: UploadViewModel,
     searchViewModel: SearchViewModel,
     authViewModel: AuthViewModel,
-    musicPlayerViewModel: MusicPlayerViewModel
-) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    artistModel: ArtistProfileViewModel,
+    musicModel: MusicPlayerViewModel
+) { val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val context = LocalContext.current
+    val db = MeloraDB.getInstance(context)
+    val artistRepository = ArtistRepository(
+        userDao = db.userDao(),
+        songDao = db.songDao()
+    )
     // ---- Navegaciones ----
     val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path) }
     val goHome: () -> Unit = { navController.navigate(Route.Home.path) }
@@ -51,8 +61,13 @@ fun AppNavGraph(
     val goRegister: () -> Unit = { navController.navigate(Route.Register.path) }
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
-    val goArtistProfile: () -> Unit = {navController.navigate(Route.ArtistProfile.path)}
-    val goMusicPlayer: () -> Unit = {navController.navigate(Route.Player.path)}
+
+    val goPlayer: (Long) -> Unit = {songId ->
+        navController.navigate("player/$songId")
+    }
+    val goArtistProfile: (Long) -> Unit = { artistId ->
+        navController.navigate("artistProfile/$artistId")
+    }
 
     // ---- Drawer lateral ----
     ModalNavigationDrawer(
@@ -136,15 +151,21 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.SearchView.path) {
-                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile )
+                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile, goPlayer = goPlayer)
                 }
-                composable(Route.ArtistProfile.path) {
-                    ArtistProfileScreen()
-
+                composable("artistProfile/{artistId}") {
+                    val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
+                    ArtistProfileScreen(
+                        artistId = artistId,
+                        repository = artistRepository
+                    )
                 }
-                composable(Route.Player.path) {
-                    PlayerScreen(
-                        vm = musicPlayerViewModel)
+                composable(
+                    route = "player/{songId}",
+                    arguments = listOf(navArgument("songId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val songId = backStackEntry.arguments?.getLong("songId") ?: return@composable
+                    PlayerScreen(songId = songId)
                 }
             }
         }

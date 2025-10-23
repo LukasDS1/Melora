@@ -13,16 +13,20 @@ interface SongDao {
     suspend fun insert(songs: SongEntity): Long
 
     //buscar canciones por nombre
-    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,up.uploadDate,us.nickname ,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId WHERE LOWER(s.songName) LIKE '%'|| LOWER(:query) ||'%'")
+    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,s.songPath,up.uploadDate,us.nickname ,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId WHERE LOWER(s.songName) LIKE '%'|| LOWER(:query) ||'%'")
     suspend fun getSong(query: String): List<SongDetailed>
 
     //mostrar todas canciones
-    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,up.uploadDate,us.nickname,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId")
+    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,s.songPath,up.uploadDate,us.nickname,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId")
     suspend fun getAllSong(): List<SongDetailed>
 
     //obtener todas las canciones de un artista
-    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,up.uploadDate,us.nickname,us.idUser AS artistId FROM songs AS s JOIN upload AS up ON s.songId = up.idSong JOIN users AS us ON us.idUser = up.userId WHERE  us.idUser = :id")
+    @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,s.songPath,up.uploadDate,us.nickname,us.idUser AS artistId FROM songs AS s JOIN upload AS up ON s.songId = up.idSong JOIN users AS us ON us.idUser = up.userId WHERE  us.idUser = :id")
     suspend fun getSongsForArtist(id: Long): List<SongDetailed>
+
+    //reproducir musica
+    @Query("SELECT s.songId,s.songName,s.songPath,s.coverArt,s.durationSong,up.uploadDate,us.nickname,us.idUser as artistId FROM songs as s JOIN upload as up ON s.songId  = up.idSong JOIN users AS us ON us.idUser = up.userId WHERE s.songId = :songId")
+    suspend fun getSongByID(songId:Long): SongDetailed
     @Query("DELETE FROM songs")
     suspend fun clearSongs()
 }

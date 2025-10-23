@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.melora.viewmodel.SearchViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.room.util.query
 import com.example.melora.ui.components.SearchBar
 import com.example.melora.ui.theme.Resaltado
 
@@ -18,17 +19,17 @@ import com.example.melora.ui.theme.Resaltado
 @Composable
 fun SearchViewScreen(
     vm: SearchViewModel,
-    goArtistProfile: () -> Unit
-) {
-
+    goArtistProfile: (Long) -> Unit,
+    goPlayer: (Long) -> Unit){
     val textState = remember { TextFieldState() }
     val onSearch: (String) -> Unit = { query -> vm.search(query) }
     val bg = (Resaltado)
     val songs by vm.songs.collectAsStateWithLifecycle()
+    val artists by vm.artists.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize().background(bg)
     ){
-        SearchBar(textFieldState = textState,onSearch,songs, goArtistProfile = goArtistProfile)
+        SearchBar(textFieldState = textState,onSearch,songs, artistResult =artists , goArtistProfile = goArtistProfile, goPlayer = goPlayer)
     }
 
 

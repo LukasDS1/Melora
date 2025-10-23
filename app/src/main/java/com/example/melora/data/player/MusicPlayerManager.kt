@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.song.SongEntity
 import java.io.File
 
@@ -14,17 +15,26 @@ class MusicPlayerManager(private val context: Context) {
         if (player == null) player = ExoPlayer.Builder(context).build()
     }
 
-    fun playSong(song: SongEntity) {
+    fun playSongPath(songPath: String) {
         initializePlayer()
-        val file = File(song.songPath)
-        if (!file.exists()) return
+
+        val cleanPath = songPath.removePrefix("file://")
+
+
+        val file = File(cleanPath)
+        if (!file.exists()) {
+            return
+        }
+
         val uri = Uri.fromFile(file)
+
         val mediaItem = MediaItem.fromUri(uri)
         player!!.setMediaItem(mediaItem)
         player!!.prepare()
+        player!!.volume = 1f
+        player!!.playWhenReady = true
         player!!.play()
     }
-
     fun pause() {
         player?.pause()
     }

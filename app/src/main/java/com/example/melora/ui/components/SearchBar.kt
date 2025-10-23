@@ -1,10 +1,12 @@
 package com.example.melora.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,11 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.song.SongEntity
+import com.example.melora.data.local.users.UserEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,8 +35,10 @@ fun SearchBar(
     textFieldState: TextFieldState,
     onSearch: (String) -> Unit,
     searchResults: List<SongDetailed>,
+    artistResult: List<UserEntity>,
     modifier: Modifier = Modifier,
-    goArtistProfile: () -> Unit
+    goArtistProfile: (Long) -> Unit,
+    goPlayer: (Long) -> Unit
     ) {
     // Controls expansion state of the search bar
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -48,6 +50,10 @@ fun SearchBar(
         SearchBar(
             modifier = Modifier
                 .align(Alignment.TopCenter),
+            colors = SearchBarDefaults.colors(
+                containerColor = Color.White,
+                dividerColor = Color.Transparent,
+            ),
             inputField = {
                 SearchBarDefaults.InputField(
                     query = textFieldState.text.toString(),
@@ -70,37 +76,71 @@ fun SearchBar(
                             .fillMaxSize()
                             .padding(horizontal = 16.dp)
                     ) {
-                        items(searchResults) { song ->
-                            SongItem(song = song,goArtistProfile = goArtistProfile)
+                        items(artistResult){ artist ->
+                        ArtistItem(artist = artist,goArtistProfile = goArtistProfile)
                         }
+                        items(searchResults) { song ->
+                            SongItem(song = song,goPlayer = goPlayer)
+                        }
+
                 }
             }
         }
     }
 
+
+
 @Composable
-fun SongItem(song: SongDetailed,goArtistProfile: () -> Unit) {
+fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Button(onClick = {goArtistProfile()}){
-            ButtonDefaults.buttonColors(
-                contentColor = Color.Black,
-                containerColor = Color.White
-            )
-            Text(
-                text = song.songName,
-                color = Color.Black
-            )
+        Button(onClick = {goArtistProfile(artist.idUser)},
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black)
+        ){ Column (modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center){
             Spacer(modifier = Modifier.padding(16.dp))
             Text(
-                text = song.nickname,
+                text = artist.nickname,
                 color = Color.Black
             )
         }
-
-
+        }
+    }
+}
+@Composable
+fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Button(
+            onClick = { goPlayer(song.songId) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            )
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = song.songName,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = song.nickname,
+                    color = Color.Gray
+                )
+            }
+        }
     }
 }

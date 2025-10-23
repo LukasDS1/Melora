@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.UploadViewModel
@@ -38,6 +39,20 @@ import java.util.Date
 import java.util.Locale
 
 
+private fun saveAudioLocally(context: Context, sourceUri: Uri): String {
+    val inputStream = context.contentResolver.openInputStream(sourceUri)
+    val destDir = File(context.filesDir, "songs").apply { mkdirs() }
+    val fileName = "song_${System.currentTimeMillis()}.mp3"
+    val destFile = File(destDir, fileName)
+
+    inputStream?.use { input ->
+        destFile.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+
+    return destFile.absolutePath
+}
 private fun createTempImageFile(context: Context): File{
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val storageDir = File(context.cacheDir,"images").apply {
@@ -117,7 +132,10 @@ private fun UploadScreen(
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        onSongChange(uri)
+        uri?.let {
+            val localPath = saveAudioLocally(context, it)
+            onSongChange(Uri.fromFile(File(localPath)))
+        }
     }
 
    val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -180,7 +198,7 @@ private fun UploadScreen(
                     Spacer(Modifier.height(12.dp))
 
                     // Audio picker
-                    Button(onClick = { audioPickerLauncher.launch("audio/*") }) {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),onClick = { audioPickerLauncher.launch("audio/*")}) {
                         Icon(Icons.Filled.Add, "Upload your music!")
                     }
 
@@ -233,13 +251,14 @@ private fun UploadScreen(
                     }
 
                     Spacer(Modifier.height(10.dp))
+
                     Text(
                         "Upload your Covert Art",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center
                     )
                     // Cover art
-                    Button(onClick = {photoPickerLauncher.launch("image/*")}) {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White), onClick = {photoPickerLauncher.launch("image/*")}) {
                         Icon(Icons.Filled.Add, "Upload your covert Art")
                     }
 

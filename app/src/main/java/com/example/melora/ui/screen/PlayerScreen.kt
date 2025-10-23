@@ -13,19 +13,28 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.player.MusicPlayerManager
+import com.example.melora.data.repository.SongRepository
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 
 // hola lukas donoso dejo api por si acaso https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
 @Composable
-fun PlayerScreen(vm: MusicPlayerViewModel) {
+fun PlayerScreen(songId:Long) {
     val context = LocalContext.current
+    val db = MeloraDB.getInstance(context)
+    val songRepository = SongRepository(db.songDao())
     val vm: MusicPlayerViewModel = viewModel(
-        factory = MusicPlayerViewModelFactory(context.applicationContext as Application)
+        factory = MusicPlayerViewModelFactory(context.applicationContext as Application,songRepository)
     )
+
     val currentSong by vm.currentSong.collectAsState()
     val isPlaying by vm.isPlaying.collectAsState()
+
+    LaunchedEffect(songId){
+        vm.play(songId)
+    }
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(currentSong?.songName ?: "No song selected")
@@ -33,7 +42,7 @@ fun PlayerScreen(vm: MusicPlayerViewModel) {
         Row {
             IconButton(onClick = {
                 currentSong?.let {
-                    if (isPlaying) vm.pause() else vm.play(it)
+                    if (isPlaying) vm.pause() else vm.play(songId)
                 }
             }) {
                 Icon(

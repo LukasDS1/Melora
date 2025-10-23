@@ -31,6 +31,11 @@ class SongRepository(
         }
     }
 
+
+    suspend fun playSongByID(songId:Long): SongDetailed{
+        return songDao.getSongByID(songId)
+    }
+
     suspend fun getSong(query: String): Result<List<SongDetailed>> {
         return try {
             val detailedSongs = songDao.getSong(query)
