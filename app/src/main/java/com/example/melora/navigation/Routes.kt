@@ -9,4 +9,5 @@ sealed class Route(val path: String) {
     data object SearchView : Route("SearchView")
 
     data object ArtistProfile: Route("artistProfile")
+    data object Player: Route("player")
 }

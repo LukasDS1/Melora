@@ -49,7 +49,7 @@ abstract class MeloraDB : RoomDatabase() {
                     DB_NAME
                 )
                     // Callback que se ejecuta al crear la DB por primera vez
-                    .addCallback(object : RoomDatabase.Callback() {
+                    .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             // Corrutina en hilo IO para precargar datos iniciales
@@ -65,19 +65,19 @@ abstract class MeloraDB : RoomDatabase() {
                                         email = "user1@email.com",
                                         nickname = "UserOne",
                                         pass = "PASSUSER1",
-                                        profilePicture = "/example.com/user1.png"
+                                        idUser = 1,
                                     ),
                                     UserEntity(
                                         email = "user2@email.com",
                                         nickname = "UserTwo",
                                         pass = "PASSUSER2",
-                                        profilePicture = "/example.com/user2.png"
+                                        idUser = 2
                                     ),
                                     UserEntity(
                                         email = "user3@email.com",
                                         nickname = "UserThree",
                                         pass = "PASSUSER3",
-                                        profilePicture = "/example.com/user3.png"
+                                        idUser = 3
                                     )
                                 )
 
