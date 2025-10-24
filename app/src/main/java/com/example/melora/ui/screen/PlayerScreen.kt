@@ -1,55 +1,97 @@
 package com.example.melora.ui.screen
 
-import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.exoplayer.ExoPlayer
-import com.example.melora.data.local.database.MeloraDB
-import com.example.melora.data.player.MusicPlayerManager
-import com.example.melora.data.repository.SongRepository
+import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModel
-import com.example.melora.viewmodel.MusicPlayerViewModelFactory
+import kotlinx.coroutines.launch
 
-// hola lukas donoso dejo api por si acaso https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
 @Composable
-fun PlayerScreen(songId:Long) {
-    val context = LocalContext.current
-    val db = MeloraDB.getInstance(context)
-    val songRepository = SongRepository(db.songDao())
-    val vm: MusicPlayerViewModel = viewModel(
-        factory = MusicPlayerViewModelFactory(context.applicationContext as Application,songRepository)
-    )
+fun PlayerScreen(
+    song: SongDetailed,
+    userId: Long,
+    playerViewModel: MusicPlayerViewModel,
+    favoriteViewModel: FavoriteViewModel
+) {
+    val scope = rememberCoroutineScope()
+    val isPlaying by playerViewModel.isPlaying.collectAsState()
+    val currentSong by playerViewModel.currentSong.collectAsState()
+    var isFavorite by remember { mutableStateOf(false) }
 
-    val currentSong by vm.currentSong.collectAsState()
-    val isPlaying by vm.isPlaying.collectAsState()
-
-    LaunchedEffect(songId){
-        vm.play(songId)
+    LaunchedEffect(song.songId, userId) {
+        isFavorite = favoriteViewModel.isFavorite(userId, song.songId)
+        playerViewModel.play(song.songId)
     }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text(currentSong?.songName ?: "No song selected")
-        Spacer(modifier = Modifier.height(16.dp))
-        Row {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = song.songName,
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Text(
+            text = "by ${song.nickname}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+
             IconButton(onClick = {
-                currentSong?.let {
-                    if (isPlaying) vm.pause() else vm.play(songId)
+                if (isPlaying) playerViewModel.pause() else playerViewModel.play(song.songId)
+            }) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            IconButton(onClick = {
+                scope.launch {
+                    favoriteViewModel.seleccionarFavorito(userId, song.songId)
+                    isFavorite = !isFavorite
                 }
             }) {
                 Icon(
-                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = null
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = if (isFavorite)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.onBackground
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Duración: ${song.durationSong} seg",
+                style = MaterialTheme.typography.labelLarge
+            )
+            Text(
+                text = "Artista ID: ${song.artistId}",
+                style = MaterialTheme.typography.labelSmall
+            )
         }
     }
 }

@@ -4,31 +4,31 @@ import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.favorites.FavoriteEntity
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.repository.FavoriteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class FavoriteViewModel (private val repository: FavoriteRepository): ViewModel(){
+class FavoriteViewModel(private val repo: FavoriteRepository) : ViewModel() {
 
-    private val _favorite = MutableStateFlow<List<FavoriteEntity>>(emptyList())
-    val favorite : StateFlow<List<FavoriteEntity>> = _favorite
+    private val _favorites = MutableStateFlow<List<SongDetailed>>(emptyList())
+    val favorites: StateFlow<List<SongDetailed>> = _favorites
 
-    fun loadFavorite(userId:Long){
+    fun loadFavorite(userId: Long) {
         viewModelScope.launch {
-            _favorite.value = repository.getByFavorite(userId)
+            _favorites.value = repo.getByFavorite(userId)
         }
     }
 
-    fun seleccionarFavorito(userId: Long,songId: Long){
+    suspend fun isFavorite(userId: Long, songId: Long): Boolean {
+        return repo.isFavorite(userId, songId)
+    }
+
+    fun seleccionarFavorito(userId: Long, songId: Long) {
         viewModelScope.launch {
-            repository.seleccionarFav(userId,songId)
-            _favorite.value = repository.getByFavorite(userId)
+            repo.seleccionarFavorito(userId, songId)
+            _favorites.value = repo.getByFavorite(userId)
         }
     }
-
-    suspend fun isFavorite(userId: Long,songId: Long): Boolean{
-        return  repository.isFavorite(userId,songId)
-    }
-
 }

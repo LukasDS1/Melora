@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.melora.data.local.favorites.FavoriteDao
+import com.example.melora.data.local.favorites.FavoriteEntity
 import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.upload.UploadDao
@@ -22,9 +24,10 @@ import java.sql.Date
     entities = [
         SongEntity::class,
         UploadEntity::class,
-        UserEntity::class
+        UserEntity::class,
+        FavoriteEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
@@ -32,6 +35,8 @@ abstract class MeloraDB : RoomDatabase() {
     // Exponemos los DAO de canciones y subidas
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
+
+    abstract fun favoriteDao(): FavoriteDao
 
     abstract fun userDao(): UserDao
     companion object {

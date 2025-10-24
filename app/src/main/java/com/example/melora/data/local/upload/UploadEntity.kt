@@ -35,5 +35,5 @@ data class UploadEntity(
     val uploadDate: Long? = System.currentTimeMillis(),
     val banReason: String? = null,
     val stateId: Long,
-    val banDate: Long? = System.currentTimeMillis()
+    val banDate: Long? = null
 )

@@ -8,7 +8,8 @@ sealed class Route(val path: String) {
     data object SuccesUpload : Route("succesUpload")
     data object SearchView : Route("SearchView")
 
-    data object Favorites: Route("Favorites")
+    data object Favorites: Route("favorites/{userId}")
+    fun createRuteFavorite(userId:Long) = "favorites/$userId"
 
     data object ArtistProfile: Route("artistProfile/{artistId}"){
         fun createRoute(artistId:Long) = "artistProfile/$artistId"

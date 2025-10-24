@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,6 +66,7 @@ fun LoginScreenVm(
 ) {
 
     val state by vm.login.collectAsStateWithLifecycle()      // Observa el StateFlow en tiempo real
+
 
     if (state.success) {                                     // Si login fue exitoso…
         vm.clearLoginResult()                                // Limpia banderas
@@ -278,6 +280,25 @@ fun LoginScreen(
                         onClick = { /* acción */ } // TODO CREAR SCREEN DE FORGOTTEN PASSWORD
                     ) {
                         Text("Forgot password?", color = Resaltado)
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Don't have an account?",
+                        Modifier.padding(top = 12.dp)
+                    )
+                    TextButton(
+                        onClick = onGoRegister,
+                        contentPadding = PaddingValues(0.dp) // Quita el padding interno para evitar que se quede estático al aparecer el mensaje de error
+                    ) {
+                        Text("Sign up", color = Resaltado)
                     }
                 }
             }

@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
@@ -20,6 +21,8 @@ import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
@@ -49,6 +52,8 @@ fun AppRoot() {
 
     val  userDao = db.userDao()
 
+    val favoriteDao = db.favoriteDao()
+
     val songRepository = SongRepository(songDao)
 
     val userRepository = UserRepository(userDao)
@@ -58,6 +63,8 @@ fun AppRoot() {
     val loginRepository = UserRepository(userDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
+
+    val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(loginRepository)
@@ -76,6 +83,9 @@ fun AppRoot() {
     val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
         factory = MusicPlayerViewModelFactory(application,songRepository)
     )
+    val favoriteViewModel: FavoriteViewModel = viewModel(
+        factory = FavoriteViewModelFactory(favoriteRepository)
+    )
     val navController = rememberNavController()
 
     MaterialTheme {
@@ -87,6 +97,7 @@ fun AppRoot() {
                 authViewModel =  authViewModel,
                 artistModel = artistProfileViewModel,
                 musicModel = musicPlayerViewModel,
+                favoriteModel = favoriteViewModel
             )
         }
     }

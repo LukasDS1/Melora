@@ -30,8 +30,15 @@ class UserRepository(
     suspend fun register(nickname: String, email: String, password: String): Result<Long> {
 
         val exists = userDao.getByEmail(email) != null
+
+        val existNickname = userDao.getBynickname(nickname) != null
+
         if (exists) {
             return Result.failure(IllegalStateException("El correo ya está en uso."))
+        }
+
+        if(existNickname){
+            return  Result.failure(IllegalStateException("The nickname has already in use"))
         }
 
         val id = userDao.upsertUser(

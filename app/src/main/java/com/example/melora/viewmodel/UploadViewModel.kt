@@ -71,7 +71,7 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
         _upload.update { it.copy(songDescription = value.ifBlank { null }) }
     }
 
-    fun submitMusic(userId: Long = 1L) {
+    fun submitMusic(userId: Long) {
         val s = _upload.value
         if (!s.canSubmit || s.isSubmitting) return
 
@@ -94,16 +94,15 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
                     songID = songId,
                     stateId = 1
                 )
-                //upload
+
                 _upload.update {
-                    if (uploadResult.isSuccess) {
+                    if (uploadResult.isSuccess)
                         it.copy(isSubmitting = false, success = true)
-                    } else {
-                        it.copy(isSubmitting = false, errorMsg = "Error")
-                    }
+                    else
+                        it.copy(isSubmitting = false, errorMsg = "Cannot upload Music")
                 }
             } else {
-                _upload.update { it.copy(isSubmitting = false, errorMsg = "Error uploading song") }
+                _upload.update { it.copy(isSubmitting = false, errorMsg = "Cannot upload Music") }
             }
         }
     }

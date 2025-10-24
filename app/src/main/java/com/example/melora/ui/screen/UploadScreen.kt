@@ -32,6 +32,7 @@ import coil.compose.AsyncImage
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -69,7 +70,8 @@ private fun getImageUriFile(context: Context,file: File):Uri{
 @Composable
 fun UploadScreenVm(
     vm: UploadViewModel,
-    onGoSucces: () -> Unit
+    onGoSucces: () -> Unit,
+    userId : Long
 ) {
     val context = LocalContext.current
     val state by vm.upload.collectAsStateWithLifecycle()
@@ -97,7 +99,7 @@ fun UploadScreenVm(
         onSongDescription = vm::onSongDescriptionChange,
         onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
         onSongChange = { uri -> vm.onSongChange(context, uri) },
-        submitMusic = vm::submitMusic
+        submitMusic = { vm.submitMusic(userId) }
     )
 }
 

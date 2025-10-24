@@ -1,40 +1,19 @@
 package com.example.melora.navigation
+
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.repository.ArtistRepository
-import com.example.melora.ui.components.AppDrawer
-import com.example.melora.ui.components.AppNavigationBar
-import com.example.melora.ui.components.AppTopBar
-import com.example.melora.ui.components.defaultDrawerItems
-import com.example.melora.ui.screen.ArtistProfileScreen
-import com.example.melora.ui.screen.HomeScreen
-import com.example.melora.ui.screen.LoginScreen
-import com.example.melora.ui.screen.LoginScreenVm
-import com.example.melora.ui.screen.PlayerScreen
-import com.example.melora.ui.screen.RegisterScreenVm
-import com.example.melora.ui.screen.SuccesUpload
-import com.example.melora.ui.screen.UploadScreenVm
-import com.example.melora.viewmodel.UploadViewModel
-import com.example.melora.ui.screen.SearchViewScreen
-import com.example.melora.viewmodel.ArtistProfileViewModel
-import com.example.melora.viewmodel.AuthViewModel
-import com.example.melora.viewmodel.MusicPlayerViewModel
-import com.example.melora.viewmodel.SearchViewModel
+import com.example.melora.ui.components.*
+import com.example.melora.ui.screen.*
+import com.example.melora.viewmodel.*
 import kotlinx.coroutines.launch
 
 @Composable
@@ -44,8 +23,13 @@ fun AppNavGraph(
     searchViewModel: SearchViewModel,
     authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
-    musicModel: MusicPlayerViewModel
-) { val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    musicModel: MusicPlayerViewModel,
+    favoriteModel: FavoriteViewModel
+) {
+
+    val currentUser by authViewModel.currentUser.collectAsState()
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
@@ -54,22 +38,34 @@ fun AppNavGraph(
         userDao = db.userDao(),
         songDao = db.songDao()
     )
-    // ---- Navegaciones ----
+
+    val goHome: () -> Unit = {
+        navController.navigate(Route.Home.path) {
+            popUpTo(0)
+        }
+    }
+    val goLogin: () -> Unit = {
+        navController.navigate(Route.Login.path) {
+            popUpTo(0)
+        }
+    }
+    val goRegister: () -> Unit = {
+        navController.navigate(Route.Register.path) {
+            popUpTo(0)
+        }
+    }
     val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path) }
-    val goHome: () -> Unit = { navController.navigate(Route.Home.path) }
-    val goLogin: () -> Unit = { navController.navigate(Route.Login.path) }
-    val goRegister: () -> Unit = { navController.navigate(Route.Register.path) }
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
+    val goArtistProfile: (Long) -> Unit = { id -> navController.navigate("artistProfile/$id") }
+    val goPlayer: (Long) -> Unit = { id -> navController.navigate("player/$id") }
 
-    val goPlayer: (Long) -> Unit = {songId ->
-        navController.navigate("player/$songId")
-    }
-    val goArtistProfile: (Long) -> Unit = { artistId ->
-        navController.navigate("artistProfile/$artistId")
+    val startDestination = if (currentUser == null) {
+        Route.Login.path
+    } else {
+        Route.Home.path
     }
 
-    // ---- Drawer lateral ----
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -81,8 +77,11 @@ fun AppNavGraph(
                         goHome()
                     },
                     onLogin = {
-                        scope.launch { drawerState.close() }
-                        goLogin()
+                        scope.launch {
+                            drawerState.close()
+                            authViewModel.logout()
+                            goLogin()
+                        }
                     },
                     onRegister = {
                         scope.launch { drawerState.close() }
@@ -108,15 +107,32 @@ fun AppNavGraph(
             },
             bottomBar = {
                 if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
-                    AppNavigationBar(navController = navController)
+                    AppNavigationBar(navController = navController, authViewModel = authViewModel)
                 }
             }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Route.Home.path,
+                startDestination = startDestination,
                 modifier = Modifier.padding(innerPadding)
             ) {
+
+                composable(Route.Login.path) {
+                    LoginScreenVm(
+                        vm = authViewModel,
+                        onLoginOk = goHome,
+                        onGoRegister = goRegister
+                    )
+                }
+
+                composable(Route.Register.path) {
+                    RegisterScreenVm(
+                        vm = authViewModel,
+                        onGoLogin = goLogin,
+                        onRegistered = goLogin
+                    )
+                }
+
                 composable(Route.Home.path) {
                     HomeScreen(
                         onGoLogin = goLogin,
@@ -124,50 +140,80 @@ fun AppNavGraph(
                         onGoUpload = goUpload,
                     )
                 }
-                composable(Route.Login.path) {
-                    LoginScreenVm(
-                        onLoginOk = goHome,
-                        onGoRegister = goRegister,
-                        vm = authViewModel
-                    )
-                }
-                composable(Route.Register.path) {
-                    RegisterScreenVm(
-                        onGoLogin = goLogin,
-                        onRegistered = goRegister,
-                        vm = authViewModel
-                    )
-                }
+
                 composable(Route.UploadScreenForm.path) {
-                    UploadScreenVm(
-                        vm = uploadViewModel,
-                        onGoSucces = goSucces
-                    )
+                    val user = authViewModel.currentUser.collectAsState().value
+                    if (user != null) {
+                        UploadScreenVm(
+                            vm = uploadViewModel,
+                            onGoSucces = goSucces,
+                            userId = user.idUser
+                        )
+                    } else {
+                        goLogin()
+                    }
                 }
+
                 composable(Route.SuccesUpload.path) {
                     SuccesUpload(
                         onLoginOk = goLogin,
                         onGoUpload = goUpload
                     )
                 }
+
                 composable(Route.SearchView.path) {
-                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile, goPlayer = goPlayer)
+                    SearchViewScreen(
+                        vm = searchViewModel,
+                        goArtistProfile = goArtistProfile,
+                        goPlayer = goPlayer
+                    )
                 }
+
                 composable("artistProfile/{artistId}") {
                     val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
                     ArtistProfileScreen(
                         artistId = artistId,
                         repository = artistRepository,
                         goPlayer = goPlayer
-
                     )
                 }
+
                 composable(
                     route = "player/{songId}",
                     arguments = listOf(navArgument("songId") { type = NavType.LongType })
                 ) { backStackEntry ->
                     val songId = backStackEntry.arguments?.getLong("songId") ?: return@composable
-                    PlayerScreen(songId = songId)
+                    val user = currentUser
+
+                    if (user == null) {
+                        LaunchedEffect(Unit) { goLogin() }
+                        return@composable
+                    }
+                    LaunchedEffect(songId) {
+                        musicModel.getSongDetails(songId)
+                    }
+
+                    val currentSong by musicModel.currentSong.collectAsState()
+                    currentSong?.let { songDetailed ->
+                        PlayerScreen(
+                            song = songDetailed,
+                            userId = user.idUser,
+                            playerViewModel = musicModel,
+                            favoriteViewModel = favoriteModel
+                        )
+                    }
+                }
+
+                composable(
+                    route = "favorites/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
+                    FavoriteScreen(
+                        userId = userId,
+                        favoriteViewModel = favoriteModel,
+                        goPlayer = goPlayer
+                    )
                 }
             }
         }

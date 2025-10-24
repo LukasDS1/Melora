@@ -94,8 +94,7 @@ fun RegisterScreenVm(
         onEmailChange = vm::onRegisterEmailChange,
         onPassChange = vm::onRegisterPassChange,
         onConfirmPassChange = vm::onConfirmChange,
-
-        onSubmit = vm::submitRegister,
+        onSubmit = { vm.submitRegister { onRegistered() } },
         onGoLogin = onGoLogin
     )
 }

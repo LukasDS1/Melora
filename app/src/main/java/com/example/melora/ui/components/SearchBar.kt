@@ -82,7 +82,6 @@ fun SearchBar(
                         items(searchResults) { song ->
                             SongItem(song = song,goPlayer = goPlayer)
                         }
-
                 }
             }
         }
