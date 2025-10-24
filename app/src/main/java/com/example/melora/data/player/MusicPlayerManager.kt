@@ -15,11 +15,11 @@ class MusicPlayerManager(private val context: Context) {
         if (player == null) player = ExoPlayer.Builder(context).build()
     }
 
+    // Play song from path
     fun playSongPath(songPath: String) {
         initializePlayer()
 
         val cleanPath = songPath.removePrefix("file://")
-
 
         val file = File(cleanPath)
         if (!file.exists()) {
@@ -35,18 +35,42 @@ class MusicPlayerManager(private val context: Context) {
         player!!.playWhenReady = true
         player!!.play()
     }
+
+    // Pause song
     fun pause() {
         player?.pause()
     }
 
+    fun resume() {
+        player?.play()
+    }
+
+    // Stop song
     fun stop() {
         player?.stop()
     }
 
+    // Release resources of ExoPlayer
     fun release() {
         player?.release()
         player = null
     }
 
+    // Move to new position (miliseconds)
+    fun seekTo(positionMs: Long) {
+        player?.seekTo(positionMs)
+    }
+
+    // Get total duration (miliseconds)
+    fun getDuration(): Long {
+        return player?.duration?.coerceAtLeast(0L) ?: 0L
+    }
+
+    // Get current position of song (miliseconds)
+    fun getCurrentPosition(): Long {
+        return player?.currentPosition ?: 0L
+    }
+
+    // Check if is playing
     fun isPlaying(): Boolean = player?.isPlaying ?: false
 }

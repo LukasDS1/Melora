@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.melora.data.local.users.UserEntity
 
 @Dao
 interface SongDao {
@@ -11,6 +12,10 @@ interface SongDao {
     //insertar canciones
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(songs: SongEntity): Long
+
+    // Conseguir artista de canción
+    @Query("SELECT * FROM users WHERE idUser = :id")
+    suspend fun getUserById(id: Long): UserEntity?
 
     //buscar canciones por nombre
     @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,s.songPath,up.uploadDate,us.nickname ,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId WHERE LOWER(s.songName) LIKE '%'|| LOWER(:query) ||'%'")
