@@ -36,7 +36,8 @@ import com.example.melora.R
 @Composable
 fun ArtistProfileScreen(
     artistId: Long,
-    repository: ArtistRepository
+    repository: ArtistRepository,
+    goPlayer: (Long) -> Unit
 ) {
     val vm: ArtistProfileViewModel = viewModel(
         factory = ArtistProfileViewModelFactory(repository)
@@ -100,7 +101,7 @@ fun ArtistProfileScreen(
                 ) {
                     artistData.songs.forEach { song ->
                         Button(
-                            onClick = { /* */ },
+                            onClick = { goPlayer(song.songId) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Resaltado,

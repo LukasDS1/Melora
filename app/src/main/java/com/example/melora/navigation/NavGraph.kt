@@ -157,7 +157,9 @@ fun AppNavGraph(
                     val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
                     ArtistProfileScreen(
                         artistId = artistId,
-                        repository = artistRepository
+                        repository = artistRepository,
+                        goPlayer = goPlayer
+
                     )
                 }
                 composable(

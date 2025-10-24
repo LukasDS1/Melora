@@ -40,7 +40,7 @@ fun SearchBar(
     goArtistProfile: (Long) -> Unit,
     goPlayer: (Long) -> Unit
     ) {
-    // Controls expansion state of the search bar
+
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box(
@@ -87,7 +87,6 @@ fun SearchBar(
             }
         }
     }
-
 
 
 @Composable

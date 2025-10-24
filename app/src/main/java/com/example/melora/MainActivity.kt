@@ -73,7 +73,7 @@ fun AppRoot() {
     val searchViewModel: SearchViewModel = viewModel(
         factory = SearchViewModelFactory(songRepository,userRepository)
     )
-    val musicPlayerViewModel: MusicPlayerViewModel = viewModel (
+    val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
         factory = MusicPlayerViewModelFactory(application,songRepository)
     )
     val navController = rememberNavController()
