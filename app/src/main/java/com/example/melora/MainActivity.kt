@@ -86,7 +86,7 @@ fun AppRoot() {
                 searchViewModel = searchViewModel,
                 authViewModel =  authViewModel,
                 artistModel = artistProfileViewModel,
-                musicModel = musicPlayerViewModel,
+                musicPlayerViewModel = musicPlayerViewModel,
             )
         }
     }

@@ -274,8 +274,25 @@ private fun UploadScreen(
                                 .fillMaxWidth(),
                             contentScale = ContentScale.Crop
                         )
-                    } else {
-                        Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center)
+                    }
+
+                    if (coverArtError != null) {
+                        Text(
+                            text = coverArtError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    } else if (coverArt == null) {
+                        Text(
+                            "Cover art has not been selected",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     Spacer(Modifier.height(10.dp))

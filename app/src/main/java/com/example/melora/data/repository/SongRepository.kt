@@ -4,6 +4,7 @@ import androidx.room.util.query
 import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.song.SongEntity
+import com.example.melora.data.local.users.UserEntity
 import java.util.Date
 
 
@@ -54,5 +55,9 @@ class SongRepository(
         }catch (e: Exception){
             Result.failure(e)
         }
+    }
+
+    suspend fun getArtistById(artistId: Long): UserEntity? {
+        return songDao.getUserById(artistId)
     }
 }

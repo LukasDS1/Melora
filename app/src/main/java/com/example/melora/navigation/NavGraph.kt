@@ -26,6 +26,7 @@ import com.example.melora.ui.screen.HomeScreen
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.LoginScreenVm
 import com.example.melora.ui.screen.PlayerScreen
+import com.example.melora.ui.screen.PlayerScreenVm
 import com.example.melora.ui.screen.RegisterScreenVm
 import com.example.melora.ui.screen.SuccesUpload
 import com.example.melora.ui.screen.UploadScreenVm
@@ -44,7 +45,7 @@ fun AppNavGraph(
     searchViewModel: SearchViewModel,
     authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
-    musicModel: MusicPlayerViewModel
+    musicPlayerViewModel: MusicPlayerViewModel,
 ) { val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -97,7 +98,7 @@ fun AppNavGraph(
 
         Scaffold(
             topBar = {
-                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path && currentRoute != Route.Player.path) {
                     AppTopBar(
                         onOpenDrawer = { scope.launch { drawerState.open() } },
                         onHome = goHome,
@@ -151,7 +152,11 @@ fun AppNavGraph(
                     )
                 }
                 composable(Route.SearchView.path) {
-                    SearchViewScreen(searchViewModel, goArtistProfile = goArtistProfile, goPlayer = goPlayer)
+                    SearchViewScreen(
+                        vm = searchViewModel,
+                        goArtistProfile = goArtistProfile,
+                        goPlayer = goPlayer
+                    )
                 }
                 composable("artistProfile/{artistId}") {
                     val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
@@ -167,7 +172,11 @@ fun AppNavGraph(
                     arguments = listOf(navArgument("songId") { type = NavType.LongType })
                 ) { backStackEntry ->
                     val songId = backStackEntry.arguments?.getLong("songId") ?: return@composable
-                    PlayerScreen(songId = songId)
+                    PlayerScreenVm(
+                        vm = musicPlayerViewModel,
+                        songId = songId,
+                        onExitPlayer = goHome
+                    )
                 }
             }
         }

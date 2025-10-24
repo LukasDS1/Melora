@@ -41,7 +41,7 @@ fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
         when {
             w <= 0 || h <= 0 -> "The image is not valid"
             w < 500 || h < 500 -> "The image must be at least 500x500 px"
-            w < 3000 || h < 3000 -> "The image is too big"
+            w > 3000 || h > 3000 -> "The image is too big"
             else -> null
         }
     } catch (e: Exception){
