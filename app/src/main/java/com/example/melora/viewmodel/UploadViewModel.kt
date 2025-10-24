@@ -33,22 +33,22 @@ data class  UploadUiState(
     val errorMsg: String? = null
 )
 
-class UploadViewModel( private  val repository: SongRepository,private val uploadRepository: UploadRepository,): ViewModel(){
+class UploadViewModel( private  val repository: SongRepository,private val uploadRepository: UploadRepository,): ViewModel() {
     //Flujos de estados
     private val _upload = MutableStateFlow(UploadUiState())
     val upload: StateFlow<UploadUiState> = _upload //pagina visible, solo lectura
 
     //funcion para habilitar el boton de enviar
-    private fun recomputeUpdateCanSubmit(){
+    private fun recomputeUpdateCanSubmit() {
         val s = _upload.value
-        val noErrors = listOf(s.songNameError,s.coverArtError).all { it == null }
-        val filled =  s.songName.isNotBlank() && s.coverArt != null && s.song != null
+        val noErrors = listOf(s.songNameError, s.coverArtError).all { it == null }
+        val filled = s.songName.isNotBlank() && s.coverArt != null && s.song != null
         _upload.update { it.copy(canSubmit = noErrors && filled) }
     }
-    fun onSongCoverChange(context: Context, value : Uri?){
+    fun onSongCoverChange(context: Context, value: Uri?) {
         //actualizar estado
         _upload.update {
-            it.copy(coverArt = value, coverArtError = songCoverArtValidation(context,value))
+            it.copy(coverArt = value, coverArtError = songCoverArtValidation(context, value))
         }
         recomputeUpdateCanSubmit()
     }
@@ -112,7 +112,7 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
         _upload.value = UploadUiState()
     }
     fun clearUpload(){
-        _upload.update { it.copy(success = false, errorMsg = null) }
+        _upload.update { it.copy(errorMsg = null) }
     }
 
 }

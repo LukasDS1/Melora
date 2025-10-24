@@ -2,6 +2,7 @@ package com.example.melora.ui.screen
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -69,15 +70,15 @@ private fun getImageUriFile(context: Context,file: File):Uri{
 @Composable
 fun UploadScreenVm(
     vm: UploadViewModel,
-    onGoSucces: () -> Unit
+    onGoSucces: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by vm.upload.collectAsStateWithLifecycle()
 
     if (state.success) {
-        vm.clearForm()
-        vm.clearUpload()
+        Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
         onGoSucces()
+        vm.clearForm()
     }
 
     UploadScreen(
@@ -324,7 +325,6 @@ private fun UploadScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text("Uploading Music...")
-                            Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
                         } else {
                             Text("Upload")
                         }
