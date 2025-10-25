@@ -1,7 +1,13 @@
 package com.example.melora.viewmodel
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.melora.data.local.users.UserEntity
+import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.storage.UserPreferences
 import com.example.melora.domain.validation.validateConfirmPassword
 import com.example.melora.domain.validation.validateEmail
 import com.example.melora.domain.validation.validateNickname
@@ -9,6 +15,7 @@ import com.example.melora.domain.validation.validatePassword
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -40,24 +47,37 @@ data class RegisterUiState (
     val errorMessage: String? = null
 )
 
-private data class DemoUser (
-    val nickname: String,
-    val email: String,
-    val pass: String
-)
+class AuthViewModel(
 
-class AuthViewModel : ViewModel() {
-    companion object {
-        private val USERS = mutableListOf(
-            DemoUser(nickname = "n1", email = "a@a.cl", pass = "A123_")
-        )
-    }
+    private val repository: UserRepository,
+    private val app: Application
+) : AndroidViewModel(app ) {
+
+    private val prefs = UserPreferences(app)
 
     private val _login = MutableStateFlow(LoginUiState())
     val login: StateFlow<LoginUiState> = _login
 
     private val _register = MutableStateFlow(RegisterUiState())
     val register: StateFlow<RegisterUiState> = _register
+
+    private val _currentUser = MutableStateFlow<UserEntity?>(null)
+    val currentUser: StateFlow<UserEntity?> = _currentUser
+
+    init {
+        viewModelScope.launch {
+            prefs.isLoggedIn.collect { logged ->
+                if (logged) {
+                    val id = prefs.userId.firstOrNull()
+                    if (id != null) {
+                        val user = repository.getUserById(id)
+                        _currentUser.value = user }
+                } else {
+                    _currentUser.value = null
+                }
+            }
+        }
+    }
 
     // ---------------- LOGIN: handlers y envío ----------------
 
@@ -82,21 +102,51 @@ class AuthViewModel : ViewModel() {
     fun submitLogin() {
         val s = _login.value
         if (!s.canSubmit || s.isSubmitting) return
+
         viewModelScope.launch {
-            _login.update { it.copy(isSubmitting = true, errorMessage = null, success = true) }
-            delay(500)
-
-            val user = USERS.firstOrNull { it.email.equals(s.email, ignoreCase = true) }
-
-            val ok = user != null && user.pass == s.pass
-
+            // 1. Estamos procesando, PERO AÚN NO ES ÉXITO
             _login.update {
                 it.copy(
-                    isSubmitting = false,
-                    success = ok,
-                    errorMessage = if (!ok) "Credenciales inválidas" else null
+                    isSubmitting = true,
+                    errorMessage = null,
+                    success = false // <-- clave: NO digas éxito todavía
                 )
             }
+
+            val result = repository.login(s.email.trim(), s.pass)
+
+            if (result.isSuccess) {
+                val user = result.getOrNull()!!
+                _currentUser.value = user
+
+                prefs.saveLoginState(true, user.idUser)
+
+                _login.update {
+                    it.copy(
+                        isSubmitting = false,
+                        success = true,
+                        errorMessage = null
+                    )
+                }
+            } else {
+                _login.update {
+
+                    it.copy(
+                        isSubmitting = false,
+                        success = false,
+                        errorMessage = result.exceptionOrNull()?.message
+                            ?: "Error de autenticación"
+                    )
+                }
+            }
+        }
+    }
+
+
+    fun logout() {
+        viewModelScope.launch {
+            prefs.clear()
+            _currentUser.value = null
         }
     }
 
@@ -138,35 +188,30 @@ class AuthViewModel : ViewModel() {
         _register.update { it.copy(canSubmit = noErrors && filled) }
     }
 
-    fun submitRegister() {
+    fun submitRegister(onSuccess: () -> Unit) {
         val s = _register.value
         if (!s.canSubmit || s.isSubmitting) return
+
         viewModelScope.launch {
-            _register.update { it.copy(isSubmitting = true, errorMessage = null, success = false) }
-            delay(700)
+            _register.update { it.copy(isSubmitting = true, errorMessage = null) }
 
-            val duplicated = USERS.any { it.email.equals(s.email, ignoreCase = true) }
-
-            if (duplicated) {
+            val result = repository.register(s.nickname, s.email, s.pass)
+            if (result.isSuccess) {
+                _register.update { it.copy(isSubmitting = false, success = true) }
+                onSuccess()
+            } else {
                 _register.update {
-                    it.copy(isSubmitting = false, success = false, errorMessage = "El usuario ya existe.")
+                    it.copy(
+                        isSubmitting = false,
+                        success = false,
+                        errorMessage = result.exceptionOrNull()?.message
+                            ?: "Cant register."
+                    )
                 }
-                return@launch
-            }
-
-            USERS.add(
-                DemoUser(
-                    nickname = s.nickname.trim(),
-                    email = s.email.trim(),
-                    pass = s.pass
-                )
-            )
-
-            _register.update {
-                it.copy(isSubmitting = false, success = true, errorMessage = null)
             }
         }
     }
+
 
     fun clearRegisterResult() {
         _register.update { it.copy(success = false, errorMessage = null) }

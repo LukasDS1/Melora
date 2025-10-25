@@ -1,129 +1,194 @@
 package com.example.melora.navigation
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.melora.ui.components.AppDrawer
-import com.example.melora.ui.components.AppNavigationBar
-import com.example.melora.ui.components.AppTopBar
-import com.example.melora.ui.components.defaultDrawerItems
-import com.example.melora.ui.screen.HomeScreen
-import com.example.melora.ui.screen.LoginScreen
-import com.example.melora.ui.screen.RegisterScreen
-import com.example.melora.ui.screen.SuccesUpload
-import com.example.melora.ui.screen.UploadScreenVm
-import com.example.melora.viewmodel.UploadViewModel
-import com.example.melora.ui.screen.RegisterScreenVm
-import kotlinx.coroutines.launch
+import androidx.navigation.NavType
+import androidx.navigation.compose.*
+import androidx.navigation.navArgument
+import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.components.*
+import com.example.melora.ui.screen.*
+import com.example.melora.viewmodel.*
 
 @Composable
-fun AppNavGraph(navController: NavHostController, uploadViewModel: UploadViewModel) {
+fun AppNavGraph(
+    navController: NavHostController,
+    uploadViewModel: UploadViewModel,
+    searchViewModel: SearchViewModel,
+    authViewModel: AuthViewModel,
+    artistModel: ArtistProfileViewModel,
+    musicPlayerViewModel: MusicPlayerViewModel,
+    favoriteModel: FavoriteViewModel
+) {
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val scope = rememberCoroutineScope()
 
-    val goUpload : () -> Unit = {navController.navigate(Route.UploadScreenForm.path)}
-    val goHome: () -> Unit    = { navController.navigate(Route.Home.path) }    // Ir a Home
-    val goLogin: () -> Unit   = { navController.navigate(Route.Login.path) }   // Ir a Login
-    val goRegister: () -> Unit = { navController.navigate(Route.Register.path) } // Ir a Registro
-    val goSucces: () -> Unit = {navController.navigate(Route.SuccesUpload.path)} // ir a la pagina de succes
+    val context = LocalContext.current
+    val db = MeloraDB.getInstance(context)
+    val artistRepository = ArtistRepository(
+        userDao = db.userDao(),
+        songDao = db.songDao()
+    )
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawer(
-                currentRoute = null,
-                items = defaultDrawerItems(
-                    onHome = {
-                        scope.launch { drawerState.close() }
-                        goHome()
-                    },
-                    onLogin = {
-                        scope.launch { drawerState.close() } // Cierra drawer
-                        goLogin()
-                    },
-                    onRegister = {
-                        scope.launch { drawerState.close() } // Cierra drawer
-                        goRegister()
-                    }
-                )
-            )
+    val prefs = remember { UserPreferences(context) }
+    val isLoggedIn by prefs.isLoggedIn.collectAsState(initial = false)
+    val savedUserId by prefs.userId.collectAsState(initial = null)
+
+    var startDestination by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        prefs.isLoggedIn.collect { logged ->
+            startDestination = if (logged) Route.Home.path else Route.Login.path
         }
-    ) {
+    }
 
-        val navBackStackEntry by navController.currentBackStackEntryAsState() // Guarda la pantalla que está encima de la "pila" de pantallas
-        val currentRoute = navBackStackEntry?.destination?.route // Guarda el string de la ruta actual
+    if (startDestination == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+
+    val goLogin: () -> Unit = { navController.navigate(Route.Login.path){popUpTo(0)} }
+    val goRegister: () -> Unit = {navController.navigate(Route.Register.path){popUpTo(0)}}
+    val goHome: () -> Unit = {navController.navigate(Route.Home.path){popUpTo(0)}}
+    val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path) }
+    val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
+    val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
+    val goArtistProfile: (Long) -> Unit = { id -> navController.navigate("artistProfile/$id") }
+    val goPlayer: (Long) -> Unit = { id -> navController.navigate("player/$id") }
+    val goFavorites: () -> Unit = { navController.navigate(Route.Favorites.path) }
+
 
         Scaffold(
             topBar = {
-                AppTopBar(
-                    onHome = goHome,
-                    onLogin = goLogin,
-                    onRegister = goRegister,
-                    onOpenDrawer = goLogin
-                )
-            }, bottomBar = {
-                AppNavigationBar( navController = navController)
-                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path && currentRoute != Route.Player.path) {
                     AppTopBar(
-                        onOpenDrawer = { scope.launch { drawerState.open() } },
                         onHome = goHome,
                         onLogin = goLogin,
                         onRegister = goRegister
                     )
                 }
+            },
+            bottomBar = {
+                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
+                    AppNavigationBar(navController = navController)
+                }
             }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Route.Home.path,
+                startDestination = startDestination!!,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable (Route.Home.path) {
-                    HomeScreen(
-                        onGoLogin = goLogin,
-                        onGoRegister = goRegister,
-                        onGoUpload = goUpload
-                    )
-                }
-                composable(Route.Login.path) { // Destino Login
-                    LoginScreen(
+
+                composable(Route.Login.path) {
+                    LoginScreenVm(
+                        vm = authViewModel,
                         onLoginOk = goHome,
                         onGoRegister = goRegister
                     )
                 }
+
                 composable(Route.Register.path) {
-                    RegisterScreen(
-                        onRegistered = goLogin,
-                        onGoLogin = goLogin
+                    RegisterScreenVm(
+                        vm = authViewModel,
+                        onGoLogin = goLogin,
+                        onRegistered = goLogin
                     )
                 }
-                composable (Route.UploadScreenForm.path){
-                    UploadScreenVm(
-                        vm = uploadViewModel,
-                        onGoSucces = goSucces
+
+                composable(Route.Home.path) {
+                    HomeScreen(
+                        onGoLogin = goLogin,
+                        onGoRegister = goRegister,
+                        onGoUpload = goUpload,
                     )
                 }
-                composable (Route.SuccesUpload.path){
-                    SuccesUpload (
+
+                composable(Route.UploadScreenForm.path) {
+                    val user = authViewModel.currentUser.collectAsStateWithLifecycle().value
+                    if (user != null) {
+                        UploadScreenVm(
+                            vm = uploadViewModel,
+                            onGoSucces = goSucces,
+                            userId = user.idUser
+                        )
+                    } else {
+                        goLogin()
+                    }
+                }
+
+                composable(Route.SuccesUpload.path) {
+                    SuccesUpload(
                         onLoginOk = goLogin,
                         onGoUpload = goUpload
-                composable(Route.Register.path) { // Destino Registro
-                    RegisterScreenVm(
-                        onRegistered = goLogin, // Botón para ir a Login
-                        onGoLogin = goLogin     // Botón alternativo a Login
+                    )
+                }
+
+                composable(Route.SearchView.path) {
+                    SearchViewScreen(
+                        vm = searchViewModel,
+                        goArtistProfile = goArtistProfile,
+                        goPlayer = goPlayer
+                    )
+                }
+
+                composable("artistProfile/{artistId}") {
+                    val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
+                    ArtistProfileScreen(
+                        artistId = artistId,
+                        repository = artistRepository,
+                        goPlayer = goPlayer
+                    )
+                }
+
+                composable(route = "player/{songId}", arguments = listOf(navArgument("songId") { type = NavType.LongType }))
+                    { backStackEntry ->
+                    val songId = backStackEntry.arguments?.getLong("songId") ?: return@composable
+
+                    LaunchedEffect(songId) {
+                        musicPlayerViewModel.getSongDetails(songId)
+                    }
+
+                    val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
+
+                    currentSong?.let {
+                        PlayerScreenVm(
+                            songId = songId,
+                            vm = musicPlayerViewModel,
+                            onExitPlayer = goSearch,
+                            favVm = favoriteModel
+                        )
+                    }
+                }
+
+                composable(Route.Favorites.path) {
+                    FavoriteScreenVm(
+                        favoriteViewModel = favoriteModel,
+                        goPlayer = goPlayer
                     )
                 }
             }
         }
     }
-}
+
+

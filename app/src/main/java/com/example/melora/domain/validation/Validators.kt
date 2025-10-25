@@ -3,13 +3,15 @@ package com.example.melora.domain.validation
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Patterns
 
 fun songNameValidation(songName:String):String?{
-    return if(songName.isBlank()) "The song name cant be empty" else null
+    if(songName.contains(' ')) return  "The song name cant contain spaces"
+    return if(songName.trim().isBlank()) "The song name cant be empty" else null
+
+
 }
-fun artistNameValidation(artistName:String):String?{
-    return if(artistName.isBlank()) "The artist name cant be empty" else null
-}
+
 
 fun songValidation(context: Context,songUri:Uri?):String?{
     if(songUri == null) return  "The song cant be empty"
@@ -39,14 +41,13 @@ fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
         when {
             w <= 0 || h <= 0 -> "The image is not valid"
             w < 500 || h < 500 -> "The image must be at least 500x500 px"
+            w > 3000 || h > 3000 -> "The image is too big"
             else -> null
         }
     } catch (e: Exception){
         "Cant be process the image"
     }
-
 }
-import android.util.Patterns
 
 fun validateEmail(email: String): String? {
     if (email.isBlank()) return "El email es obligatorio."

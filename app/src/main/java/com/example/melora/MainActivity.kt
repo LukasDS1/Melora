@@ -1,42 +1,107 @@
 package com.example.melora
-
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.data.repository.FavoriteRepository
+import com.example.melora.data.repository.SongRepository
+import com.example.melora.data.repository.UploadRepository
+import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
-import com.example.melora.ui.screen.LoginScreen
-import com.example.melora.ui.screen.RegisterScreen
-import com.example.melora.ui.theme.MeloraTheme
+import com.example.melora.viewmodel.ArtistProfileViewModel
+import com.example.melora.viewmodel.ArtistProfileViewModelFactory
+import com.example.melora.viewmodel.AuthViewModel
+import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteViewModelFactory
+import com.example.melora.viewmodel.MusicPlayerViewModel
+import com.example.melora.viewmodel.MusicPlayerViewModelFactory
+import com.example.melora.viewmodel.SearchViewModel
+import com.example.melora.viewmodel.SearchViewModelFactory
+import com.example.melora.viewmodel.UploadViewModel
+import com.example.melora.viewmodel.UploadViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppRoot()
+           AppRoot()
         }
     }
 }
 
+@Composable
+fun AppRoot() {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val db = MeloraDB.getInstance(context)
 
+    val songDao = db.songDao()
 
-@Composable // Indica que esta función dibuja UI
-fun AppRoot() { // Raíz de la app para separar responsabilidades
-    val navController = rememberNavController() // Controlador de navegación
-    MaterialTheme { // Provee colores/tipografías Material 3
-        Surface(color = MaterialTheme.colorScheme.background) { // Fondo general
-            AppNavGraph(navController = navController) // Carga el NavHost + Scaffold + Drawer
+    val uploadDao = db.uploadDao()
+
+    val  userDao = db.userDao()
+
+    val favoriteDao = db.favoriteDao()
+
+    val songRepository = SongRepository(songDao)
+
+    val userRepository = UserRepository(userDao)
+
+    val uploadRepository = UploadRepository(uploadDao)
+
+    val prefs = UserPreferences(context)
+
+    val loginRepository = UserRepository(userDao)
+
+    val artistRepository = ArtistRepository(userDao,songDao)
+
+    val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
+
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(UserRepository(db.userDao()), application)
+    )
+
+    val uploadViewModel: UploadViewModel = viewModel(
+        factory = UploadViewModelFactory(songRepository,uploadRepository)
+    )
+    val artistProfileViewModel: ArtistProfileViewModel = viewModel(
+        factory = ArtistProfileViewModelFactory(artistRepository)
+    )
+
+    val searchViewModel: SearchViewModel = viewModel(
+        factory = SearchViewModelFactory(songRepository,userRepository)
+    )
+    val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
+        factory = MusicPlayerViewModelFactory(application,songRepository)
+    )
+    val favoriteViewModel: FavoriteViewModel = viewModel(
+        factory = FavoriteViewModelFactory(favoriteRepository,prefs)
+    )
+    val navController = rememberNavController()
+
+    MaterialTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AppNavGraph(
+                navController = navController,
+                uploadViewModel = uploadViewModel,
+                searchViewModel = searchViewModel,
+                authViewModel =  authViewModel,
+                artistModel = artistProfileViewModel,
+                favoriteModel = favoriteViewModel,
+                musicPlayerViewModel = musicPlayerViewModel,
+            )
         }
     }
 }

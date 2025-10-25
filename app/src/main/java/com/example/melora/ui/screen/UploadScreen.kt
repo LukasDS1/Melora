@@ -1,11 +1,10 @@
 package com.example.melora.ui.screen
-
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
@@ -23,29 +21,63 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.melora.ui.theme.PrimaryBg
+import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.UploadViewModel
+import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Date
-import com.example.melora.R
+import java.util.Locale
+
+
+private fun saveAudioLocally(context: Context, sourceUri: Uri): String {
+    val inputStream = context.contentResolver.openInputStream(sourceUri)
+    val destDir = File(context.filesDir, "songs").apply { mkdirs() }
+    val fileName = "song_${System.currentTimeMillis()}.mp3"
+    val destFile = File(destDir, fileName)
+
+    inputStream?.use { input ->
+        destFile.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+
+    return destFile.absolutePath
+}
+private fun createTempImageFile(context: Context): File{
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val storageDir = File(context.cacheDir,"images").apply {
+        if(!exists()) mkdirs()
+    }
+    return File(storageDir,"IMG_$timeStamp.jpg")
+}
+
+private fun getImageUriFile(context: Context,file: File):Uri{
+    val authority = "${context.packageName}.fileprovider"
+    return FileProvider.getUriForFile(context,authority,file)
+}
 
 @Composable
 fun UploadScreenVm(
     vm: UploadViewModel,
-    onGoSucces: () -> Unit
+    onGoSucces: () -> Unit,
+    userId : Long
 ) {
     val context = LocalContext.current
-    val vm: UploadViewModel = viewModel()
     val state by vm.upload.collectAsStateWithLifecycle()
 
     if (state.success) {
+        vm.clearForm()
         vm.clearUpload()
         onGoSucces()
     }
@@ -67,7 +99,7 @@ fun UploadScreenVm(
         onSongDescription = vm::onSongDescriptionChange,
         onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
         onSongChange = { uri -> vm.onSongChange(context, uri) },
-        submitMusic = vm::submitMusic
+        submitMusic = { vm.submitMusic(userId) }
     )
 }
 
@@ -91,23 +123,39 @@ private fun UploadScreen(
     onSongChange: (Uri?) -> Unit,
     submitMusic: () -> Unit
 ) {
-    val bg = Color(0xFF4b4b4b)
+    val bg = Resaltado
+
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
     var isPlaying by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        onSongChange(uri)
+        uri?.let {
+            val localPath = saveAudioLocally(context, it)
+            onSongChange(Uri.fromFile(File(localPath)))
+        }
     }
 
    val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        onSongCoverChange(uri)
+    ) { uri: Uri? -> uri?.let { selec ->try {
+       val inputStream = context.contentResolver.openInputStream(selec)
+       val tempFile = createTempImageFile(context)
+       inputStream?.use { input ->
+           tempFile.outputStream().use { output -> input.copyTo(output)
+           }
+       }
+       val savedUri = getImageUriFile(context,tempFile)
+       onSongCoverChange(savedUri)
+    }catch (e: Exception){
+       Toast.makeText(context,"Error canceled upload", Toast.LENGTH_SHORT).show()
     }
-
+   }
+   }
 
     Box( Modifier.background(bg)
     ) {
@@ -134,8 +182,8 @@ private fun UploadScreen(
                 shape = MaterialTheme.shapes.large,
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = Color(0xFF414141),
-                    contentColor = Color(0xFF6650a4)
+                    containerColor = SecondaryBg,
+                    contentColor = Color(0xFF03000A)
                 )
             ) {
                 Column(
@@ -152,7 +200,7 @@ private fun UploadScreen(
                     Spacer(Modifier.height(12.dp))
 
                     // Audio picker
-                    Button(onClick = { audioPickerLauncher.launch("audio/*") }) {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),onClick = { audioPickerLauncher.launch("audio/*")}) {
                         Icon(Icons.Filled.Add, "Upload your music!")
                     }
 
@@ -205,14 +253,15 @@ private fun UploadScreen(
                     }
 
                     Spacer(Modifier.height(10.dp))
+
                     Text(
                         "Upload your Covert Art",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center
                     )
                     // Cover art
-                    Button(onClick = { photoPickerLauncher.launch("image/*") }) {
-                        Icon(Icons.Filled.Add, "Upload your CoverArt")
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White), onClick = {photoPickerLauncher.launch("image/*")}) {
+                        Icon(Icons.Filled.Add, "Upload your covert Art")
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -222,8 +271,9 @@ private fun UploadScreen(
                             model = coverArt,
                             contentDescription = "Cover Art",
                             modifier = Modifier
-                                .height(150.dp)
-                                .fillMaxWidth()
+                                .height(250.dp)
+                                .fillMaxWidth(),
+                            contentScale = ContentScale.Crop
                         )
                     } else {
                         Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center)
@@ -235,12 +285,12 @@ private fun UploadScreen(
                     OutlinedTextField(
                         value = songName,
                         onValueChange = onSongNameChange,
-                        label = { Text("Song name", color = Color.White) },
+                        label = { Text("Song name", color = Color.Black) },
                         singleLine = true,
                         isError = songNameError != null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.White)
+                        textStyle = TextStyle(color = Color.Black)
                     )
                     if (songNameError != null) {
                         Text(
@@ -249,24 +299,22 @@ private fun UploadScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
-
                     Spacer(Modifier.height(10.dp))
-
                     // Description
                     OutlinedTextField(
                         value = songDescription ?: "",
                         onValueChange = onSongDescription,
-                        label = { Text("Song description (optional)", color = Color.White) },
+                        label = { Text("Song description (optional)", color = Color.Black) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.White)
+                        textStyle = TextStyle(color = Color.Black)
                     )
-
                     Spacer(Modifier.height(16.dp))
-
                     // Submit button
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Resaltado),
                         onClick = submitMusic,
                         enabled = canSubmit && !isSubmitting,
                         modifier = Modifier.fillMaxWidth(),
@@ -278,10 +326,12 @@ private fun UploadScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text("Uploading Music...")
+                            Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
                         } else {
                             Text("Upload")
                         }
                     }
+
                 }
             }
         }

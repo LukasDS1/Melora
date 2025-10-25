@@ -26,25 +26,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.melora.ui.theme.PrimaryBg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable // Composable reutilizable: barra superior
 fun AppTopBar(
-    onOpenDrawer: () -> Unit, // Abre el drawer (hamburguesa)
     onHome: () -> Unit,       // Navega a Home
     onLogin: () -> Unit,      // Navega a Login
     onRegister: () -> Unit,// Navega a Registro
 ) {
 
+    val topcol = PrimaryBg
     CenterAlignedTopAppBar( // Barra alineada al centro
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFF393939)
+            containerColor = topcol
         ),
         title = {
            Text(text = "Melora", color = Color(0xFFFFFFFF))
         },
-        navigationIcon = { // Ícono a la izquierda (hamburguesa)
-            IconButton(onClick = onOpenDrawer) {
+        navigationIcon = {
+            IconButton(onClick = {}) {
                 Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menú") // Ícono
             }
         },

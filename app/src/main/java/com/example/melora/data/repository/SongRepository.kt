@@ -1,32 +1,29 @@
 package com.example.melora.data.repository
-import android.content.Context
-import android.media.MediaPlayer
 import android.net.Uri
+import androidx.room.util.query
 import com.example.melora.data.local.song.SongDao
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.song.SongEntity
-import java.sql.Date
+import com.example.melora.data.local.users.UserEntity
+import java.util.Date
+
 
 class SongRepository(
-    private val songDao: SongDao,
-    private val context: Context
+    private val songDao: SongDao
 ) {
-    suspend fun uploadMusic(songName: String,songPath: Uri?,coverArt:Uri?,songDescription:String?,durationSong:Int,creationDate: Date): Result<Long> {
+    suspend fun uploadMusic(songName: String,songPath: Uri?,coverArt:Uri?,songDescription:String?,durationSong:Int,creationDate: Long): Result<Long> {
         try {
             if (songName.isBlank() || songPath == null) {
                 return Result.failure(IllegalArgumentException("Name or Song file are invalid"))
             }
-            val actualDuration = getAudioDuration(songPath)
-            // con el let el bloque se ejecuta solo si no es nulo
-            val convertToByte = coverArt?.let { uri ->
-                context.contentResolver.openInputStream(uri)?.use {it.readBytes()}  //utilizamos use para cerrar el imput
-            } ?: ByteArray(0)
+            //
             val songEntity = SongEntity(
                 songName = songName,
                 songDescription = songDescription,
                 songPath = songPath.toString(), // transformamos el la uri como string
-                coverArt = convertToByte,
-                durationSong = actualDuration,
-                creationDate = Date(System.currentTimeMillis())
+                durationSong = 1,
+                coverArt = coverArt?.toString(),
+                creationDate = Date().time
             )
             val id = songDao.insert(songEntity)
             return Result.success(id)
@@ -35,32 +32,32 @@ class SongRepository(
         }
     }
 
-    private fun getAudioDuration(songUri: Uri): Int {
+
+    suspend fun playSongByID(songId:Long): SongDetailed{
+        return songDao.getSongByID(songId)
+    }
+
+    suspend fun getSong(query: String): Result<List<SongDetailed>> {
         return try {
-            val mediaPlayer = MediaPlayer().apply {
-                setDataSource(context, songUri)
-                prepare()
-            }
-            val duration = mediaPlayer.duration / 1000
-            mediaPlayer.release()
-            duration
+            val detailedSongs = songDao.getSong(query)
+            Result.success(detailedSongs)
         } catch (e: Exception) {
-            0
+            Result.failure(e)
         }
     }
 
-    suspend fun searchSong(query:String): Result<List<SongEntity>>{
-        try {
-           val songs = if(query.isBlank()){
-                emptyList()  //songDao.getAllSong() revisar
-           } else{
-               songDao.searchSongs(query)
-           }
-          return Result.success(songs)
-       }catch (e: Exception){
-          return Result.failure(e)
-       }
+    suspend fun getAllSongs(): List<SongDetailed> = songDao.getAllSong()
+
+    suspend fun  getSongsForArtist(id:Long): Result<List<SongDetailed>>{
+        return try {
+            val detailedSong = songDao.getSongsForArtist(id)
+            Result.success(detailedSong)
+        }catch (e: Exception){
+            Result.failure(e)
+        }
     }
 
-    suspend fun getAllSongs(): List<SongEntity> = songDao.getAllSong()
+    suspend fun getArtistById(artistId: Long): UserEntity? {
+        return songDao.getUserById(artistId)
+    }
 }
