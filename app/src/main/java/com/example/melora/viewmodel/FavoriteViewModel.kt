@@ -15,19 +15,32 @@ class FavoriteViewModel(private val repo: FavoriteRepository) : ViewModel() {
     private val _favorites = MutableStateFlow<List<SongDetailed>>(emptyList())
     val favorites: StateFlow<List<SongDetailed>> = _favorites
 
+    private val _currentIsFavorite = MutableStateFlow(false)
+    val currentIsFavorite: StateFlow<Boolean> = _currentIsFavorite
+
+
     fun loadFavorite(userId: Long) {
         viewModelScope.launch {
             _favorites.value = repo.getByFavorite(userId)
         }
     }
 
+
+    fun updateFavoriteState(userId: Long, songId: Long) {
+        viewModelScope.launch {
+            _currentIsFavorite.value = repo.isFavorite(userId, songId)
+        }
+    }
+
+
     suspend fun isFavorite(userId: Long, songId: Long): Boolean {
         return repo.isFavorite(userId, songId)
     }
 
-    fun seleccionarFavorito(userId: Long, songId: Long) {
+    fun toggleFavorite(userId: Long, songId: Long) {
         viewModelScope.launch {
             repo.seleccionarFavorito(userId, songId)
+            _currentIsFavorite.value = repo.isFavorite(userId,songId)
             _favorites.value = repo.getByFavorite(userId)
         }
     }

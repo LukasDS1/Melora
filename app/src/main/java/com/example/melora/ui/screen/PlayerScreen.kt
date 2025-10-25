@@ -2,6 +2,7 @@ package com.example.melora.ui.screen
 
 import android.app.Application
 import android.graphics.drawable.Icon
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,8 @@ import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
@@ -44,29 +47,35 @@ import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.viewmodel.FavoriteViewModel
 
-// hola lukas donoso dejo api por si acaso https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
 @Composable
 fun PlayerScreenVm(
     songId: Long,
+    userId: Long,
     onExitPlayer: () -> Unit,
-    vm: MusicPlayerViewModel
+    vm: MusicPlayerViewModel,
+    favVm: FavoriteViewModel
 ) {
 
     val currentSong by vm.currentSong.collectAsStateWithLifecycle()
     val isPlaying by vm.isPlaying.collectAsStateWithLifecycle()
     val currentPosition by vm.currentPosition.collectAsStateWithLifecycle()
     val duration by vm.duration.collectAsStateWithLifecycle()
+    val isFavorite by favVm.currentIsFavorite.collectAsStateWithLifecycle()
 
     LaunchedEffect(songId){
         vm.playSong(songId)
+        favVm.updateFavoriteState(userId, songId)
     }
 
     PlayerScreen(
+        userId = userId,
         songId = songId,
         currentSong = currentSong,
         isPlaying = isPlaying,
-
+        isFavorite = isFavorite,
+        toggleFavorite = favVm::toggleFavorite,
         exitPlayer = onExitPlayer,
         playSong = vm::playSong,
         resume = vm::play,
@@ -80,10 +89,12 @@ fun PlayerScreenVm(
 
 @Composable
 fun PlayerScreen(
+    userId:Long,
     songId:Long,
     currentSong: SongDetailed?,
     isPlaying: Boolean,
-
+    isFavorite: Boolean,
+    toggleFavorite: (Long,Long) -> Unit,
     exitPlayer: () -> Unit,
     playSong:(Long) -> Unit,
     resume:() -> Unit,
@@ -93,6 +104,7 @@ fun PlayerScreen(
     currentPosition: Long,
     duration: Long
 ) {
+
     val context = LocalContext.current
     val db = MeloraDB.getInstance(context)
     val songRepository = SongRepository(db.songDao())
@@ -166,7 +178,7 @@ fun PlayerScreen(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Unknown Artist",
+                text = currentSong?.nickname ?: "Unknown Artist",
                 fontSize = 18.sp
             )
 
@@ -260,12 +272,11 @@ fun PlayerScreen(
                     )
                 }
 
-                IconButton(
-                    onClick = {}
-                ) {
+                IconButton(onClick = {toggleFavorite(userId,songId)}) {
                     Icon(
-                        imageVector = Icons.Filled.BookmarkBorder, // change to ifFavorite heartBorder else heartFilled
-                        contentDescription = "Favorite song button"
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color.Red else Color.White
                     )
                 }
             }

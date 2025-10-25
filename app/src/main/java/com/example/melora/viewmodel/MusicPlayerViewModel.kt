@@ -63,6 +63,12 @@ class MusicPlayerViewModel(
             _isPlaying.value = true
         }
     }
+    fun getSongDetails(songId: Long) {
+        viewModelScope.launch {
+            val song = songRepository.playSongByID(songId)
+            _current_song.value = song
+        }
+    }
 
     fun play() {
         playerManager.resume()

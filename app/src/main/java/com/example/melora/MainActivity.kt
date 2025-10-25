@@ -67,7 +67,7 @@ fun AppRoot() {
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(loginRepository)
+        factory = AuthViewModelFactory(UserRepository(db.userDao()), application)
     )
 
     val uploadViewModel: UploadViewModel = viewModel(
@@ -96,8 +96,8 @@ fun AppRoot() {
                 searchViewModel = searchViewModel,
                 authViewModel =  authViewModel,
                 artistModel = artistProfileViewModel,
-                musicModel = musicPlayerViewModel,
-                favoriteModel = favoriteViewModel
+                favoriteModel = favoriteViewModel,
+                musicPlayerViewModel = musicPlayerViewModel,
             )
         }
     }

@@ -1,9 +1,13 @@
 package com.example.melora.viewmodel
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.users.UserEntity
 import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.storage.UserPreferences
 import com.example.melora.domain.validation.validateConfirmPassword
 import com.example.melora.domain.validation.validateEmail
 import com.example.melora.domain.validation.validateNickname
@@ -11,6 +15,7 @@ import com.example.melora.domain.validation.validatePassword
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -44,8 +49,11 @@ data class RegisterUiState (
 
 class AuthViewModel(
 
-    private val repository: UserRepository
-) : ViewModel() {
+    private val repository: UserRepository,
+    private val app: Application
+) : AndroidViewModel(app ) {
+
+    private val prefs = UserPreferences(app)
 
     private val _login = MutableStateFlow(LoginUiState())
     val login: StateFlow<LoginUiState> = _login
@@ -55,6 +63,21 @@ class AuthViewModel(
 
     private val _currentUser = MutableStateFlow<UserEntity?>(null)
     val currentUser: StateFlow<UserEntity?> = _currentUser
+
+    init {
+        viewModelScope.launch {
+            prefs.isLoggedIn.collect { logged ->
+                if (logged) {
+                    val id = prefs.userId.firstOrNull()
+                    if (id != null) {
+                        val user = repository.getUserById(id)
+                        _currentUser.value = user }
+                } else {
+                    _currentUser.value = null
+                }
+            }
+        }
+    }
 
     // ---------------- LOGIN: handlers y envío ----------------
 
@@ -96,6 +119,8 @@ class AuthViewModel(
                 val user = result.getOrNull()!!
                 _currentUser.value = user
 
+                prefs.saveLoginState(true, user.idUser)
+
                 _login.update {
                     it.copy(
                         isSubmitting = false,
@@ -105,6 +130,7 @@ class AuthViewModel(
                 }
             } else {
                 _login.update {
+
                     it.copy(
                         isSubmitting = false,
                         success = false,
@@ -118,7 +144,10 @@ class AuthViewModel(
 
 
     fun logout() {
-        _currentUser.value = null
+        viewModelScope.launch {
+            prefs.clear()
+            _currentUser.value = null
+        }
     }
 
     fun clearLoginResult() {

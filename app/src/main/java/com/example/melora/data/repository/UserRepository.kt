@@ -27,6 +27,10 @@ class UserRepository(
         }
     }
 
+    suspend fun getUserById(id: Long): UserEntity? {
+        return userDao.getById(id)
+    }
+
     suspend fun register(nickname: String, email: String, password: String): Result<Long> {
 
         val exists = userDao.getByEmail(email) != null
