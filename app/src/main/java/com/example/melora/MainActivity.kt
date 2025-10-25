@@ -16,6 +16,7 @@ import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
@@ -60,6 +61,8 @@ fun AppRoot() {
 
     val uploadRepository = UploadRepository(uploadDao)
 
+    val prefs = UserPreferences(context)
+
     val loginRepository = UserRepository(userDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
@@ -84,7 +87,7 @@ fun AppRoot() {
         factory = MusicPlayerViewModelFactory(application,songRepository)
     )
     val favoriteViewModel: FavoriteViewModel = viewModel(
-        factory = FavoriteViewModelFactory(favoriteRepository)
+        factory = FavoriteViewModelFactory(favoriteRepository,prefs)
     )
     val navController = rememberNavController()
 

@@ -67,9 +67,6 @@ fun AppNavGraph(
     }
 
 
-
-
-
     val goLogin: () -> Unit = { navController.navigate(Route.Login.path){popUpTo(0)} }
     val goRegister: () -> Unit = {navController.navigate(Route.Register.path){popUpTo(0)}}
     val goHome: () -> Unit = {navController.navigate(Route.Home.path){popUpTo(0)}}
@@ -78,6 +75,7 @@ fun AppNavGraph(
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
     val goArtistProfile: (Long) -> Unit = { id -> navController.navigate("artistProfile/$id") }
     val goPlayer: (Long) -> Unit = { id -> navController.navigate("player/$id") }
+    val goFavorites: () -> Unit = { navController.navigate(Route.Favorites.path) }
 
 
         Scaffold(
@@ -92,7 +90,7 @@ fun AppNavGraph(
             },
             bottomBar = {
                 if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
-                    AppNavigationBar(navController = navController, authViewModel = authViewModel)
+                    AppNavigationBar(navController = navController)
                 }
             }
         ) { innerPadding ->
@@ -163,40 +161,28 @@ fun AppNavGraph(
                     )
                 }
 
-                composable(
-                    route = "player/{songId}",
-                    arguments = listOf(navArgument("songId") { type = NavType.LongType })
-                ) { backStackEntry ->
+                composable(route = "player/{songId}", arguments = listOf(navArgument("songId") { type = NavType.LongType }))
+                    { backStackEntry ->
                     val songId = backStackEntry.arguments?.getLong("songId") ?: return@composable
-                    val user = currentUser
 
-                    if (user == null) {
-                        LaunchedEffect(Unit) { goLogin() }
-                        return@composable
-                    }
                     LaunchedEffect(songId) {
                         musicPlayerViewModel.getSongDetails(songId)
                     }
 
                     val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
-                    currentSong?.let { songDetailed ->
+
+                    currentSong?.let {
                         PlayerScreenVm(
                             songId = songId,
                             vm = musicPlayerViewModel,
-                            onExitPlayer = goHome,
-                            userId = user.idUser,
+                            onExitPlayer = goSearch,
                             favVm = favoriteModel
                         )
                     }
                 }
 
-                composable(
-                    route = "favorites/{userId}",
-                    arguments = listOf(navArgument("userId") { type = NavType.LongType })
-                ) { backStackEntry ->
-                    val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
+                composable(Route.Favorites.path) {
                     FavoriteScreenVm(
-                        userId = userId,
                         favoriteViewModel = favoriteModel,
                         goPlayer = goPlayer
                     )
