@@ -17,7 +17,7 @@ interface UploadDao {
     @Query("SELECT * FROM upload")
     suspend fun getAllUpload(): List<UploadEntity>
 
-    @Query("UPDATE upload SET banReason = :banReason, banDate = :banDate, stateId = 0 WHERE uploadId = :uploadId")
+    @Query("UPDATE upload SET banReason = :banReason, banDate = :banDate, stateId = 2 WHERE uploadId = :uploadId")
     suspend fun banUpload(uploadId: Long, banReason: String, banDate: Long)
 
     @Query("DELETE FROM songs WHERE songId = :songId")

@@ -1,12 +1,9 @@
 package com.example.melora.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -128,14 +125,18 @@ fun AppNavGraph(
                 )
             }
 
-            composable("artistProfile/{artistId}") {
-                val artistId = it.arguments?.getString("artistId")?.toLongOrNull() ?: 0L
-                ArtistProfileScreen(
+            composable(
+                route = "artistProfile/{artistId}",
+                arguments = listOf(navArgument("artistId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val artistId = backStackEntry.arguments?.getLong("artistId") ?: 0L
+                ArtistProfileScreenVm(
                     artistId = artistId,
-                    repository = artistRepository,
+                    vm = artistModel,
                     goPlayer = goPlayer
                 )
             }
+
 
             composable(
                 route = "player/{songId}",
@@ -159,11 +160,18 @@ fun AppNavGraph(
                     )
                 }
             }
-
             composable(Route.Favorites.path) {
                 FavoriteScreenVm(
                     favoriteViewModel = favoriteModel,
                     goPlayer = goPlayer
+                )
+            }
+            composable("profile") {
+                MyProfileScreenVm(
+                    vm = artistModel,
+                    goPlayer = { songId ->
+                        navController.navigate("player/$songId")
+                    }
                 )
             }
         }

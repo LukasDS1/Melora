@@ -55,25 +55,27 @@ fun AppRoot() {
 
     val  userDao = db.userDao()
 
+    val estadoDao = db.estadoDao()
+
     val rolDao = db.rolDao()
     val favoriteDao = db.favoriteDao()
 
     val songRepository = SongRepository(songDao)
 
-    val userRepository = UserRepository(userDao,rolDao)
+    val userRepository = UserRepository(userDao,rolDao,estadoDao)
 
     val uploadRepository = UploadRepository(uploadDao)
 
     val prefs = UserPreferences(context)
 
-    val loginRepository = UserRepository(userDao,rolDao)
+    val loginRepository = UserRepository(userDao,rolDao,estadoDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(UserRepository(db.userDao(),db.rolDao()), application)
+        factory = AuthViewModelFactory(UserRepository(userDao,rolDao,estadoDao), application)
     )
 
     val uploadViewModel: UploadViewModel = viewModel(

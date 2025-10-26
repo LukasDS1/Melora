@@ -41,6 +41,7 @@ fun SearchBar(
     goPlayer: (Long) -> Unit
     ) {
 
+
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box(
@@ -112,6 +113,14 @@ fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
 }
 @Composable
 fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
+
+    fun formatTime(millis: Int): String {
+        val totalSeconds = millis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return "%02d:%02d".format(minutes, seconds)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,6 +142,7 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
                     text = song.songName,
                     color = Color.Black
                 )
+                Text( text = formatTime(song.durationSong))
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = song.nickname,

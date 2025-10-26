@@ -7,12 +7,12 @@ import kotlin.Long
 class UploadRepository (
     private val  uploadDao: UploadDao
 ) {
-    suspend fun insertUpload(userID: Long, songID: Long, stateId: Long = 1L): Result<Long> {
+    suspend fun insertUpload(userID: Long, songID: Long, stateId: Long): Result<Long> {
         return try {
             val upload = UploadEntity(
                 userId = userID,
                 idSong = songID,
-                stateId = stateId
+                stateId = 1L
             )
             val id = uploadDao.insert(upload)
             Result.success(id)

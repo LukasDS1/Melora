@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.melora.data.local.estado.EstadoDao
+import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.favorites.FavoriteDao
 import com.example.melora.data.local.favorites.FavoriteEntity
 import com.example.melora.data.local.rol.RolDao
@@ -29,9 +31,10 @@ import java.sql.Date
         UploadEntity::class,
         UserEntity::class,
         FavoriteEntity::class,
-        RolEntity::class
+        RolEntity::class,
+        EstadoEntity::class
     ],
-    version = 15,
+    version = 17,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
@@ -44,6 +47,8 @@ abstract class MeloraDB : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao
 
     abstract fun userDao(): UserDao
+
+    abstract fun estadoDao(): EstadoDao
     companion object {
         @Volatile
         private var INSTANCE: MeloraDB? = null              // Instancia singleton
@@ -65,14 +70,25 @@ abstract class MeloraDB : RoomDatabase() {
                             super.onCreate(db)
                             // Corrutina en hilo IO para precargar datos iniciales
                             CoroutineScope(Dispatchers.IO).launch {
-
-
-
                                 val instance = getInstance(context)
-                                val songDao = instance.songDao()
-                                val userDao = instance.userDao()
-                                val uploadDao = instance.uploadDao()
                                 val rolDao = instance.rolDao()
+                                val estadoDao = instance.estadoDao()
+                                val userDao = instance.userDao()
+                                val songDao = instance.songDao()
+                                val uploadDao = instance.uploadDao()
+
+                                val seedEstado = listOf(
+                                    EstadoEntity(
+                                        nameEstado = "Activo"
+                                    ),
+                                    EstadoEntity(
+                                        nameEstado = "Inactivo"
+                                    )
+                                )
+
+                                if(estadoDao.getAllEstado().isEmpty()){
+                                    seedEstado.forEach { estadoDao.insertEstado(it)}
+                                }
 
                                 val seedRol = listOf(
                                     RolEntity(
@@ -103,9 +119,9 @@ abstract class MeloraDB : RoomDatabase() {
                                 }
 
                                 val seedUsers = listOf(
-                                    UserEntity(1,email = "user1@email.com", nickname = "IndiAladinOficial", pass = "Passuser1", rolId = 1),
-                                    UserEntity(2, email = "user2@email.com", nickname = "CBAT", pass = "Passuser2", rolId = 2),
-                                    UserEntity(3, email = "user3@email.com", nickname = "terrariaLord", pass = "Passuser3", rolId = 2)
+                                    UserEntity(1,email = "user1@email.com", nickname = "IndiAladinOficial", pass = "Passuser1", rolId = 1, estadoId = 1),
+                                    UserEntity(2, email = "user2@email.com", nickname = "CBAT", pass = "Passuser2", rolId = 2, estadoId = 1),
+                                    UserEntity(3, email = "user3@email.com", nickname = "terrariaLord", pass = "Passuser3", rolId = 2, estadoId = 1)
                                 )
 
                                 if (userDao.getAllUser().isEmpty()) {

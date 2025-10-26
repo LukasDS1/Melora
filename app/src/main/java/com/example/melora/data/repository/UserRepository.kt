@@ -1,5 +1,7 @@
 package com.example.melora.data.repository
 
+import com.example.melora.data.local.estado.EstadoDao
+import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.rol.RolDao
 import com.example.melora.data.local.rol.RolEntity
 import com.example.melora.data.local.song.SongDetailed
@@ -8,7 +10,8 @@ import com.example.melora.data.local.users.UserEntity
 
 class UserRepository(
     private val userDao : UserDao,
-    private val rolDao: RolDao
+    private val rolDao: RolDao,
+    private val estadoDao: EstadoDao
 ) {
 
 
@@ -47,6 +50,12 @@ class UserRepository(
             rolDao.insert(RolEntity(idRol = 2, rolName = "User"))
         }
 
+        val estados = estadoDao.getAllEstado()
+        if (estados.isEmpty()) {
+            estadoDao.insertEstado(EstadoEntity(nameEstado = "Activo"))
+            estadoDao.insertEstado(EstadoEntity(nameEstado = "Inactivo"))
+        }
+
         if (exists) {
             return Result.failure(IllegalStateException("El correo ya está en uso."))
         }
@@ -61,7 +70,8 @@ class UserRepository(
                 nickname = nickname,
                 email = email,
                 pass = password,
-                rolId = 2L
+                rolId = 2L,
+                estadoId = 1L
             )
         )
         return Result.success(id)

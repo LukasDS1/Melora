@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.rol.RolEntity
 
 @Entity(tableName = "users",
@@ -12,7 +13,12 @@ import com.example.melora.data.local.rol.RolEntity
         parentColumns = ["idRol"],
         childColumns = ["rolId"],
         onDelete = ForeignKey.CASCADE
-    )], indices = [Index(value = ["rolId"])])
+    ), ForeignKey(
+        entity = EstadoEntity::class,
+        parentColumns = ["idEstado"],
+        childColumns = ["estadoId"],
+        onDelete = ForeignKey.CASCADE
+    )], indices = [Index(value = ["rolId"]), Index(value = ["estadoId"])])
 data class UserEntity(
     @PrimaryKey(autoGenerate = true)
     val idUser: Long = 0L,
@@ -20,5 +26,6 @@ data class UserEntity(
     val email: String,
     val pass: String,
     val profilePicture: String? = null,
-    val rolId: Long
+    val rolId: Long,
+    val estadoId: Long = 1L
 )
