@@ -42,13 +42,16 @@ class EditProfileViewModel(
 
     private var currentUserId: Long? = null
     private var originalUser: UserEntity? = null
+    private var initialProfilePicture: String? = null
 
     init {
         viewModelScope.launch {
             currentUserId = userPreferences.userId.firstOrNull() ?: return@launch
             val user = userRepository.getUserById(currentUserId)
+            Log.d("EditProfileVM", "Loaded user: $user")
             user?.let {
                 originalUser = it
+                initialProfilePicture = it.profilePicture
                 _state.value = EditProfileUiState(
                     nickname = it.nickname,
                     email = it.email,
@@ -78,6 +81,7 @@ class EditProfileViewModel(
 
     fun onProfilePictureChange(uriString: String?) {
         _state.update { it.copy(profilePictureUrl = uriString) }
+        originalUser = originalUser?.copy(profilePicture = uriString)
         recomputeCanSubmit()
 
         viewModelScope.launch {
@@ -110,7 +114,7 @@ class EditProfileViewModel(
             s.nickname != originalUser?.nickname ||
             s.email != originalUser?.email ||
             s.password.isNotBlank() ||
-            s.profilePictureUrl != originalUser?.profilePicture
+            s.profilePictureUrl != initialProfilePicture
 
         _state.update { it.copy(canSubmit = noErrors && anyChange) }
     }

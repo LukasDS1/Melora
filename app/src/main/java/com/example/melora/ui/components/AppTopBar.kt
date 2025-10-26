@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,8 @@ fun AppTopBar(
             containerColor = topcol
         ),
         title = {
-           Text(text = "Melora", color = Color.Black)
+           Text(text = "Melora", color = Color.Black, style = MaterialTheme.typography.titleLarge.copy(fontFamily = PlayfairDisplay)
+           )
         },
         navigationIcon = {
             IconButton(onClick = onEditProfile) {

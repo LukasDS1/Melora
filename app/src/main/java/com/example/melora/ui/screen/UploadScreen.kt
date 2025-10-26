@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
@@ -194,7 +195,8 @@ private fun UploadScreen(
                     Text(
                         "Upload your audio file (wav & mp3)",
                         style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        fontFamily = Lato
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -245,11 +247,12 @@ private fun UploadScreen(
                             }
                             Text(
                                 text = if (isPlaying) "Reproduciendo..." else "Reproducir",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = Lato
                             )
                         }
                     } else {
-                        Text("The Song cannot be empty", textAlign = TextAlign.Center,color = MaterialTheme.colorScheme.error)
+                        Text("The Song cannot be empty", textAlign = TextAlign.Center,color = MaterialTheme.colorScheme.error, fontFamily = Lato)
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -257,7 +260,8 @@ private fun UploadScreen(
                     Text(
                         "Upload your Covert Art",
                         style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        fontFamily = Lato
                     )
                     // Cover art
                     Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White), onClick = {photoPickerLauncher.launch("image/*")}) {
@@ -276,7 +280,7 @@ private fun UploadScreen(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center)
+                        Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center, fontFamily = Lato)
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -285,7 +289,7 @@ private fun UploadScreen(
                     OutlinedTextField(
                         value = songName,
                         onValueChange = onSongNameChange,
-                        label = { Text("Song name", color = Color.Black) },
+                        label = { Text("Song name", color = Color.Black, fontFamily = Lato) },
                         singleLine = true,
                         isError = songNameError != null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -296,7 +300,8 @@ private fun UploadScreen(
                         Text(
                             songNameError,
                             color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = Lato
                         )
                     }
                     Spacer(Modifier.height(10.dp))
@@ -304,7 +309,7 @@ private fun UploadScreen(
                     OutlinedTextField(
                         value = songDescription ?: "",
                         onValueChange = onSongDescription,
-                        label = { Text("Song description (optional)", color = Color.Black) },
+                        label = { Text("Song description (optional)", color = Color.Black, fontFamily = Lato) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
@@ -325,10 +330,10 @@ private fun UploadScreen(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Uploading Music...")
+                            Text("Uploading Music...", fontFamily = Lato)
                             Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
                         } else {
-                            Text("Upload")
+                            Text("Upload", fontFamily = Lato)
                         }
                     }
 

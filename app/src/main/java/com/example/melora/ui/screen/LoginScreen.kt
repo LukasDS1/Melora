@@ -60,6 +60,8 @@ import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
 import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 
 @Composable                                                  // Pantalla Login conectada al VM
 fun LoginScreenVm(
@@ -137,13 +139,13 @@ fun LoginScreen(
                 Text(
                     text = "Glad you're back,",
                     style = MaterialTheme.typography.headlineLarge,
-                    fontFamily = FontFamily.SansSerif,
-                    color = Color.White
+                    fontFamily = Lato,
+                    color = Color.White,
                 )
                 Text(
                     text = "Ready to jam?",
                     style = MaterialTheme.typography.labelLarge,
-                    fontFamily = FontFamily.SansSerif,
+                    fontFamily = Lato,
                     color = Color.White,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -176,7 +178,8 @@ fun LoginScreen(
                     textAlign = TextAlign.Left,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( top = 30.dp, start = 15.dp)
+                        .padding( top = 30.dp, start = 15.dp),
+                    fontFamily = PlayfairDisplay
                 )
 
                 Spacer(Modifier.height(32.dp))
@@ -185,7 +188,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = onEmailChange,
-                    placeholder = { Text("Email")},
+                    placeholder = { Text("Email", fontFamily = Lato)},
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Email,
@@ -215,7 +218,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = pass,
                     onValueChange = onPassChange,
-                    placeholder = { Text("Password") },
+                    placeholder = { Text("Password", fontFamily = Lato) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Lock,
@@ -270,7 +273,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Sign in",
-                        style = MaterialTheme.typography.bodyLarge)
+                        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Lato))
                 }
 
                 Row(
@@ -282,7 +285,7 @@ fun LoginScreen(
                     TextButton(
                         onClick = { /* acción */ } // TODO CREAR SCREEN DE FORGOTTEN PASSWORD
                     ) {
-                        Text("Forgot password?", color = Resaltado)
+                        Text("Forgot password?", color = Resaltado, fontFamily = Lato)
                     }
                 }
 
@@ -295,13 +298,14 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Don't have an account?",
-                        Modifier.padding(top = 12.dp)
+                        Modifier.padding(top = 12.dp),
+                        fontFamily = Lato
                     )
                     TextButton(
                         onClick = onGoRegister,
                         contentPadding = PaddingValues(0.dp) // Quita el padding interno para evitar que se quede estático al aparecer el mensaje de error
                     ) {
-                        Text("Sign up", color = Resaltado)
+                        Text("Sign up", color = Resaltado, fontFamily = Lato)
                     }
                 }
             }

@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.melora.navigation.Route
+import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.AuthViewModel
 
@@ -53,7 +54,10 @@ fun AppNavigationBar(
                         tint = if (isSelected) destination.selectedColor else destination.color
                     )
                 },
-                label = { Text(destination.label) },
+                label = { Text(
+                    text = destination.label,
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = Lato)
+                ) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedTextColor = Color.White,
                     unselectedTextColor = Color.Black,

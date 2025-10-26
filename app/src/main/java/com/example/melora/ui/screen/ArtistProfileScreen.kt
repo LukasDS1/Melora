@@ -16,6 +16,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import kotlinx.coroutines.launch
@@ -87,7 +88,7 @@ fun ArtistProfileScreen(
 
             Text(
                 text = nickname ?: "Unknown Artist",
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.copy(fontFamily = PlayfairDisplay),
                 color = Color.White
             )
 
@@ -95,7 +96,7 @@ fun ArtistProfileScreen(
 
             Text(
                 text = "Songs:",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = PlayfairDisplay),
                 color = Color.White,
                 modifier = Modifier.align(Alignment.Start)
             )

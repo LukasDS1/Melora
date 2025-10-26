@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.PlaylistViewModel
@@ -92,11 +94,12 @@ fun FavoriteScreen(
         Text(
             text = "Your Favorites",
             style = MaterialTheme.typography.headlineSmall,
-            color = Color.Black
+            color = Color.Black,
+            fontFamily = Lato
         )
 
         if (favorites.isEmpty()) {
-            Text("Don't have favorites yet", color = Color.Gray)
+            Text("Don't have favorites yet", color = Color.Gray, fontFamily = PlayfairDisplay)
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(favorites) { song ->
@@ -106,8 +109,8 @@ fun FavoriteScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                     ) {
                         Column {
-                            Text(song.songName, color = Color.Black)
-                            Text("by ${song.nickname}", color = Color.Gray)
+                            Text(song.songName, color = Color.Black, fontFamily = Lato)
+                            Text("by ${song.nickname}", color = Color.Gray, fontFamily = Lato)
                         }
                     }
                 }

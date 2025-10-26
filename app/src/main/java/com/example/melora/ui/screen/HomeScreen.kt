@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 
 @Composable
 fun HomeScreen(
@@ -50,12 +52,13 @@ fun HomeScreen(
                 Text(
                     text = "Home",
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PlayfairDisplay
                 )
                 Spacer(Modifier.width(8.dp))
                 AssistChip(
                     onClick = {},
-                    label = { Text("Navega desde arriba o aquí") }
+                    label = { Text("Navega desde arriba o aquí", fontFamily = Lato) }
                 )
             }
 
@@ -72,12 +75,14 @@ fun HomeScreen(
                     Text(
                         "Demostración de navegación con TopBar + Drawer + Botones",
                         style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        fontFamily = Lato
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
                         "Usa la barra superior (íconos y menú), el menú lateral o estos botones.",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = Lato
                     )
                 }
             }
@@ -88,8 +93,8 @@ fun HomeScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(onClick = onGoLogin) { Text("Ir a Login") }
-                OutlinedButton(onClick = onGoRegister) { Text("Ir a Registro") }
+                Button(onClick = onGoLogin) { Text("Ir a Login", fontFamily = Lato) }
+                OutlinedButton(onClick = onGoRegister) { Text("Ir a Registro", fontFamily = Lato) }
             }
         }
     }

@@ -48,6 +48,7 @@ import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
@@ -170,6 +171,7 @@ fun PlayerScreen(
                 Text(
                     text = "Melora",
                     fontSize = 24.sp,
+                    fontFamily = Lato,
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
@@ -193,11 +195,13 @@ fun PlayerScreen(
             Text(
                 text = currentSong?.songName ?: "No song selected",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontFamily = Lato
             )
             Text(
                 text = currentSong?.nickname ?: "Unknown Artist",
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                fontFamily = Lato
             )
 
             Spacer(Modifier.height(20.dp))
@@ -311,17 +315,17 @@ fun PlayerScreen(
                     Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = Lato)
                     Spacer(Modifier.height(8.dp))
-                    Text("ID: ${currentSong.songId}", color = Color.LightGray)
-                    Text("Name: ${currentSong.songName}", color = Color.White)
-                    Text("Artist: ${currentSong.nickname}", color = Color.White)
+                    Text("ID: ${currentSong.songId}", color = Color.LightGray, fontFamily = Lato)
+                    Text("Name: ${currentSong.songName}", color = Color.White, fontFamily = Lato)
+                    Text("Artist: ${currentSong.nickname}", color = Color.White, fontFamily = Lato)
                     Spacer(Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = banReason,
                         onValueChange = { banReason = it },
-                        label = { Text("Ban reason") },
+                        label = { Text("Ban reason", fontFamily = Lato) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
@@ -361,14 +365,14 @@ fun PlayerScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                         ) {
-                            Text("Confirm", color = Color.White)
+                            Text("Confirm", color = Color.White, fontFamily = Lato)
                         }
 
                         OutlinedButton(onClick = {
                             showBanCard = false
                             banReason = ""
                         }) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = Color.White, fontFamily = Lato)
                         }
                     }
                 }
