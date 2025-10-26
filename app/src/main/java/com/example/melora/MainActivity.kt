@@ -1,35 +1,45 @@
 package com.example.melora
-
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
 import com.example.melora.ui.screen.LoginScreen
 import com.example.melora.ui.screen.RegisterScreen
 import com.example.melora.ui.system.ApplySystemBars
 import com.example.melora.ui.theme.MeloraTheme
+import com.example.melora.viewmodel.ArtistProfileViewModel
+import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.BanViewModel
+import com.example.melora.viewmodel.BanviewModelFactory
+import com.example.melora.viewmodel.EditProfileViewModel
+import com.example.melora.viewmodel.EditProfileViewModelFactory
+import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteViewModelFactory
+import com.example.melora.viewmodel.MusicPlayerViewModel
+import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadViewModel
@@ -44,41 +54,74 @@ class MainActivity : ComponentActivity() {
             ),
         )
         setContent {
-            AppRoot()
+           AppRoot()
         }
     }
 }
 
 @Composable
 fun AppRoot() {
-    val context = androidx.compose.ui.platform.LocalContext.current
-
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
     val db = MeloraDB.getInstance(context)
 
     val songDao = db.songDao()
 
     val uploadDao = db.uploadDao()
 
-    val userDao = db.userDao()
+    val  userDao = db.userDao()
+
+    val estadoDao = db.estadoDao()
+
+    val rolDao = db.rolDao()
+    val favoriteDao = db.favoriteDao()
 
     val songRepository = SongRepository(songDao)
 
+    val userRepository = UserRepository(userDao,rolDao,estadoDao)
+
     val uploadRepository = UploadRepository(uploadDao)
 
-    val loginRepository = UserRepository(userDao)
+    val prefs = UserPreferences(context)
 
-    val loginViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(loginRepository)
+    val loginRepository = UserRepository(userDao,rolDao,estadoDao)
+
+    val artistRepository = ArtistRepository(userDao,songDao)
+
+    val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
+
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(UserRepository(userDao,rolDao,estadoDao), application)
+    )
+
+    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
+    val currentUserId = currentUser?.idUser
+
+    val userPreferences = UserPreferences(context)
+
+    val editProfileViewModel: EditProfileViewModel = viewModel(
+        factory = EditProfileViewModelFactory(userRepository, userPreferences)
     )
 
     val uploadViewModel: UploadViewModel = viewModel(
-        factory = UploadViewModelFactory(songRepository)
+        factory = UploadViewModelFactory(songRepository,uploadRepository)
+    )
+    val artistProfileViewModel: ArtistProfileViewModel = viewModel(
+        factory = ArtistProfileViewModelFactory(artistRepository)
     )
 
     val searchViewModel: SearchViewModel = viewModel(
-        factory = SearchViewModelFactory(songRepository)
+        factory = SearchViewModelFactory(songRepository,userRepository)
     )
-
+    val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
+        factory = MusicPlayerViewModelFactory(application,songRepository)
+    )
+    val favoriteViewModel: FavoriteViewModel = viewModel(
+        factory = FavoriteViewModelFactory(favoriteRepository,prefs)
+    )
+    val banViewModel: BanViewModel = viewModel(
+        factory = BanviewModelFactory(uploadRepository, application)
+    )
     val navController = rememberNavController()
 
     MaterialTheme {
@@ -87,7 +130,12 @@ fun AppRoot() {
                 navController = navController,
                 uploadViewModel = uploadViewModel,
                 searchViewModel = searchViewModel,
-                authViewModel = loginViewModel
+                authViewModel =  authViewModel,
+                artistModel = artistProfileViewModel,
+                favoriteModel = favoriteViewModel,
+                musicPlayerViewModel = musicPlayerViewModel,
+                banViewModel = banViewModel,
+                editProfileViewModel = editProfileViewModel
             )
         }
     }

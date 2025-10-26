@@ -7,31 +7,33 @@ import kotlin.Long
 class UploadRepository (
     private val  uploadDao: UploadDao
 ) {
-    suspend fun insertUpload(userID:Long,songID:Long,stateId: Long): Result<Long>{
-        try {
-            val uploadEntity = UploadEntity(
+    suspend fun insertUpload(userID: Long, songID: Long, stateId: Long): Result<Long> {
+        return try {
+            val upload = UploadEntity(
                 userId = userID,
-                songId = songID,
-                uploadDate = Date().time ,
-                stateId = stateId)
-
-            val id = uploadDao.insert(uploadEntity)
-            return Result.success(id)
-
-        }catch (e: Exception){
-            return Result.failure(e)
+                idSong = songID,
+                stateId = 1L
+            )
+            val id = uploadDao.insert(upload)
+            Result.success(id)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
+
     suspend fun bannedUploadIds() = uploadDao.getBannedUploads()
 
-    suspend fun BanUpload(uploadId: Long,banReason : String): Result<Long>{
-         try {
-            val ban = uploadDao.banUpload(uploadId,banReason, Date().time)
-            return Result.success(uploadId)
-        } catch (e: Exception){
-            return Result.failure(e)
+    suspend fun getAllUploads() = uploadDao.getAllUpload()
+    suspend fun banAndDelete(uploadId: Long, songId: Long, banReason: String): Result<Unit> {
+        return try {
+            uploadDao.banUpload(uploadId, banReason, Date().time)
+            uploadDao.deleteSong(songId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
+
 
 
 

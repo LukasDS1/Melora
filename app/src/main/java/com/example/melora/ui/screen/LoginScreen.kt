@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,6 +59,7 @@ import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
+import com.example.melora.data.storage.UserPreferences
 
 @Composable                                                  // Pantalla Login conectada al VM
 fun LoginScreenVm(
@@ -67,9 +70,12 @@ fun LoginScreenVm(
 
     val state by vm.login.collectAsStateWithLifecycle()      // Observa el StateFlow en tiempo real
 
-    if (state.success) {                                     // Si login fue exitoso…
-        vm.clearLoginResult()                                // Limpia banderas
-        onLoginOk()                              // Navega a Home
+
+    LaunchedEffect(state.success) {
+        if (state.success) {
+            vm.clearLoginResult()
+            onLoginOk()
+        }
     }
 
     LoginScreen(                                             // Delegamos a UI presentacional
@@ -102,6 +108,7 @@ fun LoginScreen(
 ) {
     var showPass by remember { mutableStateOf(false)}
     val bg = PrimaryBg
+
 
     Box(
         modifier = Modifier

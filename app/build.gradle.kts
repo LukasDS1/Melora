@@ -78,4 +78,15 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // PlaySong dependencies
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-ui:1.8.0")
+    implementation("androidx.media3:media3-common:1.8.0")
+
+    //datatore preferenis
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Cargar imagenes para mostrrlas en la UI
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

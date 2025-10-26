@@ -1,7 +1,10 @@
 package com.example.melora.data.repository
 import android.net.Uri
+import androidx.room.util.query
 import com.example.melora.data.local.song.SongDao
+import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.song.SongEntity
+import com.example.melora.data.local.users.UserEntity
 import java.util.Date
 
 
@@ -29,18 +32,32 @@ class SongRepository(
         }
     }
 
-    suspend fun searchSong(query:String): Result<List<SongEntity>>{
-        return try {
-           val songs = if(query.isBlank()){
-               songDao.getAllSong()
-           } else{
-               songDao.searchSongs(query)
-           }
-           Result.success(songs)
-       }catch (e: Exception){
-           Result.failure(e)
-       }
+
+    suspend fun playSongByID(songId:Long): SongDetailed{
+        return songDao.getSongByID(songId)
     }
 
-    suspend fun getAllSongs(): List<SongEntity> = songDao.getAllSong()
+    suspend fun getSong(query: String): Result<List<SongDetailed>> {
+        return try {
+            val detailedSongs = songDao.getSong(query)
+            Result.success(detailedSongs)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllSongs(): List<SongDetailed> = songDao.getAllSong()
+
+    suspend fun  getSongsForArtist(id:Long): Result<List<SongDetailed>>{
+        return try {
+            val detailedSong = songDao.getSongsForArtist(id)
+            Result.success(detailedSong)
+        }catch (e: Exception){
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getArtistById(artistId: Long): UserEntity? {
+        return songDao.getUserById(artistId)
+    }
 }
