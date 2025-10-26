@@ -10,6 +10,7 @@ import com.example.melora.domain.validation.validateConfirmPassword
 import com.example.melora.domain.validation.validateEmail
 import com.example.melora.domain.validation.validateNickname
 import com.example.melora.domain.validation.validatePassword
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -64,6 +65,8 @@ class AuthViewModel(
     private val _currentRoleId = MutableStateFlow<Long?>(null)
     val currentRoleId: StateFlow<Long?> = _currentRoleId
 
+    val isLoggedIn: Flow<Boolean> = prefs.isLoggedIn
+
     init {
         viewModelScope.launch {
             prefs.isLoggedIn.collect { logged ->
@@ -71,7 +74,6 @@ class AuthViewModel(
                     val id = prefs.userId.firstOrNull()
                     val roleId = prefs.userRoleId.firstOrNull()
                     _currentRoleId.value = roleId
-
                     if (id != null) {
                         val user = repository.getUserById(id)
                         _currentUser.value = user

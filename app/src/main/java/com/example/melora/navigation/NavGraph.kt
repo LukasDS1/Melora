@@ -29,15 +29,19 @@ fun AppNavGraph(
     editProfileViewModel: EditProfileViewModel
 ) {
 
-    val startDestination by rememberSaveable {
-        mutableStateOf(if (authViewModel.currentUser.value != null) Route.Home.path else Route.Login.path)
-    }
+
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     val roleId by authViewModel.currentRoleId.collectAsStateWithLifecycle()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
 
+
+    val startDestination = when {
+        currentUser != null && isLoggedIn -> Route.Home.path
+        else -> Route.Login.path
+    }
 
     val goHome = {
         navController.navigate(Route.Home.path) {
@@ -198,6 +202,15 @@ fun AppNavGraph(
                         roleId = roleId,
                         banVm = banViewModel
                     )
+                }
+            }
+
+            composable(Route.Favorites.path) {
+                FavoriteScreenVm(
+                    favoriteViewModel = favoriteModel,
+                    goPlayer = goPlayer
+                )
+            }
 
                     composable(Route.editProfile.path) {
                         EditProfileScreenVm(
@@ -219,7 +232,6 @@ fun AppNavGraph(
                         )
                     }
                 }
-            }
         }
     }
-}
+
