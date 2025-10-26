@@ -38,7 +38,8 @@ fun AppNavGraph(
 
 
     val goHome = {
-        navController.navigate(Route.Home.path) { popUpTo(Route.Home.path)
+        navController.navigate(Route.Home.path) {
+            popUpTo(Route.Login.path) { inclusive = true }
             launchSingleTop = true
         }
     }

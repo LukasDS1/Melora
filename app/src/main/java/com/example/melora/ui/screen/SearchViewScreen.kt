@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import com.example.melora.viewmodel.SearchViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.room.util.query
-import com.example.melora.ui.components.SearchBar
+import com.example.melora.ui.components.MeloraSearchBar
 import com.example.melora.ui.theme.Resaltado
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +29,7 @@ fun SearchViewScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(bg)
     ){
-        SearchBar(textFieldState = textState,onSearch,songs, artistResult =artists , goArtistProfile = goArtistProfile, goPlayer = goPlayer)
+        MeloraSearchBar(textFieldState = textState,onSearch,songs, artistResult =artists , goArtistProfile = goArtistProfile, goPlayer = goPlayer)
     }
 
 
