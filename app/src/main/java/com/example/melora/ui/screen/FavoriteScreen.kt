@@ -22,17 +22,15 @@ import com.example.melora.viewmodel.FavoriteViewModelFactory
 
 @Composable
 fun FavoriteScreenVm(
-    userId: Long,
     favoriteViewModel: FavoriteViewModel,
     goPlayer: (Long) -> Unit
 ){
 
-    LaunchedEffect(userId) {
-        favoriteViewModel.loadFavorite(userId)
+    LaunchedEffect(Unit) {
+        favoriteViewModel.loadFavorite()
     }
 
     FavoriteScreen(
-        userId = userId,
         favoriteViewModel = favoriteViewModel,
         goPlayer = goPlayer
     )
@@ -41,15 +39,12 @@ fun FavoriteScreenVm(
 
 @Composable
 fun FavoriteScreen(
-    userId: Long,
     favoriteViewModel: FavoriteViewModel,
     goPlayer: (Long) -> Unit
 ) {
+    //TODO revisar
     val favorites by favoriteViewModel.favorites.collectAsState()
 
-    LaunchedEffect(userId) {
-        favoriteViewModel.loadFavorite(userId)
-    }
 
     if (favorites.isEmpty()) {
         Box(

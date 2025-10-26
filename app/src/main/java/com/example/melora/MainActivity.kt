@@ -65,6 +65,8 @@ fun AppRoot() {
 
     val uploadRepository = UploadRepository(uploadDao)
 
+    val prefs = UserPreferences(context)
+
     val loginRepository = UserRepository(userDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
@@ -98,7 +100,7 @@ fun AppRoot() {
         factory = MusicPlayerViewModelFactory(application,songRepository)
     )
     val favoriteViewModel: FavoriteViewModel = viewModel(
-        factory = FavoriteViewModelFactory(favoriteRepository)
+        factory = FavoriteViewModelFactory(favoriteRepository,prefs)
     )
     val navController = rememberNavController()
 

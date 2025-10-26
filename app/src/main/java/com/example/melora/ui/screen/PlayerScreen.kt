@@ -52,7 +52,6 @@ import com.example.melora.viewmodel.FavoriteViewModel
 @Composable
 fun PlayerScreenVm(
     songId: Long,
-    userId: Long,
     onExitPlayer: () -> Unit,
     vm: MusicPlayerViewModel,
     favVm: FavoriteViewModel
@@ -66,11 +65,10 @@ fun PlayerScreenVm(
 
     LaunchedEffect(songId){
         vm.playSong(songId)
-        favVm.updateFavoriteState(userId, songId)
+        favVm.updateFavoriteState(songId)
     }
 
     PlayerScreen(
-        userId = userId,
         songId = songId,
         currentSong = currentSong,
         isPlaying = isPlaying,
@@ -89,12 +87,11 @@ fun PlayerScreenVm(
 
 @Composable
 fun PlayerScreen(
-    userId:Long,
     songId:Long,
     currentSong: SongDetailed?,
     isPlaying: Boolean,
     isFavorite: Boolean,
-    toggleFavorite: (Long,Long) -> Unit,
+    toggleFavorite: (Long) -> Unit,
     exitPlayer: () -> Unit,
     playSong:(Long) -> Unit,
     resume:() -> Unit,
@@ -272,7 +269,7 @@ fun PlayerScreen(
                     )
                 }
 
-                IconButton(onClick = {toggleFavorite(userId,songId)}) {
+                IconButton(onClick = {toggleFavorite(songId)}) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Favorite",
