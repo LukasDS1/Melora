@@ -1,4 +1,5 @@
 package com.example.melora.ui.screen
+
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
@@ -33,7 +34,6 @@ import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
-import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat

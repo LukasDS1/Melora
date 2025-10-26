@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,7 +15,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.melora.navigation.Route
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
-import com.example.melora.viewmodel.AuthViewModel
 
 @Composable
 fun AppNavigationBar(

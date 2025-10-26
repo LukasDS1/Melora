@@ -1,9 +1,7 @@
 package com.example.melora.viewmodel
 
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.melora.data.local.favorites.FavoriteEntity
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.storage.UserPreferences

@@ -47,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -60,7 +59,6 @@ import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
-import org.w3c.dom.Text
 
 @Composable
 fun RegisterScreenVm(

@@ -1,9 +1,9 @@
 package com.example.melora.data.repository
+
 import com.example.melora.data.local.estado.EstadoDao
 import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.rol.RolDao
 import com.example.melora.data.local.rol.RolEntity
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserDao
 import com.example.melora.data.local.users.UserEntity
 

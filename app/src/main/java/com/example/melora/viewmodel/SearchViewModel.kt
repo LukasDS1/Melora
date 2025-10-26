@@ -1,11 +1,9 @@
 package com.example.melora.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.users.UserEntity
 import com.example.melora.data.repository.PlayListRepository
 import com.example.melora.data.repository.SongRepository

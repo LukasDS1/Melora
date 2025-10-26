@@ -15,11 +15,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun ArtistProfileScreenVm(

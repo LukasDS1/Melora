@@ -1,13 +1,9 @@
 package com.example.melora.viewmodel
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.exoplayer.ExoPlayer
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.player.MusicPlayerManager
 import com.example.melora.data.repository.SongRepository
 import kotlinx.coroutines.delay

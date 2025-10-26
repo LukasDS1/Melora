@@ -1,6 +1,8 @@
 package com.example.melora.data.local.song
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+
 @Entity(tableName = "songs")
 data class SongEntity(
     @PrimaryKey(autoGenerate = true)

@@ -3,7 +3,6 @@ package com.example.melora.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.repository.UploadRepository
 import kotlinx.coroutines.launch
 

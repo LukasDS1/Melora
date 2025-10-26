@@ -4,8 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.song.SongEntity
 import java.io.File
 
 class MusicPlayerManager(private val context: Context) {

@@ -1,7 +1,6 @@
 package com.example.melora.data.local.estado
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "estado")
