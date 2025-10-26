@@ -1,9 +1,7 @@
 package com.example.melora.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.users.UserEntity
 import com.example.melora.data.repository.UserRepository
@@ -12,7 +10,6 @@ import com.example.melora.domain.validation.validateConfirmPassword
 import com.example.melora.domain.validation.validateEmail
 import com.example.melora.domain.validation.validateNickname
 import com.example.melora.domain.validation.validatePassword
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull

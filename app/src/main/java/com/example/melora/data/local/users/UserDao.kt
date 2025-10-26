@@ -1,8 +1,6 @@
 package com.example.melora.data.local.users
 
 import androidx.room.*
-import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.song.SongEntity
 
 @Dao
 interface UserDao {
@@ -19,7 +17,7 @@ interface UserDao {
     suspend fun updateUserName(id: Long, nickname: String)
 
     @Query("UPDATE users SET profilePicture = :profilePicture WHERE idUser = :id")
-    suspend fun updateProfilePicture(id: Long, profilePicture:String)
+    suspend fun updateProfilePicture(id: Long, profilePicture:String?)
 
     @Query("DELETE FROM users")
     suspend fun clearUser()
@@ -28,10 +26,17 @@ interface UserDao {
     suspend fun getAllUser(): List<UserEntity>
 
     @Query("SELECT * FROM users WHERE idUser = :id")
-    suspend fun getById(id: Long): UserEntity?
+    suspend fun getById(id: Long?): UserEntity?
 
     @Query("SELECT * FROM users WHERE LOWER(nickname) LIKE '%' || LOWER(:query) || '%'")
     suspend fun getByName(query: String): List<UserEntity>
+
+    @Query("UPDATE users SET email = :email WHERE idUser = :id")
+    suspend fun updateUserEmail(id: Long, email: String)
+
+    @Query("UPDATE users SET pass = :pass WHERE idUser = :id")
+    suspend fun updateUserPassword(id: Long, pass: String)
+
 
 
 
