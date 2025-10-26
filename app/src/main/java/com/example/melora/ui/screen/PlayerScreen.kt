@@ -112,11 +112,7 @@ fun PlayerScreen(
     roleId: Long?,
     onBanSong: (Long, String) -> Unit
 ) {
-
-
     val context = LocalContext.current
-    val db = MeloraDB.getInstance(context)
-    val songRepository = SongRepository(db.songDao())
 
     var showBanCard by remember { mutableStateOf(false) }
     var banReason by remember { mutableStateOf("") }
