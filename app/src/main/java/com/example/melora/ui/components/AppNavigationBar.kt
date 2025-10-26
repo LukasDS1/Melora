@@ -3,6 +3,7 @@ package com.example.melora.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -25,7 +26,8 @@ fun AppNavigationBar(
     val destinations = listOf(
         Destination(Route.UploadScreenForm.path, "Upload", Icons.Filled.AddCircle, "Subir música"),
         Destination(Route.SearchView.path, "Search", Icons.Filled.Search, "Buscar canciones"),
-        Destination(Route.Favorites.path, "Library", Icons.Default.Favorite, "Ver biblioteca")
+        Destination(Route.Favorites.path, "Library", Icons.Default.Favorite, "Ver biblioteca"),
+        Destination(Route.MyProfile.path,"MyProfile",Icons.Default.MusicNote,"Perfil artistico")
     )
 
     val bg = PrimaryBg

@@ -11,6 +11,8 @@ sealed class Route(val path: String) {
 
     data object Favorites: Route("favorites")
 
+    data object MyProfile: Route("profile")
+
     data object ArtistProfile: Route("artistProfile/{artistId}"){
         fun createRoute(artistId:Long) = "artistProfile/$artistId"
     }

@@ -7,8 +7,7 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertUser(user: UserEntity): Long // update or insert user
-
-    @Query("SELECT * FROM users WHERE email = :email")
+    @Query("SELECT * FROM users WHERE LOWER(email) = LOWER(:email)")
     suspend fun getByEmail(email: String): UserEntity?
 
     @Query("SELECT * FROM users WHERE nickname =  :nickname")

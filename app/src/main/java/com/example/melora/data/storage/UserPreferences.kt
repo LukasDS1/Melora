@@ -8,33 +8,42 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-val Context.dataStore by preferencesDataStore(name= "user_prefs")
+val Context.dataStore by preferencesDataStore(name = "user_prefs")
 
-class UserPreferences(private val context: Context){
+class UserPreferences(private val context: Context) {
+
     private val isLoggedInKey = booleanPreferencesKey("is_logged_in")
-
     private val userIdKey = longPreferencesKey("user_id")
-    suspend fun saveLoginState(isLoggedIn: Boolean, userId: Long?) {
+    private val roleIdKey = longPreferencesKey("role_id")
+
+    suspend fun saveLoginState(isLoggedIn: Boolean, userId: Long?, roleId: Long?) {
         context.dataStore.edit { prefs ->
             prefs[isLoggedInKey] = isLoggedIn
-            if (userId != null) prefs[userIdKey] = userId else prefs.remove(userIdKey)
+
+            if (userId != null) prefs[userIdKey] = userId
+            else prefs.remove(userIdKey)
+            if (roleId != null) prefs[roleIdKey] = roleId
+            else prefs.remove(roleIdKey)
         }
     }
 
-    suspend fun setLoggedIn(value: Boolean){
-        context.dataStore.edit{ prefs->
-            prefs[isLoggedInKey]= value
+    suspend fun setLoggedIn(value: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[isLoggedInKey] = value
         }
     }
 
     val isLoggedIn: Flow<Boolean> = context.dataStore.data
-        .map{prefs -> prefs[isLoggedInKey] ?: false}
+        .map { prefs -> prefs[isLoggedInKey] ?: false }
 
     val userId: Flow<Long?> = context.dataStore.data
         .map { prefs -> prefs[userIdKey] }
 
-    suspend fun clear(){
-        context.dataStore.edit { prefs->
+    val userRoleId: Flow<Long?> = context.dataStore.data
+        .map { prefs -> prefs[roleIdKey] }
+
+    suspend fun clear() {
+        context.dataStore.edit { prefs ->
             prefs.clear()
         }
     }

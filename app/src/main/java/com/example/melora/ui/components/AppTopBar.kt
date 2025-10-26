@@ -41,7 +41,7 @@ fun AppTopBar(
             containerColor = topcol
         ),
         title = {
-           Text(text = "Melora", color = Color(0xFFFFFFFF))
+           Text(text = "Melora", color = Color.Black)
         },
         navigationIcon = {
             IconButton(onClick = onEditProfile) {

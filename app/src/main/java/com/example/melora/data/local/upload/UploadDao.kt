@@ -13,12 +13,17 @@ interface UploadDao {
     //insert para el registro de subida
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(upload: UploadEntity): Long
-    //Para banear una cancion
 
-    @Query("UPDATE upload SET banReason = :reason, banDate = :banDate WHERE uploadId = :uploadId")
-    suspend fun banUpload(uploadId: Long, reason: String, banDate: Long)
+    @Query("SELECT * FROM upload")
+    suspend fun getAllUpload(): List<UploadEntity>
+
+    @Query("UPDATE upload SET banReason = :banReason, banDate = :banDate, stateId = 2 WHERE uploadId = :uploadId")
+    suspend fun banUpload(uploadId: Long, banReason: String, banDate: Long)
+
+    @Query("DELETE FROM songs WHERE songId = :songId")
+    suspend fun deleteSong(songId: Long)
     //para buscar canciones baneadas
-    @Query("SELECT uploadId FROM upload WHERE banReason IS NOT NULL")
-    suspend fun getBannedUploads(): List<Long>
+    @Query("SELECT * FROM upload WHERE banReason IS NOT NULL")
+    suspend fun getBannedUploads(): List<UploadEntity>
 
 }

@@ -42,7 +42,7 @@ fun FavoriteScreen(
     favoriteViewModel: FavoriteViewModel,
     goPlayer: (Long) -> Unit
 ) {
-    //TODO revisar
+
     val favorites by favoriteViewModel.favorites.collectAsState()
 
 

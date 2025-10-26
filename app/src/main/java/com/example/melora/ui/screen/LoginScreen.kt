@@ -70,20 +70,12 @@ fun LoginScreenVm(
 
     val state by vm.login.collectAsStateWithLifecycle()      // Observa el StateFlow en tiempo real
 
-    val context = LocalContext.current
-
-    val userPrefs = remember { UserPreferences(context) }
 
     LaunchedEffect(state.success) {
         if (state.success) {
-            val user = vm.currentUser.value
-            val userId = user?.idUser
-            userPrefs.saveLoginState(true, userId)
-
             vm.clearLoginResult()
             onLoginOk()
         }
-
     }
 
     LoginScreen(                                             // Delegamos a UI presentacional

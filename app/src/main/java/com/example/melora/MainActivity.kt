@@ -24,6 +24,8 @@ import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.BanViewModel
+import com.example.melora.viewmodel.BanviewModelFactory
 import com.example.melora.viewmodel.EditProfileViewModel
 import com.example.melora.viewmodel.EditProfileViewModelFactory
 import com.example.melora.viewmodel.FavoriteViewModel
@@ -57,24 +59,27 @@ fun AppRoot() {
 
     val  userDao = db.userDao()
 
+    val estadoDao = db.estadoDao()
+
+    val rolDao = db.rolDao()
     val favoriteDao = db.favoriteDao()
 
     val songRepository = SongRepository(songDao)
 
-    val userRepository = UserRepository(userDao)
+    val userRepository = UserRepository(userDao,rolDao,estadoDao)
 
     val uploadRepository = UploadRepository(uploadDao)
 
     val prefs = UserPreferences(context)
 
-    val loginRepository = UserRepository(userDao)
+    val loginRepository = UserRepository(userDao,rolDao,estadoDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(UserRepository(db.userDao()), application)
+        factory = AuthViewModelFactory(UserRepository(userDao,rolDao,estadoDao), application)
     )
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
@@ -102,6 +107,9 @@ fun AppRoot() {
     val favoriteViewModel: FavoriteViewModel = viewModel(
         factory = FavoriteViewModelFactory(favoriteRepository,prefs)
     )
+    val banViewModel: BanViewModel = viewModel(
+        factory = BanviewModelFactory(uploadRepository, application)
+    )
     val navController = rememberNavController()
 
     MaterialTheme {
@@ -114,6 +122,7 @@ fun AppRoot() {
                 artistModel = artistProfileViewModel,
                 favoriteModel = favoriteViewModel,
                 musicPlayerViewModel = musicPlayerViewModel,
+                banViewModel = banViewModel,
                 editProfileViewModel = editProfileViewModel
             )
         }
