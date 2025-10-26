@@ -64,16 +64,27 @@ class AuthViewModel(
     private val _currentUser = MutableStateFlow<UserEntity?>(null)
     val currentUser: StateFlow<UserEntity?> = _currentUser
 
+    private val _currentRoleId = MutableStateFlow<Long?>(null)
+    val currentRoleId: StateFlow<Long?> = _currentRoleId
+
     init {
         viewModelScope.launch {
             prefs.isLoggedIn.collect { logged ->
                 if (logged) {
                     val id = prefs.userId.firstOrNull()
+                    val roleId = prefs.userRoleId.firstOrNull()
+                    _currentRoleId.value = roleId
+
                     if (id != null) {
                         val user = repository.getUserById(id)
-                        _currentUser.value = user }
+                        _currentUser.value = user
+                        if (user != null && roleId != null && user.rolId != roleId) {
+                            prefs.saveLoginState(true, id, user.rolId)
+                        }
+                    }
                 } else {
                     _currentUser.value = null
+                    _currentRoleId.value = null
                 }
             }
         }
@@ -118,8 +129,8 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val user = result.getOrNull()!!
                 _currentUser.value = user
-
-                prefs.saveLoginState(true, user.idUser)
+                _currentRoleId.value = user.rolId
+                prefs.saveLoginState(true, user.idUser,user.rolId)
 
                 _login.update {
                     it.copy(
@@ -188,7 +199,7 @@ class AuthViewModel(
         _register.update { it.copy(canSubmit = noErrors && filled) }
     }
 
-    fun submitRegister(onSuccess: () -> Unit) {
+    fun submitRegister() {
         val s = _register.value
         if (!s.canSubmit || s.isSubmitting) return
 
@@ -198,7 +209,6 @@ class AuthViewModel(
             val result = repository.register(s.nickname, s.email, s.pass)
             if (result.isSuccess) {
                 _register.update { it.copy(isSubmitting = false, success = true) }
-                onSuccess()
             } else {
                 _register.update {
                     it.copy(
@@ -214,6 +224,8 @@ class AuthViewModel(
 
 
     fun clearRegisterResult() {
-        _register.update { it.copy(success = false, errorMessage = null) }
+        _register.update {
+            RegisterUiState()
+        }
     }
 }

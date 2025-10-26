@@ -17,6 +17,9 @@ interface SongDao {
     @Query("SELECT * FROM users WHERE idUser = :id")
     suspend fun getUserById(id: Long): UserEntity?
 
+    @Query("SELECT COUNT(*) FROM songs")
+    suspend fun countSongs(): Int
+
     //buscar canciones por nombre
     @Query("SELECT s.songId,s.songName,s.coverArt,s.durationSong,s.songPath,up.uploadDate,us.nickname ,us.idUser AS artistId FROM songs AS s JOIN upload as up ON s.songId = up.idSong JOIN users us ON us.idUser = up.userId WHERE LOWER(s.songName) LIKE '%'|| LOWER(:query) ||'%'")
     suspend fun getSong(query: String): List<SongDetailed>

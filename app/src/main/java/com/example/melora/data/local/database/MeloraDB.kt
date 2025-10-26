@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.melora.data.local.favorites.FavoriteDao
 import com.example.melora.data.local.favorites.FavoriteEntity
+import com.example.melora.data.local.rol.RolDao
+import com.example.melora.data.local.rol.RolEntity
 import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.upload.UploadDao
@@ -16,6 +18,7 @@ import com.example.melora.data.local.users.UserEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 import java.sql.Date
 
 // @Database registra entidades y versión del esquema.
@@ -25,14 +28,16 @@ import java.sql.Date
         SongEntity::class,
         UploadEntity::class,
         UserEntity::class,
-        FavoriteEntity::class
+        FavoriteEntity::class,
+        RolEntity::class
     ],
-    version = 8,
+    version = 15,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
 
     // Exponemos los DAO de canciones y subidas
+    abstract fun rolDao() : RolDao
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
 
@@ -45,6 +50,7 @@ abstract class MeloraDB : RoomDatabase() {
         private const val DB_NAME = "melora.db"                // Nombre del archivo .db
 
         // Obtiene la instancia única de la base de datos
+
         fun getInstance(context: Context): MeloraDB {
             return INSTANCE ?: synchronized(this) {
                 // Construimos la DB con callback de precarga
@@ -60,101 +66,103 @@ abstract class MeloraDB : RoomDatabase() {
                             // Corrutina en hilo IO para precargar datos iniciales
                             CoroutineScope(Dispatchers.IO).launch {
 
+
+
                                 val instance = getInstance(context)
                                 val songDao = instance.songDao()
                                 val userDao = instance.userDao()
                                 val uploadDao = instance.uploadDao()
+                                val rolDao = instance.rolDao()
+
+                                val seedRol = listOf(
+                                    RolEntity(
+                                        rolName = "Admin"
+                                    ),
+                                    RolEntity(
+                                        rolName = "User"
+                                    )
+                                )
+
+                                if(rolDao.getAllRol().isEmpty()){
+                                    seedRol.forEach { rolDao.insert(it) }
+                                }
+
+                                fun copyAssetToInternal(assetPath: String, destDirName: String): String {
+                                    val destDir = File(context.filesDir, destDirName).apply { mkdirs() }
+                                    val fileName = File(assetPath).name
+                                    val destFile = File(destDir, fileName)
+
+                                    if (!destFile.exists()) {
+                                        context.assets.open(assetPath).use { input ->
+                                            destFile.outputStream().use { output ->
+                                                input.copyTo(output)
+                                            }
+                                        }
+                                    }
+                                    return destFile.absolutePath
+                                }
 
                                 val seedUsers = listOf(
-                                    UserEntity(
-                                        email = "user1@email.com",
-                                        nickname = "UserOne",
-                                        pass = "PASSUSER1",
-                                        idUser = 1,
-                                    ),
-                                    UserEntity(
-                                        email = "user2@email.com",
-                                        nickname = "UserTwo",
-                                        pass = "PASSUSER2",
-                                        idUser = 2
-                                    ),
-                                    UserEntity(
-                                        email = "user3@email.com",
-                                        nickname = "UserThree",
-                                        pass = "PASSUSER3",
-                                        idUser = 3
-                                    )
+                                    UserEntity(1,email = "user1@email.com", nickname = "IndiAladinOficial", pass = "Passuser1", rolId = 1),
+                                    UserEntity(2, email = "user2@email.com", nickname = "CBAT", pass = "Passuser2", rolId = 2),
+                                    UserEntity(3, email = "user3@email.com", nickname = "terrariaLord", pass = "Passuser3", rolId = 2)
                                 )
 
                                 if (userDao.getAllUser().isEmpty()) {
                                     seedUsers.forEach { userDao.upsertUser(it) }
                                 }
 
-                                val userIds = mutableListOf<Long>()
-                                seedUsers.forEach { user ->
-                                    val id = userDao.upsertUser(user)
-                                    userIds.add(id)
-                                }
-
-
-                                // Precarga de canciones de ejemplo
                                 val seedSongs = listOf(
-                                    SongEntity(
-                                        songName = "Cielo Azul",
-                                        songDescription = "Canción tranquila de ejemplo",
-                                        songPath = "/example.com/song1.mp3",
-                                        coverArt = "/example.com/song1cover.png",
+                                    SongEntity(1,
+                                        songName = "aladin",
+                                        songDescription = "aladin",
+                                        songPath = copyAssetToInternal("songs/aladin.mp3","songs"),
+                                        coverArt = copyAssetToInternal("covers/portada1.png","covers"),
                                         durationSong = 180,
                                         creationDate = System.currentTimeMillis()
                                     ),
-                                    SongEntity(
-                                        songName = "Lluvia de Verano",
-                                        songDescription = "Canción con ritmo alegre",
-                                        songPath = "/example.com/song2.mp3",
-                                        coverArt = "/example.com/song2cover.png",
+                                    SongEntity(2,
+                                        songName = "cbat",
+                                        songDescription = "rusky",
+                                        songPath = copyAssetToInternal("songs/cbat.mp3","songs"),
+                                        coverArt = copyAssetToInternal("covers/cbat.png","covers"),
                                         durationSong = 210,
                                         creationDate = System.currentTimeMillis()
                                     ),
-                                    SongEntity(
-                                        songName = "Noches Lentas",
-                                        songDescription = "Canción suave y relajante",
-                                        songPath = "/example.com/song3.mp3",
-                                        coverArt = "/example.com/song3cover.png",
+                                    SongEntity(3,
+                                        songName = "Terraria song by me",
+                                        songDescription = "punshis punshis",
+                                        songPath = copyAssetToInternal("songs/terraria.mp3","songs"),
+                                        coverArt = copyAssetToInternal("covers/terrariaport.png","covers"),
                                         durationSong = 240,
                                         creationDate = System.currentTimeMillis()
                                     )
                                 )
-
-                                // Inserta canciones sólo si la tabla está vacía
-                                if (songDao.getAllSong().isEmpty()) {
+                                if (songDao.countSongs() == 0) {
                                     seedSongs.forEach { songDao.insert(it) }
-                                }
-
-                                val songIds = mutableListOf<Long>()
-                                seedSongs.forEach { song ->
-                                    val id = songDao.insert(song)
-                                    songIds.add(id)
                                 }
 
                                 val seedUploads = listOf(
                                     UploadEntity(
-                                        userId = userIds[0],
-                                        idSong = songIds[0],
+                                        userId = 1,
+                                        idSong = 1,
                                         stateId = 1
                                     ),
                                     UploadEntity(
-                                        userId = userIds[1],
-                                        idSong = songIds[1],
+                                        userId = 2,
+                                        idSong = 2,
                                         stateId = 1
                                     ),
                                     UploadEntity(
-                                        userId = userIds[2],
-                                        idSong = songIds[2],
+                                        userId = 3,
+                                        idSong = 3,
                                         stateId = 1
                                     )
                                 )
+                                if(uploadDao.getAllUpload().isEmpty()){
+                                    seedUploads.forEach { uploadDao.insert(it) }
+                                }
 
-                                seedUploads.forEach { uploadDao.insert(it) }
                             }
 
                         }

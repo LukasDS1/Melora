@@ -3,6 +3,7 @@ package com.example.melora.ui.screen
 import android.app.Application
 import android.graphics.drawable.Icon
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -47,6 +48,8 @@ import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
 
 @Composable
@@ -54,7 +57,9 @@ fun PlayerScreenVm(
     songId: Long,
     onExitPlayer: () -> Unit,
     vm: MusicPlayerViewModel,
-    favVm: FavoriteViewModel
+    favVm: FavoriteViewModel,
+    roleId: Long?,
+    banVm: BanViewModel
 ) {
 
     val currentSong by vm.currentSong.collectAsStateWithLifecycle()
@@ -62,6 +67,8 @@ fun PlayerScreenVm(
     val currentPosition by vm.currentPosition.collectAsStateWithLifecycle()
     val duration by vm.duration.collectAsStateWithLifecycle()
     val isFavorite by favVm.currentIsFavorite.collectAsStateWithLifecycle()
+    var showBanCard by remember { mutableStateOf(false) }
+    var banReason by remember { mutableStateOf("") }
 
     LaunchedEffect(songId){
         vm.playSong(songId)
@@ -81,7 +88,9 @@ fun PlayerScreenVm(
         stop = vm::stop,
         seekTo = vm::seekTo,
         currentPosition = currentPosition,
-        duration = duration
+        duration = duration,
+        roleId = roleId,
+        onBanSong = banVm::banSong
     )
 }
 
@@ -99,12 +108,23 @@ fun PlayerScreen(
     stop: () -> Unit,
     seekTo: (Long) -> Unit,
     currentPosition: Long,
-    duration: Long
+    duration: Long,
+    roleId: Long?,
+    onBanSong: (Long, String) -> Unit
 ) {
+
 
     val context = LocalContext.current
     val db = MeloraDB.getInstance(context)
     val songRepository = SongRepository(db.songDao())
+
+    var showBanCard by remember { mutableStateOf(false) }
+    var banReason by remember { mutableStateOf("") }
+
+    BackHandler {
+        stop()
+        exitPlayer()
+    }
 
 
     fun formatTime(millis: Long): String {
@@ -158,14 +178,21 @@ fun PlayerScreen(
                 )
 
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        if (roleId == 1L) {
+                            showBanCard = !showBanCard
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Block,
-                        contentDescription = "block song button"
+                        contentDescription = "Ban song",
+                        tint = if (roleId == 1L) Color.Black else bg
                     )
                 }
+
             }
+
 
             Spacer(Modifier.height(30.dp))
 
@@ -278,7 +305,81 @@ fun PlayerScreen(
                 }
             }
         }
+        if (showBanCard && roleId == 1L && currentSong != null) {
+            ElevatedCard(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(20.dp)
+                    .fillMaxWidth(0.9f),
+                colors = CardDefaults.elevatedCardColors(containerColor = PrimaryBg)
+            ) {
+                Column(
+                    Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text("ID: ${currentSong.songId}", color = Color.LightGray)
+                    Text("Name: ${currentSong.songName}", color = Color.White)
+                    Text("Artist: ${currentSong.nickname}", color = Color.White)
+                    Spacer(Modifier.height(12.dp))
 
+                    OutlinedTextField(
+                        value = banReason,
+                        onValueChange = { banReason = it },
+                        label = { Text("Ban reason") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color.Red,
+                            unfocusedBorderColor = Color.Gray,
+                            cursorColor = Color.White
+                        )
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                if (banReason.isNotBlank()) {
+                                    onBanSong(songId, banReason)
+                                        Toast.makeText(
+                                            context,
+                                            "The song has been banned",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        showBanCard = false
+                                        banReason = ""
+                                        exitPlayer()
+
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "You must enter a reason",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text("Confirm", color = Color.White)
+                        }
+
+                        OutlinedButton(onClick = {
+                            showBanCard = false
+                            banReason = ""
+                        }) {
+                            Text("Cancel", color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
 
 
     }

@@ -23,14 +23,17 @@ class UploadRepository (
 
     suspend fun bannedUploadIds() = uploadDao.getBannedUploads()
 
-    suspend fun BanUpload(uploadId: Long,banReason : String): Result<Long>{
-         try {
-            val ban = uploadDao.banUpload(uploadId,banReason, Date().time)
-            return Result.success(uploadId)
-        } catch (e: Exception){
-            return Result.failure(e)
+    suspend fun getAllUploads() = uploadDao.getAllUpload()
+    suspend fun banAndDelete(uploadId: Long, songId: Long, banReason: String): Result<Unit> {
+        return try {
+            uploadDao.banUpload(uploadId, banReason, Date().time)
+            uploadDao.deleteSong(songId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
+
 
 
 

@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,10 +70,13 @@ fun RegisterScreenVm(
     val state by vm.register.collectAsStateWithLifecycle() // Observa estado en tiempo real
 
     val context = LocalContext.current
-    if (state.success) {
-        vm.clearRegisterResult()
-        onRegistered()
-        Toast.makeText(context, "Signed up correctly.", Toast.LENGTH_SHORT).show()
+
+    LaunchedEffect(state.success) {
+        if (state.success) {
+            Toast.makeText(context, "Signed up correctly.", Toast.LENGTH_SHORT).show()
+            vm.clearRegisterResult()
+            onRegistered()
+        }
     }
 
     RegisterScreen(
@@ -94,7 +98,7 @@ fun RegisterScreenVm(
         onEmailChange = vm::onRegisterEmailChange,
         onPassChange = vm::onRegisterPassChange,
         onConfirmPassChange = vm::onConfirmChange,
-        onSubmit = { vm.submitRegister { onRegistered() } },
+        onSubmit = vm::submitRegister,
         onGoLogin = onGoLogin
     )
 }

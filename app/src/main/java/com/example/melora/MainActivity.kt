@@ -22,6 +22,8 @@ import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.BanViewModel
+import com.example.melora.viewmodel.BanviewModelFactory
 import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
@@ -53,24 +55,25 @@ fun AppRoot() {
 
     val  userDao = db.userDao()
 
+    val rolDao = db.rolDao()
     val favoriteDao = db.favoriteDao()
 
     val songRepository = SongRepository(songDao)
 
-    val userRepository = UserRepository(userDao)
+    val userRepository = UserRepository(userDao,rolDao)
 
     val uploadRepository = UploadRepository(uploadDao)
 
     val prefs = UserPreferences(context)
 
-    val loginRepository = UserRepository(userDao)
+    val loginRepository = UserRepository(userDao,rolDao)
 
     val artistRepository = ArtistRepository(userDao,songDao)
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(UserRepository(db.userDao()), application)
+        factory = AuthViewModelFactory(UserRepository(db.userDao(),db.rolDao()), application)
     )
 
     val uploadViewModel: UploadViewModel = viewModel(
@@ -89,6 +92,9 @@ fun AppRoot() {
     val favoriteViewModel: FavoriteViewModel = viewModel(
         factory = FavoriteViewModelFactory(favoriteRepository,prefs)
     )
+    val banViewModel: BanViewModel = viewModel(
+        factory = BanviewModelFactory(uploadRepository, application)
+    )
     val navController = rememberNavController()
 
     MaterialTheme {
@@ -101,6 +107,8 @@ fun AppRoot() {
                 artistModel = artistProfileViewModel,
                 favoriteModel = favoriteViewModel,
                 musicPlayerViewModel = musicPlayerViewModel,
+                banViewModel = banViewModel
+
             )
         }
     }

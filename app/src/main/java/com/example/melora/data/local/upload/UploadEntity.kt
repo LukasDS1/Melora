@@ -19,7 +19,7 @@ import java.sql.Date
             entity = SongEntity::class,
             parentColumns = ["songId"],
             childColumns = ["idSong"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.SET_NULL
         )
     ],
     indices = [
@@ -31,7 +31,7 @@ data class UploadEntity(
     @PrimaryKey(autoGenerate = true)
     val uploadId: Long = 0L,
     val userId: Long,
-    val idSong: Long,
+    val idSong: Long?,
     val uploadDate: Long? = System.currentTimeMillis(),
     val banReason: String? = null,
     val stateId: Long,
