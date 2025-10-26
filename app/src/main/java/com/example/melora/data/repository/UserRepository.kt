@@ -1,6 +1,5 @@
 package com.example.melora.data.repository
 
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserDao
 import com.example.melora.data.local.users.UserEntity
 
@@ -27,7 +26,7 @@ class UserRepository(
         }
     }
 
-    suspend fun getUserById(id: Long): UserEntity? {
+    suspend fun getUserById(id: Long?): UserEntity? {
         return userDao.getById(id)
     }
 
@@ -54,4 +53,27 @@ class UserRepository(
         )
         return Result.success(id)
     }
+
+    // Methods for EditProfileViewModel
+    suspend fun getById(id: Long): UserEntity? {
+        return userDao.getById(id)
+    }
+
+    suspend fun updateNickname(id: Long, newNickname: String) {
+        userDao.updateUserName(id, newNickname)
+    }
+
+    suspend fun updateEmail(id: Long, email: String) {
+        val exists = userDao.getByEmail(email)
+        if (exists != null) throw IllegalStateException("Email ya en uso")
+        userDao.updateUserEmail(id, email)
+    }
+
+    suspend fun updatePassword(id: Long, password: String) = userDao.updateUserPassword(id, password)
+
+    suspend fun updateProfilePicture(id: Long, newProfilePicture: String?) {
+        userDao.updateProfilePicture(id, newProfilePicture)
+    }
+
+
 }

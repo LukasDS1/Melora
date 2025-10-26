@@ -28,7 +28,8 @@ fun AppNavGraph(
     authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
-    favoriteModel: FavoriteViewModel
+    favoriteModel: FavoriteViewModel,
+    editProfileViewModel: EditProfileViewModel
 ) {
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
@@ -73,20 +74,23 @@ fun AppNavGraph(
     val goLogin: () -> Unit = { navController.navigate(Route.Login.path){popUpTo(0)} }
     val goRegister: () -> Unit = {navController.navigate(Route.Register.path){popUpTo(0)}}
     val goHome: () -> Unit = {navController.navigate(Route.Home.path){popUpTo(0)}}
-    val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path) }
+    val goUpload: () -> Unit = { navController.navigate(Route.UploadScreenForm.path)}
     val goSucces: () -> Unit = { navController.navigate(Route.SuccesUpload.path) }
     val goSearch: () -> Unit = { navController.navigate(Route.SearchView.path) }
     val goArtistProfile: (Long) -> Unit = { id -> navController.navigate("artistProfile/$id") }
     val goPlayer: (Long) -> Unit = { id -> navController.navigate("player/$id") }
+    val goEditProfile: () -> Unit = { navController.navigate(Route.editProfile.path) }
 
 
         Scaffold(
             topBar = {
-                if (currentRoute != Route.Login.path && currentRoute != Route.Register.path && currentRoute != Route.Player.path) {
+                if (currentRoute != Route.Login.path        &&
+                    currentRoute != Route.Register.path     &&
+                    currentRoute != Route.Player.path       &&
+                    currentRoute != Route.editProfile.path) {
                     AppTopBar(
                         onHome = goHome,
-                        onLogin = goLogin,
-                        onRegister = goRegister
+                        onEditProfile = goEditProfile
                     )
                 }
             },
@@ -116,6 +120,15 @@ fun AppNavGraph(
                         onGoLogin = goLogin,
                         onRegistered = goLogin
                     )
+                }
+
+                composable(Route.editProfile.path) {
+                    EditProfileScreenVm(
+                        vm = editProfileViewModel,
+                        onExit = goHome,
+                        onProfileUpdated = { navController.popBackStack() }, // Go back to home if success
+                        onLogout = goLogin
+                        )
                 }
 
                 composable(Route.Home.path) {

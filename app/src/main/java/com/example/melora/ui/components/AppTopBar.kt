@@ -31,9 +31,8 @@ import com.example.melora.ui.theme.PrimaryBg
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable // Composable reutilizable: barra superior
 fun AppTopBar(
-    onHome: () -> Unit,       // Navega a Home
-    onLogin: () -> Unit,      // Navega a Login
-    onRegister: () -> Unit,// Navega a Registro
+    onHome: () -> Unit,       //  go Home
+    onEditProfile: () -> Unit, // go Edit profile
 ) {
 
     val topcol = PrimaryBg
@@ -45,13 +44,13 @@ fun AppTopBar(
            Text(text = "Melora", color = Color(0xFFFFFFFF))
         },
         navigationIcon = {
-            IconButton(onClick = {}) {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menú") // Ícono
+            IconButton(onClick = onEditProfile) {
+                Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "Edit profile Icon", tint = Color.Black) // Ícono
             }
         },
         actions = {
-            IconButton(onClick = onLogin) {
-                Icon(Icons.Filled.AccountCircle, contentDescription = "Login")
+            IconButton(onClick = onHome ) {
+                Icon(Icons.Filled.Home, contentDescription = "Home icon", tint = Color.Black)
             }
         }
     )
