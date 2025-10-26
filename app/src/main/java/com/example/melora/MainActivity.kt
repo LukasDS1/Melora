@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
@@ -22,6 +24,8 @@ import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.viewmodel.AuthViewModelFactory
+import com.example.melora.viewmodel.EditProfileViewModel
+import com.example.melora.viewmodel.EditProfileViewModelFactory
 import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
@@ -73,6 +77,15 @@ fun AppRoot() {
         factory = AuthViewModelFactory(UserRepository(db.userDao()), application)
     )
 
+    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
+    val currentUserId = currentUser?.idUser
+
+    val userPreferences = UserPreferences(context)
+
+    val editProfileViewModel: EditProfileViewModel = viewModel(
+        factory = EditProfileViewModelFactory(userRepository, userPreferences)
+    )
+
     val uploadViewModel: UploadViewModel = viewModel(
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
@@ -101,6 +114,7 @@ fun AppRoot() {
                 artistModel = artistProfileViewModel,
                 favoriteModel = favoriteViewModel,
                 musicPlayerViewModel = musicPlayerViewModel,
+                editProfileViewModel = editProfileViewModel
             )
         }
     }

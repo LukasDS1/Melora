@@ -86,4 +86,7 @@ dependencies {
 
     //datatore preferenis
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Cargar imagenes para mostrrlas en la UI
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
