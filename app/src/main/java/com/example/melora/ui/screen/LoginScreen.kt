@@ -119,7 +119,7 @@ fun LoginScreen(
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 100.dp),
+                .padding(top = 50.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -154,7 +154,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()                         // Usa to.do el ancho de la pantalla
                 .align(Alignment.BottomCenter)         // Alinea el card abajo y centrado
-                .heightIn(min = 200.dp, max = 650.dp) // Limita el alto
+                .heightIn(min = 200.dp, max = 700.dp) // Limita el alto
                 .padding(top = 100.dp),              // Controla que tanto puede subir la card
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -185,7 +185,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = onEmailChange,
-                    placeholder = { Text("Correo electrónico")},
+                    placeholder = { Text("Email")},
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Email,
@@ -247,9 +247,6 @@ fun LoginScreen(
                 if (passError != null) {
                     Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
-
-
-
 
                 Spacer(Modifier.height(20.dp))
 
