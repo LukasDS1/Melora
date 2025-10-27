@@ -5,10 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -16,6 +19,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.ui.theme.PlayfairDisplay
+import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
 
@@ -79,10 +83,12 @@ fun ArtistProfileScreen(
                 else
                     painterResource(R.drawable.defaultprofilepicture),
                 contentDescription = "Artist picture",
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(MaterialTheme.shapes.medium)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = nickname ?: "Unknown Artist",
@@ -96,32 +102,52 @@ fun ArtistProfileScreen(
                 text = "Songs:",
                 style = MaterialTheme.typography.titleMedium.copy(fontFamily = PlayfairDisplay),
                 color = Color.White,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 10.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 10.dp)
             ) {
                 songs.forEach { song ->
-                    Button(
-                        onClick = { goPlayer(song.songId) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = bg,
-                            contentColor = Color.Black
-                        ),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = PrimaryBg),
+                        elevation = CardDefaults.cardElevation(4.dp)
                     ) {
-                        Text(
-                            text = song.songName,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = song.songName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(
+                                onClick = { goPlayer(song.songId) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.PlayArrow, // tu ícono de play
+                                    contentDescription = "Play",
+                                    tint = Color.White
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+

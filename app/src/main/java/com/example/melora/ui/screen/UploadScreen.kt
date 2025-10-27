@@ -100,7 +100,7 @@ fun UploadScreenVm(
         onSongDescription = vm::onSongDescriptionChange,
         onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
         onSongChange = { uri -> vm.onSongChange(context, uri) },
-        submitMusic = { vm.submitMusic(userId) }
+        submitMusic = { vm.submitMusic(context, userId) }
     )
 }
 

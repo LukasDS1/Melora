@@ -37,6 +37,8 @@ import com.example.melora.viewmodel.EditProfileViewModel
 import com.example.melora.viewmodel.EditProfileViewModelFactory
 import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
+import com.example.melora.viewmodel.HomeScreenViewModel
+import com.example.melora.viewmodel.HomeScreenViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.PlaylistViewModel
@@ -107,7 +109,9 @@ fun AppRoot() {
     val editProfileViewModel: EditProfileViewModel = viewModel(
         factory = EditProfileViewModelFactory(userRepository, userPreferences)
     )
-
+    val homeScreenViewModel: HomeScreenViewModel = viewModel(
+        factory = HomeScreenViewModelFactory(songRepository)
+    )
     val playlistViewModel: PlaylistViewModel = viewModel(
         factory = PlaylistViewModelFactory(playlistRepository,playlistUserRepository)
     )
@@ -145,7 +149,8 @@ fun AppRoot() {
                 musicPlayerViewModel = musicPlayerViewModel,
                 banViewModel = banViewModel,
                 editProfileViewModel = editProfileViewModel,
-                playlistViewModel =playlistViewModel
+                playlistViewModel =playlistViewModel,
+                homeScreenViewModel = homeScreenViewModel
             )
         }
     }

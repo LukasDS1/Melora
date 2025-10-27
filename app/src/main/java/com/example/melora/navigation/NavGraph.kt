@@ -29,7 +29,8 @@ fun AppNavGraph(
     favoriteModel: FavoriteViewModel,
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
-    playlistViewModel: PlaylistViewModel
+    playlistViewModel: PlaylistViewModel,
+    homeScreenViewModel: HomeScreenViewModel
 ) {
 
 
@@ -136,10 +137,11 @@ fun AppNavGraph(
                 )
             }
             composable(Route.Home.path) {
-                HomeScreen(
-                    onGoLogin = goLogin,
-                    onGoRegister = goRegister,
-                    onGoUpload = goUpload
+                HomeScreenVm(
+                    vm = homeScreenViewModel,
+                    goPlayer = { songId ->
+                        navController.navigate("player/$songId") { launchSingleTop = true }
+                    }
                 )
             }
             composable(Route.UploadScreenForm.path) {
