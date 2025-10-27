@@ -1,4 +1,5 @@
 package com.example.melora.ui.screen
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.melora.R
+import com.example.melora.ui.theme.Lato
 
 @Composable
 fun SuccesUpload(
@@ -54,12 +56,14 @@ fun SuccesUpload(
                     Text(text = "Your song has been uploaded successfully",
                         textAlign = TextAlign.Center,
                         fontSize = 24.sp,
-                        color = Color.White
+                        color = Color.White,
+                        fontFamily = Lato
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(text = "Keep uploading more music or listen to your music",
                         textAlign = TextAlign.Center,
-                        color = Color.White
+                        color = Color.White,
+                        fontFamily = Lato
                     )
                     Spacer(Modifier.height(20.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -71,7 +75,7 @@ fun SuccesUpload(
                         ) {
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
-                            Text("Upload more music!")
+                            Text("Upload more music!", fontFamily = Lato)
                         }
                         Button(
                             onClick = onLoginOk,
@@ -79,7 +83,7 @@ fun SuccesUpload(
                         ) {
                             Icon(Icons.Filled.Person, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
-                            Text("Hear your music!")
+                            Text("Hear your music!", fontFamily = Lato)
                         }
                     }
                 }

@@ -61,6 +61,8 @@ import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.EditProfileViewModel
 import com.example.melora.R
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -227,7 +229,7 @@ fun EditProfileScreen(
                 Text(
                     text = "Edit Profile",
                     color = Resaltado,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontFamily = PlayfairDisplay),
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 48.dp, top = 6.dp),
@@ -285,7 +287,7 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = nickname,
                 onValueChange = onNicknameChange,
-                placeholder = { Text("New nickname") },
+                placeholder = { Text("New nickname", style =  MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.AccountCircle,
@@ -305,7 +307,7 @@ fun EditProfileScreen(
             )
             Spacer(Modifier.height(10.dp))
             if (nicknameError != null)
-                Text(nicknameError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(nicknameError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
             Spacer(Modifier.height(30.dp))
 
@@ -313,7 +315,7 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = onEmailChange,
-                placeholder = { Text("New email") },
+                placeholder = { Text("New email", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Email,
@@ -334,7 +336,7 @@ fun EditProfileScreen(
             )
             Spacer(Modifier.height(10.dp))
             if (emailError != null)
-                Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
             Spacer(Modifier.height(30.dp))
 
@@ -342,7 +344,7 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChange,
-                placeholder = { Text("New password") },
+                placeholder = { Text("New password", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Lock,
@@ -372,15 +374,15 @@ fun EditProfileScreen(
             )
             Spacer(Modifier.height(10.dp))
             if (passwordError != null)
-                Text(passwordError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(passwordError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
             Spacer(Modifier.height(10.dp))
 
             if (errorMessage != null)
-                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
             if (success)
-                Text("Saved changes.", color = Color.Green)
+                Text("Saved changes.", color = Color.Green, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato))
 
             Spacer(Modifier.height(10.dp))
 
@@ -392,7 +394,7 @@ fun EditProfileScreen(
                     .fillMaxWidth(0.9f)
                     .height(50.dp)
             ) {
-                Text(if (isSubmitting) "Saving..." else "Save changes", color = Color.White)
+                Text(if (isSubmitting) "Saving..." else "Save changes", color = Color.White, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato))
             }
 
             Spacer(Modifier.height(20.dp))
@@ -404,7 +406,7 @@ fun EditProfileScreen(
                     .fillMaxWidth(0.9f)
                     .height(50.dp)
             ) {
-                Text("Log out", color = Color.White)
+                Text("Log out", color = Color.White, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato))
             }
         }
 

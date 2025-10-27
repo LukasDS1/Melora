@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.PlaylistViewModel
@@ -92,7 +94,8 @@ fun FavoriteScreen(
         Text(
             text = "Your Favorites",
             style = MaterialTheme.typography.headlineSmall,
-            color = Color.Black
+            color = Color.Black,
+            fontFamily = Lato
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -100,6 +103,7 @@ fun FavoriteScreen(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text("You don't have favorites yet", color = Color.Gray)
             }
+            Text("Don't have favorites yet", color = Color.Gray, fontFamily = PlayfairDisplay)
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -114,6 +118,10 @@ fun FavoriteScreen(
                     ) {
                         Text(song.songName, color = Color.Black, style = MaterialTheme.typography.titleMedium)
                         Text("by ${song.nickname}", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+                        Column {
+                            Text(song.songName, color = Color.Black, fontFamily = Lato)
+                            Text("by ${song.nickname}", color = Color.Gray, fontFamily = Lato)
+                        }
                     }
                     Divider(color = Color.Black, thickness = 1.dp)
                 }

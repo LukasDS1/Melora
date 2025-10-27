@@ -198,7 +198,7 @@ abstract class MeloraDB : RoomDatabase() {
                 songDescription = "aladin",
                 songPath = copyAssetToInternal("songs/aladin.mp3","songs"),
                 coverArt = copyAssetToInternal("covers/portada1.png","covers"),
-                durationSong = 180,
+                durationSong = 156,
                 creationDate = System.currentTimeMillis()
             ),
             SongEntity(2,
@@ -206,7 +206,7 @@ abstract class MeloraDB : RoomDatabase() {
                 songDescription = "rusky",
                 songPath = copyAssetToInternal("songs/cbat.mp3","songs"),
                 coverArt = copyAssetToInternal("covers/cbat.png","covers"),
-                durationSong = 210,
+                durationSong = 171,
                 creationDate = System.currentTimeMillis()
             ),
             SongEntity(3,
@@ -214,7 +214,7 @@ abstract class MeloraDB : RoomDatabase() {
                 songDescription = "punshis punshis",
                 songPath = copyAssetToInternal("songs/terraria.mp3","songs"),
                 coverArt = copyAssetToInternal("covers/terrariaport.png","covers"),
-                durationSong = 240,
+                durationSong = 89,
                 creationDate = System.currentTimeMillis()
             )
         )

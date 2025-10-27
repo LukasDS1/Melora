@@ -2,9 +2,10 @@ package com.example.melora.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -28,7 +29,8 @@ fun AppNavGraph(
     favoriteModel: FavoriteViewModel,
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
-    playlistViewModel: PlaylistViewModel
+    playlistViewModel: PlaylistViewModel,
+    homeScreenViewModel: HomeScreenViewModel
 ) {
 
 
@@ -135,10 +137,11 @@ fun AppNavGraph(
                 )
             }
             composable(Route.Home.path) {
-                HomeScreen(
-                    onGoLogin = goLogin,
-                    onGoRegister = goRegister,
-                    onGoUpload = goUpload
+                HomeScreenVm(
+                    vm = homeScreenViewModel,
+                    goPlayer = { songId ->
+                        navController.navigate("player/$songId") { launchSingleTop = true }
+                    }
                 )
             }
             composable(Route.UploadScreenForm.path) {

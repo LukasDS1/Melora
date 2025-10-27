@@ -4,14 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.melora.viewmodel.SearchViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.room.util.query
 import com.example.melora.ui.components.MeloraSearchBar
 import com.example.melora.ui.theme.Resaltado
 

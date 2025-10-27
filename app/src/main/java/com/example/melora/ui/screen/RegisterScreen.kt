@@ -47,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -59,7 +58,7 @@ import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
-import org.w3c.dom.Text
+import com.example.melora.ui.theme.Lato
 
 @Composable
 fun RegisterScreenVm(
@@ -157,13 +156,13 @@ fun RegisterScreen(
                 Text(
                     text = "Hello!",
                     style = MaterialTheme.typography.displayMedium,
-                    fontFamily = FontFamily.SansSerif,
+                    fontFamily = Lato,
                     color = Color.White
                 )
                 Text(
                     text = "Welcome to Melora",
                     style = MaterialTheme.typography.labelLarge,
-                    fontFamily = FontFamily.SansSerif,
+                    fontFamily = Lato,
                     color = Color.White,
                     modifier = Modifier.padding(start = 6.dp)
                 )
@@ -208,6 +207,7 @@ fun RegisterScreen(
                     Text(
                         text = "Back to Login",
                         style = MaterialTheme.typography.bodyLarge,
+                        fontFamily = Lato,
                         color = Resaltado,
                         textAlign = TextAlign.Left,
                         modifier = Modifier
@@ -222,6 +222,7 @@ fun RegisterScreen(
                     text = "Sign up",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Resaltado,
+                    fontFamily = Lato,
                     textAlign = TextAlign.Left,
                     modifier = Modifier
                         .fillMaxWidth()

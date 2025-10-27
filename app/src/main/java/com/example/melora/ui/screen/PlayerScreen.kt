@@ -1,20 +1,18 @@
 package com.example.melora.ui.screen
 
-import android.app.Application
-import android.graphics.drawable.Icon
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -26,29 +24,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.melora.data.local.database.MeloraDB
-import com.example.melora.data.player.MusicPlayerManager
-import com.example.melora.data.repository.SongRepository
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.MusicPlayerViewModel
-import com.example.melora.viewmodel.MusicPlayerViewModelFactory
-import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.ui.theme.Lato
 import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
 
@@ -170,6 +158,7 @@ fun PlayerScreen(
                 Text(
                     text = "Melora",
                     fontSize = 24.sp,
+                    fontFamily = Lato,
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
@@ -193,11 +182,13 @@ fun PlayerScreen(
             Text(
                 text = currentSong?.songName ?: "No song selected",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontFamily = Lato
             )
             Text(
                 text = currentSong?.nickname ?: "Unknown Artist",
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                fontFamily = Lato
             )
 
             Spacer(Modifier.height(20.dp))
@@ -272,13 +263,24 @@ fun PlayerScreen(
                     )
                 }
 
-                IconButton(
-                    onClick = { if (isPlaying) pause() else resume() }
+                this@Row.AnimatedVisibility( // kotlin se confunde con tipos de animatedVisibility por estar en Row(){Row(){}}, por eso usamos this@Row
+                    visible = !isPlaying,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
                 ) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = "Play or Stop song button"
-                    )
+                    IconButton(onClick = { resume() }) {
+                        Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(60.dp))
+                    }
+                }
+
+                this@Row.AnimatedVisibility(
+                    visible = isPlaying,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    IconButton(onClick = { pause() }) {
+                        Icon(Icons.Filled.Pause, contentDescription = "Pause", tint = Color.White, modifier = Modifier.size(60.dp))
+                    }
                 }
 
                 IconButton(
@@ -311,17 +313,17 @@ fun PlayerScreen(
                     Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = Lato)
                     Spacer(Modifier.height(8.dp))
-                    Text("ID: ${currentSong.songId}", color = Color.LightGray)
-                    Text("Name: ${currentSong.songName}", color = Color.White)
-                    Text("Artist: ${currentSong.nickname}", color = Color.White)
+                    Text("ID: ${currentSong.songId}", color = Color.LightGray, fontFamily = Lato)
+                    Text("Name: ${currentSong.songName}", color = Color.White, fontFamily = Lato)
+                    Text("Artist: ${currentSong.nickname}", color = Color.White, fontFamily = Lato)
                     Spacer(Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = banReason,
                         onValueChange = { banReason = it },
-                        label = { Text("Ban reason") },
+                        label = { Text("Ban reason", fontFamily = Lato) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
@@ -361,14 +363,14 @@ fun PlayerScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                         ) {
-                            Text("Confirm", color = Color.White)
+                            Text("Confirm", color = Color.White, fontFamily = Lato)
                         }
 
                         OutlinedButton(onClick = {
                             showBanCard = false
                             banReason = ""
                         }) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = Color.White, fontFamily = Lato)
                         }
                     }
                 }

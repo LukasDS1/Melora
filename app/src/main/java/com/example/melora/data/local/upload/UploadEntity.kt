@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.users.UserEntity
-import java.sql.Date
 
 @Entity(tableName = "upload",
     foreignKeys = [ForeignKey(

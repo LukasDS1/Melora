@@ -1,7 +1,6 @@
 package com.example.melora.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
@@ -27,11 +25,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,9 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -59,7 +53,8 @@ import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
-import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PlayfairDisplay
 
 @Composable                                                  // Pantalla Login conectada al VM
 fun LoginScreenVm(
@@ -119,7 +114,7 @@ fun LoginScreen(
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 100.dp),
+                .padding(top = 50.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -137,13 +132,13 @@ fun LoginScreen(
                 Text(
                     text = "Glad you're back,",
                     style = MaterialTheme.typography.headlineLarge,
-                    fontFamily = FontFamily.SansSerif,
-                    color = Color.White
+                    fontFamily = Lato,
+                    color = Color.White,
                 )
                 Text(
                     text = "Ready to jam?",
                     style = MaterialTheme.typography.labelLarge,
-                    fontFamily = FontFamily.SansSerif,
+                    fontFamily = Lato,
                     color = Color.White,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -154,7 +149,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()                         // Usa to.do el ancho de la pantalla
                 .align(Alignment.BottomCenter)         // Alinea el card abajo y centrado
-                .heightIn(min = 200.dp, max = 650.dp) // Limita el alto
+                .heightIn(min = 200.dp, max = 700.dp) // Limita el alto
                 .padding(top = 100.dp),              // Controla que tanto puede subir la card
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -176,7 +171,8 @@ fun LoginScreen(
                     textAlign = TextAlign.Left,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( top = 30.dp, start = 15.dp)
+                        .padding( top = 30.dp, start = 15.dp),
+                    fontFamily = PlayfairDisplay
                 )
 
                 Spacer(Modifier.height(32.dp))
@@ -185,7 +181,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = onEmailChange,
-                    placeholder = { Text("Correo electrónico")},
+                    placeholder = { Text("Email", fontFamily = Lato)},
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Email,
@@ -215,7 +211,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = pass,
                     onValueChange = onPassChange,
-                    placeholder = { Text("Password") },
+                    placeholder = { Text("Password", fontFamily = Lato) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Lock,
@@ -248,9 +244,6 @@ fun LoginScreen(
                     Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
 
-
-
-
                 Spacer(Modifier.height(20.dp))
 
                 if (errorMessage != null) {
@@ -273,7 +266,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Sign in",
-                        style = MaterialTheme.typography.bodyLarge)
+                        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Lato))
                 }
 
                 Row(
@@ -285,7 +278,7 @@ fun LoginScreen(
                     TextButton(
                         onClick = { /* acción */ } // TODO CREAR SCREEN DE FORGOTTEN PASSWORD
                     ) {
-                        Text("Forgot password?", color = Resaltado)
+                        Text("Forgot password?", color = Resaltado, fontFamily = Lato)
                     }
                 }
 
@@ -298,13 +291,14 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Don't have an account?",
-                        Modifier.padding(top = 12.dp)
+                        Modifier.padding(top = 12.dp),
+                        fontFamily = Lato
                     )
                     TextButton(
                         onClick = onGoRegister,
                         contentPadding = PaddingValues(0.dp) // Quita el padding interno para evitar que se quede estático al aparecer el mensaje de error
                     ) {
-                        Text("Sign up", color = Resaltado)
+                        Text("Sign up", color = Resaltado, fontFamily = Lato)
                     }
                 }
             }

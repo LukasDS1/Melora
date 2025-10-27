@@ -1,8 +1,8 @@
 package com.example.melora.viewmodel
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.repository.SongRepository
@@ -71,21 +71,37 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
         _upload.update { it.copy(songDescription = value.ifBlank { null }) }
     }
 
-    fun submitMusic(userId: Long) {
+    private fun getSongDuration(context: Context, songUri: Uri?): Int {
+        if (songUri == null) return 0
+        val retriever = android.media.MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(context, songUri)
+            val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+            (durationMs / 1000).toInt() // devuelve segundos
+        } catch (e: Exception) {
+            0
+        } finally {
+            retriever.release()
+        }
+    }
+    fun submitMusic(context: Context, userId: Long) {
         val s = _upload.value
         if (!s.canSubmit || s.isSubmitting) return
 
         viewModelScope.launch {
             _upload.update { it.copy(isSubmitting = true, errorMsg = null, success = false) }
 
+            val duration = getSongDuration(context, s.song)
+
             val songResult = repository.uploadMusic(
+                context = context,
                 songName = s.songName,
                 songPath = s.song,
                 coverArt = s.coverArt,
                 songDescription = s.songDescription,
-                durationSong = 0,
                 creationDate = s.releaseDate.time
             )
+
 
             if (songResult.isSuccess) {
                 val songId = songResult.getOrNull()!!
