@@ -35,6 +35,11 @@ interface SongDao {
     //reproducir musica
     @Query("SELECT s.songId,s.songName,s.songPath,s.coverArt,s.durationSong,up.uploadDate,us.nickname,us.idUser as artistId FROM songs as s JOIN upload as up ON s.songId  = up.idSong JOIN users AS us ON us.idUser = up.userId WHERE s.songId = :songId")
     suspend fun getSongByID(songId:Long): SongDetailed
+
+
+    @Query("DELETE FROM songs WHERE songId = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("DELETE FROM songs")
     suspend fun clearSongs()
 }

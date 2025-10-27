@@ -1,7 +1,5 @@
 package com.example.melora.ui.components
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SearchBar
@@ -44,8 +40,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserEntity
-import java.io.File
 import com.example.melora.R
+import com.example.melora.data.local.playlist.PlaylistEntity
+import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,9 +51,11 @@ fun MeloraSearchBar(
     onSearch: (String) -> Unit,
     searchResults: List<SongDetailed>,
     artistResult: List<UserEntity>,
+    playlistResults: List<PlaylistEntity>,
     modifier: Modifier = Modifier,
     goArtistProfile: (Long) -> Unit,
-    goPlayer: (Long) -> Unit
+    goPlayer: (Long) -> Unit,
+    goPlaylist: (Long) -> Unit
     ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -109,11 +108,39 @@ fun MeloraSearchBar(
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
                         }
+                     items(playlistResults) { playlist ->
+                    PlaylistItem(playlist = playlist, goPlaylist = goPlaylist)
+                    HorizontalDivider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
                 }
             }
         }
     }
 
+@Composable
+fun PlaylistItem(playlist: PlaylistEntity, goPlaylist: (Long) -> Unit) {
+    Button(
+        onClick = { goPlaylist(playlist.idPlaylist) },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        )
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(playlist.playListName, color = Color.Black, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Text(
+                text = "Created on ${SimpleDateFormat("dd/MM/yyyy").format(playlist.creationDate)}",
+                color = Color.Gray,
+                fontSize = 12.sp
+            )
+        }
+    }
+}
 
 @Composable
 fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
@@ -163,6 +190,7 @@ fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
         }
     }
 }
+
 @Composable
 fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
     fun formatTime(seconds: Int): String {
@@ -230,4 +258,5 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
             }
         }
     }
+
 }

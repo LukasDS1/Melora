@@ -1,28 +1,35 @@
 package com.example.melora.data.local.database
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.melora.data.local.acceso.AccesoDao
+import com.example.melora.data.local.acceso.AccesoEntity
+import com.example.melora.data.local.categoria.CategoriaDao
+import com.example.melora.data.local.categoria.CategoriaEntity
 import com.example.melora.data.local.estado.EstadoDao
 import com.example.melora.data.local.estado.EstadoEntity
 import com.example.melora.data.local.favorites.FavoriteDao
 import com.example.melora.data.local.favorites.FavoriteEntity
+import com.example.melora.data.local.lista.ListaEntity
+import com.example.melora.data.local.playlist.PlaylistDao
+import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.local.rol.RolDao
 import com.example.melora.data.local.rol.RolEntity
 import com.example.melora.data.local.song.SongDao
 import com.example.melora.data.local.song.SongEntity
 import com.example.melora.data.local.upload.UploadDao
 import com.example.melora.data.local.upload.UploadEntity
+import com.example.melora.data.local.userplaylist.PlayListUsersEntity
+import com.example.melora.data.local.userplaylist.PlayListUsersDao
 import com.example.melora.data.local.users.UserDao
 import com.example.melora.data.local.users.UserEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
-import java.sql.Date
 
 // @Database registra entidades y versión del esquema.
 // version = 1: primera versión del esquema local.
@@ -33,9 +40,14 @@ import java.sql.Date
         UserEntity::class,
         FavoriteEntity::class,
         RolEntity::class,
-        EstadoEntity::class
+        EstadoEntity::class,
+        CategoriaEntity::class,
+        AccesoEntity::class,
+        PlaylistEntity::class,
+        PlayListUsersEntity::class,
+        ListaEntity::class
     ],
-    version = 17,
+    version = 20,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {
@@ -45,11 +57,18 @@ abstract class MeloraDB : RoomDatabase() {
     abstract fun songDao(): SongDao
     abstract fun uploadDao(): UploadDao
 
+    abstract fun playListUsersDao(): PlayListUsersDao
+
     abstract fun favoriteDao(): FavoriteDao
+
+    abstract fun PlaylistDao(): PlaylistDao
 
     abstract fun userDao(): UserDao
 
     abstract fun estadoDao(): EstadoDao
+
+    abstract fun accesoDao(): AccesoDao
+    abstract fun categoriaDao(): CategoriaDao
     companion object {
         @Volatile
         private var INSTANCE: MeloraDB? = null              // Instancia singleton
@@ -90,11 +109,14 @@ abstract class MeloraDB : RoomDatabase() {
     }
 
     suspend fun preloadData(context:Context) {
+        val categoriaDao = categoriaDao()
+        val accesoDao = accesoDao()
         val rolDao = rolDao()
         val estadoDao = estadoDao()
         val userDao = userDao()
         val songDao = songDao()
         val uploadDao = uploadDao()
+
 
         val seedEstado = listOf(
             EstadoEntity(
@@ -120,6 +142,29 @@ abstract class MeloraDB : RoomDatabase() {
 
         if(rolDao.getAllRol().isEmpty()){
             seedRol.forEach { rolDao.insert(it) }
+        }
+
+        val seedAcceso = listOf(
+            AccesoEntity(
+               nombre = "Publico"
+            ),
+            AccesoEntity(
+                nombre = "Privado"
+            )
+        )
+
+        if(accesoDao().getAllAccesos().isEmpty()){
+            seedAcceso.forEach { accesoDao().insertAcceso(it) }
+        }
+
+        val seedCategoria = listOf(
+            CategoriaEntity(
+                catName = "Playlist"
+            )
+        )
+
+        if(categoriaDao.getAllCategorias().isEmpty()){
+            seedCategoria.forEach { categoriaDao().insertCategoria(it) }
         }
 
         fun copyAssetToInternal(assetPath: String, destDirName: String): String {

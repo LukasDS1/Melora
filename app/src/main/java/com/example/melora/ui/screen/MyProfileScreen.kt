@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,28 +15,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
+import com.example.melora.viewmodel.FavoriteViewModel
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 
 @Composable
 fun MyProfileScreenVm(
     vm: ArtistProfileViewModel,
-    goPlayer: (Long) -> Unit
+    goPlayer: (Long) -> Unit,
+    favVm: FavoriteViewModel,
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
+    val scope = rememberCoroutineScope()
 
     var nickname by remember { mutableStateOf<String?>(null) }
     var profilePicture by remember { mutableStateOf<String?>(null) }
     var songs by remember { mutableStateOf<List<SongDetailed>>(emptyList()) }
+
 
     LaunchedEffect(Unit) {
         val id = prefs.userId.firstOrNull()
@@ -57,7 +60,9 @@ fun MyProfileScreenVm(
         nickname = nickname,
         profilePicture = profilePicture,
         songs = songs,
-        goPlayer = goPlayer
+        goPlayer = goPlayer,
+        onDeleteSong = vm::deleteSong,
+        onToggleFavorite = favVm::toggleFavorite
     )
 }
 
@@ -66,10 +71,12 @@ fun MyProfileScreen(
     nickname: String?,
     profilePicture: String?,
     songs: List<SongDetailed>,
-    goPlayer: (Long) -> Unit
+    goPlayer: (Long) -> Unit,
+    onDeleteSong : (Long) -> Unit,
+    onToggleFavorite: (Long) -> Unit
 ) {
     val bg = Resaltado
-
+    var expanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -116,19 +123,68 @@ fun MyProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 songs.forEach { song ->
-                    Button(
-                        onClick = { goPlayer(song.songId) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = bg,
-                            contentColor = Color.Black
-                        ),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(bg),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f))
                     ) {
-                        Text(
-                            text = song.songName,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(
+                                onClick = { goPlayer(song.songId) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = song.songName,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color.White
+                                )
+                            }
+                            Box {
+                                IconButton(onClick = { expanded = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "Menu options",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.background(Color(0xFF222222))
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Delete Song", color = Color.White) },
+                                        onClick = {
+                                            expanded = false
+                                            onDeleteSong(song.songId)
+                                        }
+                                    )
+
+                                    DropdownMenuItem(
+                                        text = { Text("Add Favorite", color = Color.White) },
+                                        onClick = {
+                                            expanded = false
+                                            onToggleFavorite(song.songId)
+                                        }
+                                    )
+
+                                    DropdownMenuItem(
+                                        text = { Text("Ver detalles", color = Color.White) },
+                                        onClick = {
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

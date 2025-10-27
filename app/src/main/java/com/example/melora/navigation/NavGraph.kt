@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -34,7 +35,8 @@ fun AppNavGraph(
     musicPlayerViewModel: MusicPlayerViewModel,
     favoriteModel: FavoriteViewModel,
     banViewModel: BanViewModel,
-    editProfileViewModel: EditProfileViewModel
+    editProfileViewModel: EditProfileViewModel,
+    playlistViewModel: PlaylistViewModel
 ) {
 
 
@@ -58,12 +60,9 @@ fun AppNavGraph(
         }
     }
 
-    val goSearch = {
-        navController.navigate(Route.SearchView.path) {
-            popUpTo(Route.Home.path)
-            launchSingleTop = true
-        }
-    }
+    val goSearch: () -> Unit = {navController.navigate(Route.SearchView.path) {launchSingleTop = true} }
+
+    val goPlaylist : (Long) -> Unit = { playlistId -> navController.navigate("playlist/$playlistId") {launchSingleTop = true} }
 
     val goFavorites = {
         navController.navigate(Route.Favorites.path) {
@@ -71,6 +70,7 @@ fun AppNavGraph(
             launchSingleTop = true
         }
     }
+
 
     val goUpload = {
         navController.navigate(Route.UploadScreenForm.path) { launchSingleTop = true }
@@ -80,7 +80,7 @@ fun AppNavGraph(
         { navController.navigate(Route.editProfile.path) { launchSingleTop = true } }
 
 
-    val goSucces = {
+    val goSucces : () -> Unit = {
         navController.navigate(Route.SuccesUpload.path) { launchSingleTop = true }
     }
 
@@ -99,9 +99,7 @@ fun AppNavGraph(
         }
     }
 
-    val goRegister = {
-        navController.navigate(Route.Register.path) {
-            popUpTo(Route.Login.path) { inclusive = false }
+    val goRegister : () -> Unit = { navController.navigate(Route.Register.path) { popUpTo(Route.Login.path) { inclusive = false }
             launchSingleTop = true
         }
     }
@@ -173,7 +171,8 @@ fun AppNavGraph(
                 SearchViewScreen(
                     vm = searchViewModel,
                     goArtistProfile = goArtistProfile,
-                    goPlayer = goPlayer
+                    goPlayer = goPlayer,
+                    goPlaylist = goPlaylist
                 )
             }
 
@@ -216,7 +215,10 @@ fun AppNavGraph(
             composable(Route.Favorites.path) {
                 FavoriteScreenVm(
                     favoriteViewModel = favoriteModel,
-                    goPlayer = goPlayer
+                    goPlayer = goPlayer,
+                    playlistViewModel = playlistViewModel,
+                    searchViewModel = searchViewModel,
+                    goPlaylistDetail = goPlaylist
                 )
             }
 
@@ -231,6 +233,7 @@ fun AppNavGraph(
 
                     composable(Route.MyProfile.path) {
                         MyProfileScreenVm(
+                            favVm = favoriteModel,
                             vm = artistModel,
                             goPlayer = { songId ->
                                 navController.navigate("player/$songId") {
@@ -239,6 +242,18 @@ fun AppNavGraph(
                             }
                         )
                     }
+            composable(
+                route = "playlist/{playlistId}",
+                arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val playlistId = backStackEntry.arguments?.getLong("playlistId") ?: return@composable
+                PlaylistDetailScreenVm(
+                    playlistId = playlistId,
+                    playlistViewModel = playlistViewModel,
+                    goPlayer = goPlayer,
+                    onBack = { navController.popBackStack() }
+                )
+            }
                 }
         }
     }

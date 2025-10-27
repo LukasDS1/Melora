@@ -19,4 +19,8 @@ sealed class Route(val path: String) {
     data object Player: Route("player/{songId}"){
         fun createRoutePlayer(songId:Long) = "player/$songId"
     }
+
+    data object PlaylistDetail : Route("playlist/{playlistId}") {
+        fun createRoutePlaylist(playlistId: Long) = "playlist/$playlistId"
+    }
 }

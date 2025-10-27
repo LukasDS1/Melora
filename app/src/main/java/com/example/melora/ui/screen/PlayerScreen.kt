@@ -188,8 +188,6 @@ fun PlayerScreen(
                 }
 
             }
-
-
             Spacer(Modifier.height(30.dp))
 
             Text(
@@ -344,6 +342,7 @@ fun PlayerScreen(
                             onClick = {
                                 if (banReason.isNotBlank()) {
                                     onBanSong(songId, banReason)
+                                    stop()
                                         Toast.makeText(
                                             context,
                                             "The song has been banned",
@@ -352,7 +351,6 @@ fun PlayerScreen(
                                         showBanCard = false
                                         banReason = ""
                                         exitPlayer()
-
                                 } else {
                                     Toast.makeText(
                                         context,
