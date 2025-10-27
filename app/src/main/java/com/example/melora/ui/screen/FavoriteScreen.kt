@@ -88,39 +88,46 @@ fun FavoriteScreen(
             .background(PrimaryBg)
             .padding(16.dp)
     ) {
-        // 🎵 FAVORITOS
+
         Text(
             text = "Your Favorites",
             style = MaterialTheme.typography.headlineSmall,
             color = Color.Black
         )
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (favorites.isEmpty()) {
-            Text("Don't have favorites yet", color = Color.Gray)
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("You don't have favorites yet", color = Color.Gray)
+            }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                modifier = Modifier.heightIn(max = 220.dp)
+            ) {
                 items(favorites) { song ->
-                    Button(
-                        onClick = { goPlayer(song.songId) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { goPlayer(song.songId) }
+                            .padding(vertical = 10.dp, horizontal = 8.dp)
                     ) {
-                        Column {
-                            Text(song.songName, color = Color.Black)
-                            Text("by ${song.nickname}", color = Color.Gray)
-                        }
+                        Text(song.songName, color = Color.Black, style = MaterialTheme.typography.titleMedium)
+                        Text("by ${song.nickname}", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
                     }
+                    Divider(color = Color.Black, thickness = 1.dp)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Playlists",
+            text = "Your Playlists",
             style = MaterialTheme.typography.headlineSmall,
             color = Color.Black
         )
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = { showForm = !showForm },
@@ -131,39 +138,41 @@ fun FavoriteScreen(
         }
 
         if (showForm) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = playlistName,
                 onValueChange = { playlistName = it },
                 label = { Text("Playlist name") },
                 singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth()
             )
 
-            // 🎶 LISTADO DE TODAS LAS CANCIONES SELECCIONABLES
+            Spacer(modifier = Modifier.height(10.dp))
             Text("Select songs to include:", color = Color.Black)
+
             LazyColumn(
                 modifier = Modifier
-                    .height(220.dp)
+                    .height(200.dp)
                     .padding(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(allSongs) { song ->
                     val isSelected = song.songId in selectedSongs
                     Row(
-                        Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 if (isSelected) selectedSongs.remove(song.songId)
                                 else selectedSongs.add(song.songId)
                             }
-                            .padding(8.dp),
+                            .padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(checked = isSelected, onCheckedChange = null)
-                        Text(song.songName, Modifier.padding(start = 8.dp))
+                        Text(song.songName, Modifier.padding(start = 8.dp), color = Color.Black)
                     }
+                    Divider(color = Color.Black, thickness = 1.dp)
                 }
             }
 
@@ -179,7 +188,6 @@ fun FavoriteScreen(
                                 userId = userId,
                                 songIds = selectedSongs
                             ) {
-
                                 playlistName = ""
                                 selectedSongs.clear()
                                 showForm = false
@@ -193,23 +201,38 @@ fun FavoriteScreen(
                 Text("Save Playlist", color = Color.White)
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        if (myPlaylists.isEmpty() && followedPlaylists.isEmpty()) {
-            Text("No playlists found", color = Color.Gray)
+        val combinedPlaylists = (myPlaylists + followedPlaylists).distinctBy { it.idPlaylist }
+
+        if (combinedPlaylists.isEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("No playlists found", color = Color.Gray)
+            }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(myPlaylists + followedPlaylists) { playlist ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable{ goPlaylistDetail(playlist.idPlaylist)}.padding(8.dp)) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(playlist.playListName, color = Color.Black)
-                            Text(
-                                "Date: ${SimpleDateFormat("dd/MM/yyyy").format(playlist.creationDate)}",
-                                color = Color.Gray
-                            )
-                        }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                items(combinedPlaylists) { playlist ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { goPlaylistDetail(playlist.idPlaylist) }
+                            .padding(vertical = 10.dp, horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = playlist.playListName,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "Created on ${
+                                SimpleDateFormat("dd/MM/yyyy").format(playlist.creationDate)
+                            }",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
+                    Divider(color = Color.Black, thickness = 1.dp)
                 }
             }
         }

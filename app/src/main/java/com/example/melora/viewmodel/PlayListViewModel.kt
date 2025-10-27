@@ -18,14 +18,16 @@ class PlaylistViewModel(
     private val _myPlaylists = MutableStateFlow<List<PlaylistEntity>>(emptyList())
     val myPlaylists: StateFlow<List<PlaylistEntity>> = _myPlaylists
 
-    private val _songsInPlaylist = MutableStateFlow<List<SongDetailed>>(emptyList())
-    val songsInPlaylist: StateFlow<List<SongDetailed>> = _songsInPlaylist
-
     private val _followedPlaylists = MutableStateFlow<List<PlaylistEntity>>(emptyList())
     val followedPlaylists: StateFlow<List<PlaylistEntity>> = _followedPlaylists
 
+    private val _songsInPlaylist = MutableStateFlow<List<SongDetailed>>(emptyList())
+    val songsInPlaylist: StateFlow<List<SongDetailed>> = _songsInPlaylist
 
-    // 🔄 Carga las playlists creadas por el usuario
+    // 🔹 Playlist actual (para cuando se abre una ajena)
+    private val _currentPlaylist = MutableStateFlow<PlaylistEntity?>(null)
+    val currentPlaylist: StateFlow<PlaylistEntity?> = _currentPlaylist
+
     fun loadMyPlaylists(userId: Long) {
         viewModelScope.launch {
             playlistRepo.getPlaylistsByUser(userId)
@@ -33,15 +35,27 @@ class PlaylistViewModel(
         }
     }
 
-    // 🔄 Carga las playlists que el usuario sigue
     fun loadFollowedPlaylists(userId: Long) {
         viewModelScope.launch {
             _followedPlaylists.value = userPlaylistRepo.getUserPlaylists(userId)
         }
     }
 
+    fun loadSongsFromPlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            playlistRepo.getSongsFromPlaylist(playlistId)
+                .onSuccess { _songsInPlaylist.value = it }
+        }
+    }
 
-    // 🎵 Crear playlist con canciones seleccionadas
+    fun loadPlaylistById(playlistId: Long) {
+        viewModelScope.launch {
+            playlistRepo.getPlaylistById(playlistId)
+                .onSuccess { _currentPlaylist.value = it }
+                .onFailure { it.printStackTrace() }
+        }
+    }
+
     fun createPlaylist(
         name: String,
         playListName: String,
@@ -66,25 +80,16 @@ class PlaylistViewModel(
                 loadMyPlaylists(userId)
                 loadFollowedPlaylists(userId)
                 onSuccess(newId)
-            }
-            result.onFailure { e ->
+            }.onFailure { e ->
                 e.printStackTrace()
             }
         }
     }
 
-
     fun deletePlaylist(playlistId: Long, userId: Long) {
         viewModelScope.launch {
             playlistRepo.deletePlaylist(playlistId)
             loadMyPlaylists(userId)
-        }
-    }
-
-    fun loadSongsFromPlaylist(playlistId: Long) {
-        viewModelScope.launch {
-            playlistRepo.getSongsFromPlaylist(playlistId)
-                .onSuccess { _songsInPlaylist.value = it }
         }
     }
 
@@ -101,6 +106,7 @@ class PlaylistViewModel(
             loadSongsFromPlaylist(playlistId)
         }
     }
+
 
     fun followPlaylist(userId: Long, playlistId: Long) {
         viewModelScope.launch {
