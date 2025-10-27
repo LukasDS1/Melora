@@ -20,16 +20,19 @@ import com.example.melora.ui.theme.Resaltado
 fun SearchViewScreen(
     vm: SearchViewModel,
     goArtistProfile: (Long) -> Unit,
-    goPlayer: (Long) -> Unit){
+    goPlayer: (Long) -> Unit,
+    goPlaylist: (Long) -> Unit){
     val textState = remember { TextFieldState() }
     val onSearch: (String) -> Unit = { query -> vm.search(query) }
     val bg = (Resaltado)
+    val playlists by vm.playlists.collectAsStateWithLifecycle()
     val songs by vm.songs.collectAsStateWithLifecycle()
     val artists by vm.artists.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize().background(bg)
     ){
-        MeloraSearchBar(textFieldState = textState,onSearch,songs, artistResult =artists , goArtistProfile = goArtistProfile, goPlayer = goPlayer)
+        MeloraSearchBar(textFieldState = textState,onSearch,songs, artistResult =artists ,
+            goArtistProfile = goArtistProfile, goPlayer = goPlayer,  goPlaylist = goPlaylist, playlistResults = playlists)
     }
 
 

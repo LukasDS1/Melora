@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.repository.FavoriteRepository
+import com.example.melora.data.repository.PlayListRepository
+import com.example.melora.data.repository.PlayListUserRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
@@ -32,6 +34,8 @@ import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
+import com.example.melora.viewmodel.PlaylistViewModel
+import com.example.melora.viewmodel.PlaylistViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadViewModel
@@ -63,7 +67,11 @@ fun AppRoot() {
 
     val rolDao = db.rolDao()
     val favoriteDao = db.favoriteDao()
+    val playListDao = db.PlaylistDao()
+    val playListUsersDao = db.playListUsersDao()
 
+    val playlistUserRepository = PlayListUserRepository(playListUsersDao)
+    val playlistRepository = PlayListRepository(playListDao,playListUsersDao)
     val songRepository = SongRepository(songDao)
 
     val userRepository = UserRepository(userDao,rolDao,estadoDao)
@@ -91,15 +99,19 @@ fun AppRoot() {
         factory = EditProfileViewModelFactory(userRepository, userPreferences)
     )
 
+    val playlistViewModel: PlaylistViewModel = viewModel(
+        factory = PlaylistViewModelFactory(playlistRepository,playlistUserRepository)
+    )
+
     val uploadViewModel: UploadViewModel = viewModel(
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
     val artistProfileViewModel: ArtistProfileViewModel = viewModel(
-        factory = ArtistProfileViewModelFactory(artistRepository)
+        factory = ArtistProfileViewModelFactory(artistRepository,songRepository)
     )
 
     val searchViewModel: SearchViewModel = viewModel(
-        factory = SearchViewModelFactory(songRepository,userRepository)
+        factory = SearchViewModelFactory(songRepository,userRepository,playlistRepository)
     )
     val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
         factory = MusicPlayerViewModelFactory(application,songRepository)
@@ -123,7 +135,8 @@ fun AppRoot() {
                 favoriteModel = favoriteViewModel,
                 musicPlayerViewModel = musicPlayerViewModel,
                 banViewModel = banViewModel,
-                editProfileViewModel = editProfileViewModel
+                editProfileViewModel = editProfileViewModel,
+                playlistViewModel =playlistViewModel
             )
         }
     }
