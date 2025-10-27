@@ -2,6 +2,11 @@ package com.example.melora.ui.screen
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -258,13 +263,24 @@ fun PlayerScreen(
                     )
                 }
 
-                IconButton(
-                    onClick = { if (isPlaying) pause() else resume() }
+                this@Row.AnimatedVisibility( // kotlin se confunde con tipos de animatedVisibility por estar en Row(){Row(){}}, por eso usamos this@Row
+                    visible = !isPlaying,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
                 ) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = "Play or Stop song button"
-                    )
+                    IconButton(onClick = { resume() }) {
+                        Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(60.dp))
+                    }
+                }
+
+                this@Row.AnimatedVisibility(
+                    visible = isPlaying,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    IconButton(onClick = { pause() }) {
+                        Icon(Icons.Filled.Pause, contentDescription = "Pause", tint = Color.White, modifier = Modifier.size(60.dp))
+                    }
                 }
 
                 IconButton(
