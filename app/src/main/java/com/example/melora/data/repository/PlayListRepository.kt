@@ -117,4 +117,12 @@ class PlayListRepository(
         }
     }
 
+    suspend fun getPlaylistById(id: Long): Result<PlaylistEntity?> {
+        return try {
+            Result.success(dao.getPlaylistById(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }
