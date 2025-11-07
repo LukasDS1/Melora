@@ -51,6 +51,9 @@ class SongRepository(
         }
     }
 
+    suspend fun deleteSong(songId: Long){
+        songDao.deleteById(songId)
+    }
     suspend fun playSongByID(songId: Long): SongDetailed =
         songDao.getSongByID(songId)
 
