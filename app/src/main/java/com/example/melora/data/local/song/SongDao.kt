@@ -42,4 +42,11 @@ interface SongDao {
 
     @Query("DELETE FROM songs")
     suspend fun clearSongs()
+
+    @Query(" UPDATE songs SET songName = CASE WHEN " +
+            ":newSongName IS NOT NULL THEN :newSongName ELSE " +
+            "songName END, songDescription = CASE WHEN :description IS NOT NULL THEN " +
+            ":description ELSE songDescription END WHERE songId = :songId")
+    suspend fun updateSongDetails(songId: Long, newSongName: String?, description: String?)
+
 }

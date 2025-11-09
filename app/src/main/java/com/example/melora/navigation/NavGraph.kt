@@ -158,7 +158,7 @@ fun AppNavGraph(
             }
             composable(Route.SuccesUpload.path) {
                 SuccesUpload(
-                    onLoginOk = goLogin,
+                    onGoHome = goHome,
                     onGoUpload = goUpload
                 )
             }

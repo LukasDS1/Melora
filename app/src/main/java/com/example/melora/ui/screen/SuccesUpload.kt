@@ -18,10 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PrimaryBg
+import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.SecondaryBg
 
 @Composable
 fun SuccesUpload(
-    onLoginOk: () -> Unit,
+    onGoHome: () -> Unit,
     onGoUpload: () -> Unit
 ) {
     val cardBg = R.drawable.backgroundtonegray
@@ -30,7 +33,7 @@ fun SuccesUpload(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(PrimaryBg)
     ) {
         ElevatedCard(
             modifier = Modifier.padding(24.dp).wrapContentHeight().fillMaxWidth().align(Alignment.Center),
@@ -41,13 +44,7 @@ fun SuccesUpload(
                 contentColor = Color.White
             )
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Image(
-                    painter = painterResource(cardBg),
-                    contentDescription = "Background",
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.Crop
-                )
+            Box(modifier = Modifier.fillMaxWidth().background(SecondaryBg)) {
                 Column(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -56,13 +53,13 @@ fun SuccesUpload(
                     Text(text = "Your song has been uploaded successfully",
                         textAlign = TextAlign.Center,
                         fontSize = 24.sp,
-                        color = Color.White,
+                        color = Color.Black,
                         fontFamily = Lato
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(text = "Keep uploading more music or listen to your music",
                         textAlign = TextAlign.Center,
-                        color = Color.White,
+                        color = Color.Black,
                         fontFamily = Lato
                     )
                     Spacer(Modifier.height(20.dp))
@@ -71,19 +68,23 @@ fun SuccesUpload(
                     ) {
                         Button(
                             onClick = onGoUpload,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Resaltado)
                         ) {
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
                             Text("Upload more music!", fontFamily = Lato)
                         }
                         Button(
-                            onClick = onLoginOk,
-                            modifier = Modifier.weight(1f)
+                            onClick = onGoHome,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Resaltado)
                         ) {
                             Icon(Icons.Filled.Person, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
-                            Text("Hear your music!", fontFamily = Lato)
+                            Text("Listen More Music", fontFamily = Lato)
                         }
                     }
                 }

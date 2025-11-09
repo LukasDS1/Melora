@@ -60,6 +60,20 @@ class SongRepository(
         }
     }
 
+    suspend fun changeSongDetails(
+        songId: Long,
+        newSongName: String?,
+        description: String?
+    ): Result<Unit> {
+        return try {
+            songDao.updateSongDetails(songId, newSongName, description)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
     suspend fun playSongByID(songId: Long): SongDetailed =
         songDao.getSongByID(songId)
 
