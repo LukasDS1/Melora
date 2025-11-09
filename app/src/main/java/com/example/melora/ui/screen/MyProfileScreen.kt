@@ -1,5 +1,6 @@
 package com.example.melora.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -39,6 +40,9 @@ fun MyProfileScreenVm(
     var songs by remember { mutableStateOf<List<SongDetailed>>(emptyList()) }
 
 
+
+
+
     LaunchedEffect(Unit) {
         val id = prefs.userId.firstOrNull()
         if (id != null) {
@@ -62,7 +66,8 @@ fun MyProfileScreenVm(
         songs = songs,
         goPlayer = goPlayer,
         onDeleteSong = vm::deleteSong,
-        onToggleFavorite = favVm::toggleFavorite
+        onToggleFavorite = favVm::toggleFavorite,
+        updateSong =  vm::updateSongDetails
     )
 }
 
@@ -73,10 +78,17 @@ fun MyProfileScreen(
     songs: List<SongDetailed>,
     goPlayer: (Long) -> Unit,
     onDeleteSong : (Long) -> Unit,
+    updateSong: (Long,String?,String?) -> Unit,
     onToggleFavorite: (Long) -> Unit
 ) {
     val bg = Resaltado
     var expanded by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedSong by remember { mutableStateOf<SongDetailed?>(null) }
+    var newName by remember { mutableStateOf("") }
+    var newDesc by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -140,12 +152,24 @@ fun MyProfileScreen(
                                 onClick = { goPlayer(song.songId) },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(
-                                    text = song.songName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color.White
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.Start,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = song.songName,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = song.songDescription ?: "No description yet",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
                             }
+
                             Box {
                                 IconButton(onClick = { expanded = true }) {
                                     Icon(
@@ -177,12 +201,54 @@ fun MyProfileScreen(
                                     )
 
                                     DropdownMenuItem(
-                                        text = { Text("Ver detalles", color = Color.White) },
+                                        text = { Text("Edit your song", color = Color.White) },
                                         onClick = {
                                             expanded = false
+                                            selectedSong = song
+                                            newName = song.songName
+                                            newDesc = song.songDescription?: ""
+                                            showEditDialog = true
                                         }
                                     )
                                 }
+                                if (showEditDialog && selectedSong != null) {
+                                    AlertDialog(
+                                        onDismissRequest = { showEditDialog = false },
+                                        confirmButton = {
+                                            TextButton(onClick = {
+                                                showEditDialog = false
+                                                updateSong(selectedSong!!.songId, newName, newDesc)
+                                                Toast.makeText(context,"Song updated sucefully", Toast.LENGTH_SHORT).show()
+                                            }) {
+                                                Text("Save", color = Color.White)
+                                            }
+                                        },
+                                        dismissButton = {
+                                            TextButton(onClick = { showEditDialog = false }) {
+                                                Text("Cancel", color = Color.Gray)
+                                            }
+                                        },
+                                        title = { Text("Edit your song", color = Color.White) },
+                                        text = {
+                                            Column {
+                                                OutlinedTextField(
+                                                    value = newName,
+                                                    onValueChange = { newName = it },
+                                                    label = { Text("Song name") },
+                                                    singleLine = true
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                OutlinedTextField(
+                                                    value = newDesc,
+                                                    onValueChange = { newDesc = it },
+                                                    label = { Text("Description") }
+                                                )
+                                            }
+                                        },
+                                        containerColor = Color(0xFF222222)
+                                    )
+                                }
+
                             }
                         }
                     }

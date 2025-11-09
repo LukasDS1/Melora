@@ -126,7 +126,7 @@ fun EditProfileScreenVm(
             }
         )
     }
-
+    
     EditProfileScreen(
         nickname = state.nickname,
         email = state.email,
