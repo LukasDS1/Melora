@@ -39,7 +39,6 @@ fun FavoriteScreenVm(
 
     var userId by remember { mutableStateOf<Long?>(null) }
 
-    // 🔄 Cargar datos iniciales
     LaunchedEffect(Unit) {
         val id = prefs.userId.firstOrNull()
         if (id != null) {
