@@ -1,11 +1,13 @@
 package com.example.melora.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -22,12 +25,14 @@ import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ArtistProfileScreenVm(
     artistId: Long,
     vm: ArtistProfileViewModel,
-    goPlayer: (Long) -> Unit
+    goPlayer: (Long) -> Unit,
+    roleId: Long?
 ) {
     var nickname by remember { mutableStateOf<String?>(null) }
     var profilePicture by remember { mutableStateOf<String?>(null) }
@@ -48,21 +53,31 @@ fun ArtistProfileScreenVm(
     }
 
     ArtistProfileScreen(
+        artistId = artistId,
         nickname = nickname,
         profilePicture = profilePicture,
         songs = songs,
-        goPlayer = goPlayer
+        goPlayer = goPlayer,
+        roleId = roleId,
+        banUser = vm::banUser
     )
 }
 
 @Composable
 fun ArtistProfileScreen(
+    artistId:Long,
     nickname: String?,
     profilePicture: String?,
     songs: List<SongDetailed>,
-    goPlayer: (Long) -> Unit
+    goPlayer: (Long) -> Unit,
+    banUser: (Long) -> Unit,
+    roleId: Long?
 ) {
     val bg = Resaltado
+    val context = LocalContext.current
+    var showBanDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
 
     Box(
         modifier = Modifier
@@ -148,6 +163,50 @@ fun ArtistProfileScreen(
                 }
             }
         }
+        if (roleId == 1L) {
+            IconButton(
+                onClick = { showBanDialog = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Block,
+                    contentDescription = "Ban user",
+                    tint = Color.Red
+                )
+            }
+        }
+        if (showBanDialog) {
+            AlertDialog(
+                onDismissRequest = { showBanDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showBanDialog = false
+                        scope.launch {
+                            banUser(artistId)
+                            Toast.makeText(context, "User banned successfully", Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Text("Confirm", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showBanDialog = false }) {
+                        Text("Cancel", color = Color.White)
+                    }
+                },
+                title = { Text("Ban user", color = Color.White) },
+                text = {
+                    Text(
+                        "Are you sure you want to ban this user? This action cannot be undone.",
+                        color = Color.White
+                    )
+                },
+                containerColor = Color(0xFF222222)
+            )
+        }
+
     }
 }
 

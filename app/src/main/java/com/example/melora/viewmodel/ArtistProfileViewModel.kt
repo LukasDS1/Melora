@@ -42,4 +42,15 @@ class ArtistProfileViewModel(private val repository: ArtistRepository,private va
         }
     }
 
+    fun banUser(userId: Long) {
+        viewModelScope.launch {
+            val result = repository.banUser(userId)
+            result.onSuccess {
+            }.onFailure { e ->
+                e.printStackTrace()
+            }
+        }
+    }
+
+
 }

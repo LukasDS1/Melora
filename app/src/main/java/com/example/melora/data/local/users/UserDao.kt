@@ -36,6 +36,9 @@ interface UserDao {
 
     @Query("UPDATE users SET pass = :pass WHERE idUser = :id")
     suspend fun updateUserPassword(id: Long, pass: String)
+    
+    @Query("DELETE FROM users WHERE idUser = :idUser")
+    suspend fun banUser(idUser:Long)
 
 
 
