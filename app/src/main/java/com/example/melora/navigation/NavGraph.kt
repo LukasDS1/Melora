@@ -16,6 +16,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.example.melora.ui.components.*
 import com.example.melora.ui.screen.*
+import com.example.melora.ui.theme.PrimaryBg
+import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.*
 
 @Composable
@@ -99,6 +102,7 @@ fun AppNavGraph(
     }
 
     Scaffold(
+        containerColor = Resaltado,
         topBar = {
             if (currentRoute != Route.Login.path &&
                 currentRoute != Route.Register.path &&

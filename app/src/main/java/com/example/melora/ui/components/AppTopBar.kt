@@ -1,5 +1,8 @@
 package com.example.melora.ui.components
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
@@ -11,7 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 
@@ -24,6 +30,7 @@ fun AppTopBar(
 
     val topcol = PrimaryBg
     CenterAlignedTopAppBar( // Barra alineada al centro
+        modifier = Modifier.clip(shape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)),
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = topcol
         ),
@@ -32,6 +39,7 @@ fun AppTopBar(
            )
         },
         navigationIcon = {
+            // TODO: make button an icon button with the profile image of user
             IconButton(onClick = onEditProfile) {
                 Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "Edit profile Icon", tint = Color.Black) // Ícono
             }

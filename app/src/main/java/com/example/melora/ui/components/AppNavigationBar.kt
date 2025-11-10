@@ -1,5 +1,6 @@
 package com.example.melora.ui.components
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
@@ -8,8 +9,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.melora.navigation.Route
@@ -33,7 +36,7 @@ fun AppNavigationBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar(modifier = modifier, containerColor = bg) {
+    NavigationBar(modifier = modifier.clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)), containerColor = bg) {
         destinations.forEach { destination ->
             val isSelected = currentRoute?.startsWith(destination.route) == true
             NavigationBarItem(
