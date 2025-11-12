@@ -86,7 +86,36 @@ dependencies {
 
     //datatore preferenis
     implementation("androidx.datastore:datastore-preferences:1.1.1")
-
     // Cargar imagenes para mostrrlas en la UI
     implementation("io.coil-kt:coil-compose:2.7.0")
+    //Libreria para los endPoints
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    //Libreria conversion JSON
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    //librerias HTTP y login
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    //======LIBRERIAS TEST LOCALES ===========
+    //librerias pruebas unitarias locales
+    testImplementation(libs.junit)
+
+    //libreria que permite crear mocks ficticios
+    testImplementation("io.mockk:mockk:1.13.12")
+
+    //simular pruebas locales en android
+    testImplementation("org.robolectric:robolectric:4.13")
+    //===========================================
+
+    //=====LIBRERIAS DE TEST UI======================================
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.compose.ui.test.manifest)
+    //===============================================================
+
+    //====LIBRERIAS PARA EL MANEJO DE REGLAS================
+    androidTestImplementation("androidx.test:core-ktx:1.5.0")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    //======================================================
+
 }
