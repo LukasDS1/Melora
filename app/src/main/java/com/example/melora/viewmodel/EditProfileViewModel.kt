@@ -50,14 +50,16 @@ class EditProfileViewModel(
 
     init {
         viewModelScope.launch {
-            userPreferences.userId.collect { id ->
-                if (id != null) {
-                    loadUserById(id)
-                } else {
-                    _state.value = EditProfileUiState()
-                    originalUser = null
-                    currentUserId = null
-                }
+            currentUserId = userPreferences.userId.firstOrNull() ?: return@launch
+            val user = userRepository.getUserById(currentUserId)
+            user?.let {
+                originalUser = it
+                initialProfilePicture = it.profilePicture
+                _state.value = EditProfileUiState(
+                    nickname = it.nickname,
+                    email = it.email,
+                    profilePictureUrl = it.profilePicture
+                )
             }
         }
     }
@@ -109,6 +111,7 @@ class EditProfileViewModel(
         viewModelScope.launch {
             currentUserId?.let { id ->
                 userRepository.updateProfilePicture(id, uriString)
+                userPreferences.setProfilePicture(uriString)
             }
         }
     }

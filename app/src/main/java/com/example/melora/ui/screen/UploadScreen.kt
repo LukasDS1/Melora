@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -72,7 +73,8 @@ private fun getImageUriFile(context: Context,file: File):Uri{
 fun UploadScreenVm(
     vm: UploadViewModel,
     onGoSucces: () -> Unit,
-    userId : Long
+    userId : Long,
+    goHome: () -> Unit
 ) {
     val context = LocalContext.current
     val state by vm.upload.collectAsStateWithLifecycle()
@@ -81,6 +83,11 @@ fun UploadScreenVm(
         vm.clearForm()
         vm.clearUpload()
         onGoSucces()
+    }
+
+    BackHandler {
+        vm.clearForm()
+        goHome()
     }
 
     UploadScreen(
@@ -100,7 +107,11 @@ fun UploadScreenVm(
         onSongDescription = vm::onSongDescriptionChange,
         onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
         onSongChange = { uri -> vm.onSongChange(context, uri) },
-        submitMusic = { vm.submitMusic(context, userId) }
+        submitMusic = { vm.submitMusic(context, userId) },
+        onCancel = {
+            vm.clearForm()
+            goHome()
+        }
     )
 }
 
@@ -122,7 +133,8 @@ private fun UploadScreen(
     onSongDescription: (String) -> Unit,
     onSongCoverChange: (Uri?) -> Unit,
     onSongChange: (Uri?) -> Unit,
-    submitMusic: () -> Unit
+    submitMusic: () -> Unit,
+    onCancel: () -> Unit
 ) {
     val bg = Resaltado
 
@@ -188,8 +200,9 @@ private fun UploadScreen(
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -322,7 +335,7 @@ private fun UploadScreen(
                             containerColor = Resaltado),
                         onClick = submitMusic,
                         enabled = canSubmit && !isSubmitting,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         if (isSubmitting) {
                             CircularProgressIndicator(
@@ -337,6 +350,16 @@ private fun UploadScreen(
                         }
                     }
 
+                    Spacer(Modifier.height(10.dp))
+
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Resaltado),
+                        onClick = onCancel,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel", fontFamily = Lato)
+                    }
                 }
             }
         }

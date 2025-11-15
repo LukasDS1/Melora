@@ -89,4 +89,6 @@ dependencies {
 
     // Cargar imagenes para mostrrlas en la UI
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
 }

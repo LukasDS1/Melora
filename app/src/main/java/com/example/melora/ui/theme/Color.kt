@@ -12,5 +12,6 @@ val Pink40 = Color(0xFF7D5260)
 
 // Colores
 val Resaltado = Color(0xFF93B1A6)
+val ResaltadoNegative = Color(0xFF6D837A)
 val PrimaryBg = Color(0xFF5C8374)
 val SecondaryBg = Color(0xFFebefee)
