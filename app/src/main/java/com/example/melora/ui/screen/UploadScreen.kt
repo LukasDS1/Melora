@@ -215,8 +215,24 @@ private fun UploadScreen(
                     Spacer(Modifier.height(12.dp))
 
                     // Audio picker
-                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),onClick = { audioPickerLauncher.launch("audio/*")}) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),
+                        onClick = { audioPickerLauncher.launch("audio/*") }
+                    ) {
                         Icon(Icons.Filled.Add, "Upload your music!")
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    if (songError != null) {
+                        Text(
+                            songError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = Lato,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -277,8 +293,24 @@ private fun UploadScreen(
                         fontFamily = Lato
                     )
                     // Cover art
-                    Button(colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White), onClick = {photoPickerLauncher.launch("image/*")}) {
-                        Icon(Icons.Filled.Add, "Upload your covert Art")
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),
+                        onClick = { photoPickerLauncher.launch("image/*") }
+                    ) {
+                        Icon(Icons.Filled.Add, "Upload your cover art")
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    if (coverArtError != null) {
+                        Text(
+                            coverArtError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = Lato,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     Spacer(Modifier.height(10.dp))

@@ -429,7 +429,7 @@ fun EditProfileScreen(
             if (passwordError != null)
                 Text(passwordError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(20.dp))
 
             // --- Confirm Password ---
             OutlinedTextField(

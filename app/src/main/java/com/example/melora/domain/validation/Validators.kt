@@ -15,15 +15,8 @@ fun songNameValidation(songName:String):String?{
 
 fun songValidation(context: Context,songUri:Uri?):String?{
     if(songUri == null) return  "The song cant be empty"
-    return try {    //abrimos el arhcivo
-        context.contentResolver.openInputStream(songUri)?.use { stream ->
-            if(stream.available() <= 0) "the audio file is empty or invalid" else null //si el archivo tiene 0 bytes esque esta vacio
-        }?: "cant open the audio file"
-    } catch (e: Exception){
-        "cant process the audio file"
+    return null
     }
-
-}
 
 fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
     if(songCoverArtUri == null) return "The song covert art cant be empty"

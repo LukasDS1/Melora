@@ -70,7 +70,7 @@ fun MyProfileScreenVm(
         goPlayer = goPlayer,
         onDeleteSong = vm::deleteSong,
         onToggleFavorite = favVm::toggleFavorite,
-        onEditProfile = onEditProfile
+        onEditProfile = onEditProfile,
         updateSong =  vm::updateSongDetails
     )
 }
@@ -81,10 +81,9 @@ fun MyProfileScreen(
     profilePicture: String?,
     songs: List<SongDetailed>,
     goPlayer: (Long) -> Unit,
-    onDeleteSong : (Long) -> Unit,
-    onToggleFavorite: (Long) -> Unit,
-    onEditProfile: () -> Unit
-    updateSong: (Long,String?,String?) -> Unit,
+    onDeleteSong: (Long) -> Unit,
+    onEditProfile: () -> Unit,
+    updateSong: (Long, String?, String?) -> Unit,
     onToggleFavorite: (Long) -> Unit
 ) {
     val bg = Resaltado
