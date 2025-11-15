@@ -53,40 +53,47 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
-import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
-
+import com.example.melora.viewmodel.RegisterApiViewModel
 @Composable
 fun RegisterScreenVm(
     onRegistered: () -> Unit,
     onGoLogin: () -> Unit,
-    vm: AuthViewModel
+    vm: RegisterApiViewModel = viewModel()
 ) {
-    val state by vm.register.collectAsStateWithLifecycle() // Observa estado en tiempo real
-
+    val state by vm.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    // ÉXITO
     LaunchedEffect(state.success) {
         if (state.success) {
-            Toast.makeText(context, "Signed up correctly.", Toast.LENGTH_SHORT).show()
-            vm.clearRegisterResult()
+            Toast.makeText(context, "Registered successfully!", Toast.LENGTH_SHORT).show()
+            vm.clearState()
             onRegistered()
+        }
+    }
+
+    // ERRORES
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
 
     RegisterScreen(
         nickname = state.nickname,
         email = state.email,
-        pass = state.pass,
-        confirmPass = state.confirmPass,
+        password = state.password,
+        confirmPass = state.confirmPassword,
 
         nicknameError = state.nicknameError,
         emailError = state.emailError,
-        passError = state.passError,
+        passError = state.passwordError,
         confirmPassError = state.confirmPassError,
 
         canSubmit = state.canSubmit,
@@ -94,19 +101,21 @@ fun RegisterScreenVm(
         errorMessage = state.errorMessage,
 
         onNicknameChange = vm::onNicknameChange,
-        onEmailChange = vm::onRegisterEmailChange,
-        onPassChange = vm::onRegisterPassChange,
-        onConfirmPassChange = vm::onConfirmChange,
+        onEmailChange = vm::onEmailChange,
+        onPassChange = vm::onPasswordChange,
+        onConfirmPassChange = vm::onConfirmPasswordChange,
+
         onSubmit = vm::submitRegister,
         onGoLogin = onGoLogin
     )
 }
 
+
 @Composable
 fun RegisterScreen(
     nickname: String,
     email: String,
-    pass: String,
+    password: String,
     confirmPass: String,
 
     nicknameError: String?,
@@ -293,7 +302,7 @@ fun RegisterScreen(
 
                 // Contraseña
                 OutlinedTextField(
-                    value = pass,
+                    value = password,
                     onValueChange = onPassChange,
                     placeholder = { Text("Password") },
                     leadingIcon = {

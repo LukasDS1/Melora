@@ -43,6 +43,7 @@ import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.PlaylistViewModel
 import com.example.melora.viewmodel.PlaylistViewModelFactory
+import com.example.melora.viewmodel.RegisterApiViewModel
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadViewModel
@@ -97,6 +98,9 @@ fun AppRoot() {
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
+    val registerApiViewModel: RegisterApiViewModel = viewModel()
+
+
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(UserRepository(userDao,rolDao,estadoDao), application)
     )
@@ -109,6 +113,7 @@ fun AppRoot() {
     val editProfileViewModel: EditProfileViewModel = viewModel(
         factory = EditProfileViewModelFactory(userRepository, userPreferences)
     )
+
     val homeScreenViewModel: HomeScreenViewModel = viewModel(
         factory = HomeScreenViewModelFactory(songRepository)
     )
@@ -150,7 +155,8 @@ fun AppRoot() {
                 banViewModel = banViewModel,
                 editProfileViewModel = editProfileViewModel,
                 playlistViewModel =playlistViewModel,
-                homeScreenViewModel = homeScreenViewModel
+                homeScreenViewModel = homeScreenViewModel,
+                registerApiViewModel = registerApiViewModel
             )
         }
     }

@@ -6,10 +6,9 @@ import android.net.Uri
 import android.util.Patterns
 
 fun songNameValidation(songName:String):String?{
-    if(songName.contains(' ')) return  "The song name cant contain spaces"
-    return if(songName.trim().isBlank()) "The song name cant be empty" else null
-
-
+    if(songName.trim().isBlank()) return "The song name cant be empty"
+    if(songName.contains(' ')) return "The song name cant contain spaces"
+    return null
 }
 
 
@@ -45,6 +44,7 @@ fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
 fun validateEmail(email: String): String? {
     if (email.isBlank()) return "El email es obligatorio."
     val ok = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    //TODO:poner que la longitud minima para el email sea >3  con el length
     return if (!ok) "Formato de email inválido" else null
 }
 
@@ -63,7 +63,7 @@ fun validatePassword(pass: String): String? {
     if (!pass.any { it.isUpperCase() }) return "Debe incluir al menos una mayúscula."
     if (!pass.any { it.isLowerCase() }) return "Debe incluir al menos una minúscula."
     if (!pass.any { it.isDigit() }) return "Debe incluir al menos un número."
-    if (!pass.any { it.isLetterOrDigit() }) return "Debe incluir al menos un símbolo."
+    if (!pass.any { !it.isLetterOrDigit() }) return "Debe incluir al menos un símbolo."
     if (pass.contains(' ')) return "No debe contener espacios."
     return null
 }

@@ -51,10 +51,13 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
     implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
+    implementation("androidx.navigation:navigation-compose:2.9.5")
+
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,27 +71,36 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.activity:activity-compose:1.9.3")
 
-
-    //navBar Imports
-    implementation("androidx.navigation:navigation-compose:2.9.5")
+    // Coil (solo 1 vez)
     implementation("io.coil-kt:coil-compose:2.7.0")
+
     //Bd Imports
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
-
-    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // PlaySong dependencies
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
     implementation("androidx.media3:media3-common:1.8.0")
 
-    //datatore preferenis
+    //datastore preferences
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // Cargar imagenes para mostrrlas en la UI
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    // Retrofit + OkHttp
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    //======LIBRERIAS TEST LOCALES ===========
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("org.robolectric:robolectric:4.13")
+
+    //=====LIBRERIAS DE TEST UI==============
+    androidTestImplementation("androidx.test:core-ktx:1.5.0")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+
+    // Accompanist
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
 }

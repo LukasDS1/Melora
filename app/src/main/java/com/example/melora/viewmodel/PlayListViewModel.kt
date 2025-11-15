@@ -24,7 +24,7 @@ class PlaylistViewModel(
     private val _songsInPlaylist = MutableStateFlow<List<SongDetailed>>(emptyList())
     val songsInPlaylist: StateFlow<List<SongDetailed>> = _songsInPlaylist
 
-    // 🔹 Playlist actual (para cuando se abre una ajena)
+    //  Playlist actual (para cuando se abre una ajena)
     private val _currentPlaylist = MutableStateFlow<PlaylistEntity?>(null)
     val currentPlaylist: StateFlow<PlaylistEntity?> = _currentPlaylist
 
