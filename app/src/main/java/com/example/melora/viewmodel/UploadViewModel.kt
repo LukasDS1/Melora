@@ -41,7 +41,7 @@ class UploadViewModel( private  val repository: SongRepository,private val uploa
     //funcion para habilitar el boton de enviar
     private fun recomputeUpdateCanSubmit() {
         val s = _upload.value
-        val noErrors = listOf(s.songNameError, s.coverArtError).all { it == null }
+        val noErrors = listOf(s.songNameError, s.coverArtError, s.songError).all { it == null }
         val filled = s.songName.isNotBlank() && s.coverArt != null && s.song != null
         _upload.update { it.copy(canSubmit = noErrors && filled) }
     }

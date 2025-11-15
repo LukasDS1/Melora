@@ -65,6 +65,7 @@ import com.example.melora.viewmodel.EditProfileViewModel
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PlayfairDisplay
+import com.example.melora.ui.theme.ResaltadoNegative
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -428,7 +429,7 @@ fun EditProfileScreen(
             if (passwordError != null)
                 Text(passwordError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(20.dp))
 
             // --- Confirm Password ---
             OutlinedTextField(
@@ -472,10 +473,7 @@ fun EditProfileScreen(
             Button(
                 onClick = onSubmit,
                 enabled = canSubmit && !isSubmitting,
-                colors = ButtonDefaults.buttonColors(
-                    disabledContainerColor = Color(0xFF5C8374),
-                    containerColor = Color(0xFF93B1A6)
-                ),
+                colors = ButtonDefaults.buttonColors(disabledContainerColor = ResaltadoNegative, containerColor = Resaltado),
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .height(50.dp)
@@ -492,7 +490,7 @@ fun EditProfileScreen(
             // --- Botón logout ---
             Button(
                 onClick = onLogoutClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF660B05)),
+                colors = ButtonDefaults.buttonColors(containerColor = ResaltadoNegative),
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .height(50.dp)

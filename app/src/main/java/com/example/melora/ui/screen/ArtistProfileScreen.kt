@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -99,8 +100,9 @@ fun ArtistProfileScreen(
                     painterResource(R.drawable.defaultprofilepicture),
                 contentDescription = "Artist picture",
                 modifier = Modifier
-                    .size(120.dp)
-                    .clip(MaterialTheme.shapes.medium)
+                    .aspectRatio(1f)
+                    .size(120.dp),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.height(20.dp))

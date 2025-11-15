@@ -51,8 +51,13 @@ class SongRepository(
         }
     }
 
-    suspend fun deleteSong(songId: Long){
-        songDao.deleteById(songId)
+    suspend fun deleteSong(songId: Long): Result<Unit> {
+        return try {
+            songDao.deleteById(songId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun changeSongDetails(
