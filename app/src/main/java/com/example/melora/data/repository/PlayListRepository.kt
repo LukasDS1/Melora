@@ -14,7 +14,6 @@ class PlayListRepository(
 
 
     suspend fun createPlaylist(
-        name: String,
         playListName: String,
         creationDate: Long,
         accesoId: Long,
@@ -23,12 +22,11 @@ class PlayListRepository(
         songIds: List<Long>
     ): Result<Long> {
         return try {
-            if (name.isBlank() || playListName.isBlank()) {
+            if (playListName.isBlank()) {
                 return Result.failure(IllegalArgumentException("Playlist name cannot be empty"))
             }
 
             val playlist = PlaylistEntity(
-                name = name,
                 playListName = playListName,
                 creationDate = creationDate,
                 accesoId = accesoId,

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,7 +38,6 @@ fun AppNavGraph(
 ) {
 
 
-
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     val roleId by authViewModel.currentRoleId.collectAsStateWithLifecycle()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -52,19 +52,31 @@ fun AppNavGraph(
 
     val goHome = {
         navController.navigate(Route.Home.path) {
-            popUpTo(Route.Login.path) { inclusive = true }
+            popUpTo(Route.Home.path) { inclusive = false }
             launchSingleTop = true
         }
     }
 
-    val goSearch: () -> Unit = {navController.navigate(Route.SearchView.path) {launchSingleTop = true} }
+    val goSearch = {
+        navController.navigate(Route.SearchView.path) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
-    val goPlaylist : (Long) -> Unit = { playlistId -> navController.navigate("playlist/$playlistId") {launchSingleTop = true} }
+    val goPlaylist: (Long) -> Unit =
+        { playlistId -> navController.navigate("playlist/$playlistId") { launchSingleTop = true } }
 
     val goFavorites = {
         navController.navigate(Route.Favorites.path) {
-            popUpTo(Route.Home.path)
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
             launchSingleTop = true
+            restoreState = true
         }
     }
 
@@ -77,12 +89,12 @@ fun AppNavGraph(
         { navController.navigate(Route.editProfile.path) { launchSingleTop = true } }
 
 
-    val goSucces : () -> Unit = {
+    val goSucces: () -> Unit = {
         navController.navigate(Route.SuccesUpload.path) { launchSingleTop = true }
     }
 
 
-    val goArtistProfile: (Long) -> Unit = { id ->
+    val goArtistProfile: (Long?) -> Unit = { id ->
         navController.navigate("artistProfile/$id") { launchSingleTop = true }
     }
 
@@ -96,28 +108,44 @@ fun AppNavGraph(
         }
     }
 
-    val goRegister : () -> Unit = { navController.navigate(Route.Register.path) { popUpTo(Route.Login.path) { inclusive = false }
+    val goRegister: () -> Unit = {
+        navController.navigate(Route.Register.path) {
+            popUpTo(Route.Login.path) { inclusive = false }
             launchSingleTop = true
         }
     }
 
+    val goMyProfile: () -> Unit = {
+        navController.navigate(Route.MyProfile.path) { launchSingleTop = true }
+    }
+
+    val hideBars = currentRoute in listOf(
+        Route.Login.path,
+        Route.Register.path,
+        Route.UploadScreenForm.path,
+        Route.editProfile.path,
+        Route.Player.path
+    )
+
     Scaffold(
         containerColor = Resaltado,
         topBar = {
-            if (currentRoute != Route.Login.path &&
-                currentRoute != Route.Register.path &&
-                currentRoute != Route.Player.path &&
-                currentRoute != Route.editProfile.path
-            ) {
+            if (!hideBars) {
                 AppTopBar(
-                    onHome = goHome,
-                    onEditProfile = goEditProfile
+                    onUpload = goUpload,
+                    profileImageUrl = currentUser?.profilePicture,
+                    onMyProfile = goMyProfile
                 )
             }
         },
         bottomBar = {
-            if (currentRoute != Route.Login.path && currentRoute != Route.Register.path) {
-                AppNavigationBar(navController = navController)
+            if (!hideBars) {
+                AppNavigationBar(
+                    navController = navController,
+                    onGoHome = goHome,
+                    onGoSearch = goSearch,
+                    onGoFavorites = goFavorites
+                )
             }
         }
     ) { innerPadding ->
@@ -154,7 +182,8 @@ fun AppNavGraph(
                     UploadScreenVm(
                         vm = uploadViewModel,
                         onGoSucces = goSucces,
-                        userId = user.idUser
+                        userId = user.idUser,
+                        goHome = goHome
                     )
                 } else {
                     goLogin()
@@ -221,31 +250,34 @@ fun AppNavGraph(
                 )
             }
 
-                    composable(Route.editProfile.path) {
-                        EditProfileScreenVm(
-                            vm = editProfileViewModel,
-                            onExit = goHome,
-                            onProfileUpdated = { navController.popBackStack() }, // Go back to home if success
-                            onLogout = goLogin
-                        )
-                    }
+            composable(Route.editProfile.path) {
+                EditProfileScreenVm(
+                    vm = editProfileViewModel,
+                    onExit = goMyProfile,
+                    onProfileUpdated = { navController.popBackStack() }, // Go back to home if success
+                    onLogout = goLogin
+                )
+            }
 
-                    composable(Route.MyProfile.path) {
-                        MyProfileScreenVm(
-                            favVm = favoriteModel,
-                            vm = artistModel,
-                            goPlayer = { songId ->
-                                navController.navigate("player/$songId") {
-                                    launchSingleTop = true
-                                }
-                            }
-                        )
-                    }
+            composable(Route.MyProfile.path) {
+                MyProfileScreenVm(
+                    favVm = favoriteModel,
+                    vm = artistModel,
+                    goPlayer = { songId ->
+                        navController.navigate("player/$songId") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onEditProfile = goEditProfile
+                )
+            }
+
             composable(
                 route = "playlist/{playlistId}",
                 arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
             ) { backStackEntry ->
-                val playlistId = backStackEntry.arguments?.getLong("playlistId") ?: return@composable
+                val playlistId =
+                    backStackEntry.arguments?.getLong("playlistId") ?: return@composable
                 PlaylistDetailScreenVm(
                     playlistId = playlistId,
                     playlistViewModel = playlistViewModel,
@@ -253,7 +285,7 @@ fun AppNavGraph(
                     onBack = { navController.popBackStack() }
                 )
             }
-                }
         }
     }
+}
 

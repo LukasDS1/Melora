@@ -57,7 +57,6 @@ class PlaylistViewModel(
     }
 
     fun createPlaylist(
-        name: String,
         playListName: String,
         accesoId: Long,
         catId: Long,
@@ -67,7 +66,6 @@ class PlaylistViewModel(
     ) {
         viewModelScope.launch {
             val result = playlistRepo.createPlaylist(
-                name = name,
                 playListName = playListName,
                 creationDate = System.currentTimeMillis(),
                 accesoId = accesoId,

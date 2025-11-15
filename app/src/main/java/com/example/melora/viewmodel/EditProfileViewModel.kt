@@ -48,7 +48,6 @@ class EditProfileViewModel(
         viewModelScope.launch {
             currentUserId = userPreferences.userId.firstOrNull() ?: return@launch
             val user = userRepository.getUserById(currentUserId)
-            Log.d("EditProfileVM", "Loaded user: $user")
             user?.let {
                 originalUser = it
                 initialProfilePicture = it.profilePicture
@@ -87,6 +86,7 @@ class EditProfileViewModel(
         viewModelScope.launch {
             currentUserId?.let { id ->
                 userRepository.updateProfilePicture(id, uriString)
+                userPreferences.setProfilePicture(uriString)
             }
         }
     }

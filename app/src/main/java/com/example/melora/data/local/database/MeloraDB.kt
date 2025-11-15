@@ -47,7 +47,7 @@ import java.io.File
         PlayListUsersEntity::class,
         ListaEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Mantener true para inspeccionar el esquema (útil en educación)
 )
 abstract class MeloraDB : RoomDatabase() {

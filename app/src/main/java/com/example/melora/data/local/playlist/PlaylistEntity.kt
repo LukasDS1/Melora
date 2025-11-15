@@ -30,7 +30,6 @@ import com.example.melora.data.local.users.UserEntity
 data class PlaylistEntity(
     @PrimaryKey(autoGenerate = true)
     val idPlaylist: Long = 0,
-    val name: String,
     val playListName: String,
     val creationDate: Long,
     val accesoId:Long,

@@ -19,6 +19,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
+import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
@@ -29,6 +31,7 @@ fun MyProfileScreenVm(
     vm: ArtistProfileViewModel,
     goPlayer: (Long) -> Unit,
     favVm: FavoriteViewModel,
+    onEditProfile: () -> Unit
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
@@ -62,7 +65,8 @@ fun MyProfileScreenVm(
         songs = songs,
         goPlayer = goPlayer,
         onDeleteSong = vm::deleteSong,
-        onToggleFavorite = favVm::toggleFavorite
+        onToggleFavorite = favVm::toggleFavorite,
+        onEditProfile = onEditProfile
     )
 }
 
@@ -73,7 +77,8 @@ fun MyProfileScreen(
     songs: List<SongDetailed>,
     goPlayer: (Long) -> Unit,
     onDeleteSong : (Long) -> Unit,
-    onToggleFavorite: (Long) -> Unit
+    onToggleFavorite: (Long) -> Unit,
+    onEditProfile: () -> Unit
 ) {
     val bg = Resaltado
     var expanded by remember { mutableStateOf(false) }
@@ -100,6 +105,17 @@ fun MyProfileScreen(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = onEditProfile,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBg
+                )
+            ) {
+                Text("Edit profile", fontFamily = Lato)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = nickname ?: "Unknown Artist",
