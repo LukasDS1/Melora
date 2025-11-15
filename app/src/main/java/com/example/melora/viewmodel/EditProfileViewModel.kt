@@ -20,8 +20,12 @@ data class EditProfileUiState(
     val nicknameError: String? = null,
     val email: String = "",
     val emailError: String? = null,
+    val currentPassword: String = "",
+    val currentPasswordError: String? = null,
     val password: String = "",
+    val confirmPassword: String = "",
     val passwordError: String? = null,
+    val passwordConfirmError: String? = null,
     val profilePictureUrl: String? = null,
     val isSubmitting: Boolean = false,
     val canSubmit: Boolean = false,
@@ -60,6 +64,8 @@ class EditProfileViewModel(
         }
     }
 
+
+
     fun resetFormToOriginalUser() {
         originalUser?.let { user ->
             _state.value = _state.value.copy(
@@ -76,6 +82,25 @@ class EditProfileViewModel(
                 profilePictureUrl = user.profilePicture
             )
         }
+    }
+
+    private suspend fun loadUserById(id: Long) {
+        currentUserId = id
+        val user = userRepository.getUserById(id)
+        if (user != null) {
+            originalUser = user
+            initialProfilePicture = user.profilePicture
+            _state.value = EditProfileUiState(
+                nickname = user.nickname,
+                email = user.email,
+                profilePictureUrl = user.profilePicture
+            )
+        }
+    }
+
+    fun onCurrentPasswordChange(value: String) {
+        _state.update { it.copy(currentPassword = value, currentPasswordError = null) }
+        recomputeCanSubmit()
     }
 
     fun onProfilePictureChange(uriString: String?) {
@@ -106,18 +131,52 @@ class EditProfileViewModel(
         recomputeCanSubmit()
     }
 
+    fun onConfirmPasswordChange(value: String) {
+        val password = _state.value.password
+
+        val error = when {
+            value.isBlank() && password.isNotBlank() -> "Confirm"
+            value != password -> "The password are not the same"
+            else -> null
+        }
+        _state.update {
+            it.copy(
+                confirmPassword = value,
+                passwordConfirmError = error
+            )
+        }
+        recomputeCanSubmit()
+    }
+
     private fun recomputeCanSubmit() {
         val s = _state.value
-        val noErrors = listOf(s.nicknameError, s.emailError, s.passwordError).all { it == null }
+        val passwordChanging = s.password.isNotBlank()
+
+        val noErrors = listOf(
+            s.nicknameError,
+            s.emailError,
+            s.passwordError,
+            s.passwordConfirmError,
+            s.currentPasswordError
+        ).all { it == null }
+
+        val confirmOk = if (passwordChanging) {
+            s.confirmPassword.isNotBlank() && s.passwordConfirmError == null
+        } else true
 
         val anyChange =
             s.nickname != originalUser?.nickname ||
-            s.email != originalUser?.email ||
-            s.password.isNotBlank() ||
-            s.profilePictureUrl != initialProfilePicture
+                    s.email != originalUser?.email ||
+                    passwordChanging ||
+                    s.profilePictureUrl != initialProfilePicture
 
-        _state.update { it.copy(canSubmit = noErrors && anyChange) }
+        val hasCurrentPassword = s.currentPassword.isNotBlank()
+
+        _state.update { it.copy(canSubmit = noErrors && confirmOk && anyChange && hasCurrentPassword) }
     }
+
+
+
     fun submitChanges() {
         val s = _state.value
         if (!s.canSubmit || s.isSubmitting) return
@@ -127,6 +186,18 @@ class EditProfileViewModel(
         viewModelScope.launch {
             try {
                 currentUserId?.let { id ->
+                    val user = userRepository.getUserById(id)
+                    if (user == null || user.pass != s.currentPassword) {
+                        _state.update {
+                            it.copy(
+                                isSubmitting = false,
+                                success = false,
+                                currentPasswordError = "Contraseña actual incorrecta"
+                            )
+                        }
+                        return@launch
+                    }
+
                     if (s.nickname.isNotBlank() && s.nickname != originalUser?.nickname)
                         userRepository.updateNickname(id, s.nickname)
 
@@ -135,28 +206,39 @@ class EditProfileViewModel(
 
                     if (s.password.isNotBlank())
                         userRepository.updatePassword(id, s.password)
-                }
 
-                val user = originalUser
-                if (user != null) {
-                    originalUser = user.copy(
+                    val userUpdated = user.copy(
                         nickname = if (s.nickname != user.nickname) s.nickname else user.nickname,
                         email = if (s.email != user.email) s.email else user.email
                     )
+
+                    originalUser = userUpdated
+
+                    _state.update {
+                        it.copy(
+                            isSubmitting = false,
+                            success = true,
+                            canSubmit = false,
+                            password = "",
+                            confirmPassword = "",
+                            currentPassword = ""
+                        )
+                    }
                 }
-
-
-
-                _state.update { it.copy(isSubmitting = false, success = true, canSubmit = false, password = "") }
             } catch (e: Exception) {
                 _state.update { it.copy(isSubmitting = false, success = false, errorMessage = e.message) }
             }
         }
     }
 
+
     fun logout(onLogout: () -> Unit) {
         viewModelScope.launch {
             userPreferences.clear()
+            _state.value = EditProfileUiState()
+            originalUser = null
+            currentUserId = null
+            initialProfilePicture = null
             onLogout()
         }
     }

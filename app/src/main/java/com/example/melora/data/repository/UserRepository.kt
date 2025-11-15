@@ -23,6 +23,7 @@ class UserRepository(
         }
     }
 
+
     suspend fun login(email: String, password: String): Result<UserEntity> {
         val user = userDao.getByEmail(email.trim().lowercase())
         return if (user != null && user.pass == password.trim()) {

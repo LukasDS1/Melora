@@ -4,6 +4,7 @@ data class SongDetailed(
     val artistId: Long,
     val songName: String,
     val coverArt: String?,
+    val songDescription: String?,
     val songPath: String,
     val durationSong: Int,
     val uploadDate: Long?,

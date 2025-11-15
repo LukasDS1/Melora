@@ -30,4 +30,27 @@ class ArtistProfileViewModel(private val repository: ArtistRepository,private va
             }
         }
     }
+
+    fun updateSongDetails(songId: Long, newName: String?, newDesc: String?) {
+        viewModelScope.launch {
+            val result = songRepository.changeSongDetails(songId, newName, newDesc)
+            result.onSuccess {
+                artistData?.artist?.idUser?.let { loadArtist(it) }
+            }.onFailure { e ->
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun banUser(userId: Long) {
+        viewModelScope.launch {
+            val result = repository.banUser(userId)
+            result.onSuccess {
+            }.onFailure { e ->
+                e.printStackTrace()
+            }
+        }
+    }
+
+
 }

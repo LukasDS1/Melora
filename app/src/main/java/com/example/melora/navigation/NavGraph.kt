@@ -191,7 +191,7 @@ fun AppNavGraph(
             }
             composable(Route.SuccesUpload.path) {
                 SuccesUpload(
-                    onLoginOk = goLogin,
+                    onGoHome = goHome,
                     onGoUpload = goUpload
                 )
             }
@@ -212,7 +212,8 @@ fun AppNavGraph(
                 ArtistProfileScreenVm(
                     artistId = artistId,
                     vm = artistModel,
-                    goPlayer = goPlayer
+                    goPlayer = goPlayer,
+                    roleId = roleId
                 )
             }
 
@@ -225,7 +226,6 @@ fun AppNavGraph(
                 LaunchedEffect(songId) {
                     musicPlayerViewModel.getSongDetails(songId)
                 }
-
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
 
                 currentSong?.let {

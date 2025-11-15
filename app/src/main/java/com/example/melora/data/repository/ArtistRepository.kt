@@ -19,4 +19,14 @@ class ArtistRepository(
         val songs = songDao.getSongsForArtist(artistId)
         return ArtistProfilData(artist,songs)
     }
+
+    suspend fun banUser(userId: Long): Result<Unit> {
+        return try {
+            userDao.banUser(userId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }
