@@ -30,7 +30,8 @@ fun AppNavGraph(
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
     playlistViewModel: PlaylistViewModel,
-    homeScreenViewModel: HomeScreenViewModel
+    homeScreenViewModel: HomeScreenViewModel,
+    registerApiViewModel: RegisterApiViewModel
 ) {
 
 
@@ -131,7 +132,7 @@ fun AppNavGraph(
             }
             composable(Route.Register.path) {
                 RegisterScreenVm(
-                    vm = authViewModel,
+                    vm = registerApiViewModel ,
                     onGoLogin = goLogin,
                     onRegistered = goLogin
                 )
