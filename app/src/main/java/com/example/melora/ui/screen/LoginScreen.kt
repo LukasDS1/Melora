@@ -55,10 +55,11 @@ import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PlayfairDisplay
+import com.example.melora.viewmodel.LoginApiViewModel
 
 @Composable                                                  // Pantalla Login conectada al VM
 fun LoginScreenVm(
-    vm: AuthViewModel,                            // MOD: recibimos el VM desde NavGraph
+    vm: LoginApiViewModel,                            // MOD: recibimos el VM desde NavGraph
     onLoginOk: () -> Unit,                       // Navega a Home cuando el login es exitoso
     onGoRegister: () -> Unit                                 // Navega a Registro
 ) {
@@ -68,23 +69,25 @@ fun LoginScreenVm(
 
     LaunchedEffect(state.success) {
         if (state.success) {
-            vm.clearLoginResult()
+            vm.clearLoginStatus()
             onLoginOk()
         }
     }
 
-    LoginScreen(                                             // Delegamos a UI presentacional
-        email = state.email,                                 // Valor de email
-        pass = state.pass,                                   // Valor de password
-        emailError = state.emailError,                       // Error de email
-        passError = state.passError,                         // (Opcional) error de pass en login
-        canSubmit = state.canSubmit,                         // Habilitar botón
-        isSubmitting = state.isSubmitting,                   // Loading
-        errorMessage = state.errorMessage,                           // Error global
-        onEmailChange = vm::onLoginEmailChange,              // Handler email
-        onPassChange = vm::onLoginPassChange,                // Handler pass
-        onSubmit = vm::submitLogin,                          // Acción enviar
-        onGoRegister = onGoRegister                          // Ir a Registro
+    LoginScreen(
+        email = state.email,
+        pass = state.pass,
+        emailError = state.emailError,
+        passError = state.passError,
+        canSubmit = state.canSubmit,
+        isSubmitting = state.isSubmitting,
+        errorMessage = state.errorMessage,
+
+        onEmailChange = vm::onEmailChange,
+        onPassChange = vm::onPasswordChange,
+        onSubmit = vm::submitLogin,
+
+        onGoRegister = onGoRegister
     )
 }
 @Composable

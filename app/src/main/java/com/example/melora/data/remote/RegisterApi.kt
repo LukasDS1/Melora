@@ -13,26 +13,26 @@ interface RegisterApi {
 
 
     //Registrar usuario
-    @POST("api-v1/register/add")
+    @POST("api-v1/auth/add")
     suspend fun registerUser(
         @Body dto: RegisterUserDto
     ): Response<Any>
 
     // Obtener usuario por ID
-    @GET("api-v1/register/exists/{idUser}")
+    @GET("api-v1/auth/exists/{idUser}")
     suspend fun getUserById(
         @Path("idUser") id: Long
     ): Response<Any>
 
     // Actualizar usuario
-    @PATCH("api-v1/register/update/{idUser}")
+    @PATCH("api-v1/auth/update/{idUser}")
     suspend fun updateUser(
         @Path("idUser") id: Long,
         @Body dto: RegisterUserDto
     ): Response<Any>
 
     // Eliminar usuario
-    @DELETE("api-v1/register/delete/{idUser}")
+    @DELETE("api-v1/auth/delete/{idUser}")
     suspend fun deleteUser(
         @Path("idUser") id: Long
     ): Response<Any>
