@@ -56,6 +56,8 @@ fun AppNavGraph(
             popUpTo(Route.Home.path) { inclusive = false }
             launchSingleTop = true
         }
+
+
     }
 
     val goSearch = {
