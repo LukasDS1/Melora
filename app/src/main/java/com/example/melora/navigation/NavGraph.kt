@@ -33,7 +33,8 @@ fun AppNavGraph(
     playlistViewModel: PlaylistViewModel,
     homeScreenViewModel: HomeScreenViewModel,
     registerApiViewModel: RegisterApiViewModel,
-    loginApiViewModel: LoginApiViewModel
+    loginApiViewModel: LoginApiViewModel,
+    uploadApiViewModel: UploadApiViewModel
 ) {
 
     // =============== NUEVO: leer el login real desde UserPreferences =====================
@@ -42,8 +43,9 @@ fun AppNavGraph(
     val isLoggedIn by prefs.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     // ====================================================================================
 
-    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
-    val roleId by authViewModel.currentRoleId.collectAsStateWithLifecycle()
+    val userId by prefs.userId.collectAsStateWithLifecycle(initialValue = null)
+    val profilePicture by prefs.profilePicture.collectAsStateWithLifecycle(initialValue = null)
+    val roleId by prefs.userRoleId.collectAsStateWithLifecycle(initialValue = null)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -133,7 +135,7 @@ fun AppNavGraph(
             if (!hideBars) {
                 AppTopBar(
                     onUpload = goUpload,
-                    profileImageUrl = currentUser?.profilePicture,
+                    profileImageUrl = profilePicture,
                     onMyProfile = goMyProfile
                 )
             }
@@ -185,15 +187,15 @@ fun AppNavGraph(
 
             // =================== RESTO IGUAL ====================
             composable(Route.UploadScreenForm.path) {
-                val user = currentUser
-                if (user != null) {
+                if (userId != null) {
                     UploadScreenVm(
-                        vm = uploadViewModel,
-                        onGoSucces = goSucces,
-                        userId = user.idUser,
-                        goHome = goHome
+                        vm = uploadApiViewModel,
+                        onGoSuccess = goSucces,
+                        userId = userId!!
                     )
-                } else goLogin()
+                } else {
+                    goLogin()
+                }
             }
 
             composable(Route.SuccesUpload.path) {
