@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
 import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.repository.FavoriteRepository
+import com.example.melora.data.repository.LoginApiRepository
 import com.example.melora.data.repository.PlayListRepository
 import com.example.melora.data.repository.PlayListUserRepository
 import com.example.melora.data.repository.SongRepository
@@ -39,6 +40,8 @@ import com.example.melora.viewmodel.FavoriteViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.HomeScreenViewModel
 import com.example.melora.viewmodel.HomeScreenViewModelFactory
+import com.example.melora.viewmodel.LoginApiViewModel
+import com.example.melora.viewmodel.LoginApiViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.PlaylistViewModel
@@ -100,9 +103,15 @@ fun AppRoot() {
 
     val registerApiViewModel: RegisterApiViewModel = viewModel()
 
-
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(UserRepository(userDao,rolDao,estadoDao), application)
+    )
+
+    val loginApiViewModel: LoginApiViewModel = viewModel(
+        factory = LoginApiViewModelFactory(
+            repository = LoginApiRepository(),
+            prefs = prefs
+        )
     )
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
@@ -156,7 +165,8 @@ fun AppRoot() {
                 editProfileViewModel = editProfileViewModel,
                 playlistViewModel =playlistViewModel,
                 homeScreenViewModel = homeScreenViewModel,
-                registerApiViewModel = registerApiViewModel
+                registerApiViewModel = registerApiViewModel,
+                loginApiViewModel = loginApiViewModel
             )
         }
     }
