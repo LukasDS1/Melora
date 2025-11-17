@@ -49,6 +49,7 @@ import com.example.melora.viewmodel.PlaylistViewModelFactory
 import com.example.melora.viewmodel.RegisterApiViewModel
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
+import com.example.melora.viewmodel.UploadApiViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.viewmodel.UploadViewModelFactory
 
@@ -113,6 +114,7 @@ fun AppRoot() {
             prefs = prefs
         )
     )
+    val uploadApiViewModel: UploadApiViewModel = viewModel()
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     val currentUserId = currentUser?.idUser
@@ -166,7 +168,8 @@ fun AppRoot() {
                 playlistViewModel =playlistViewModel,
                 homeScreenViewModel = homeScreenViewModel,
                 registerApiViewModel = registerApiViewModel,
-                loginApiViewModel = loginApiViewModel
+                loginApiViewModel = loginApiViewModel,
+                uploadApiViewModel = uploadApiViewModel
             )
         }
     }

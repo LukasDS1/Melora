@@ -4,7 +4,6 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,6 +34,7 @@ import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
+import com.example.melora.viewmodel.UploadApiViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -71,55 +71,41 @@ private fun getImageUriFile(context: Context,file: File):Uri{
 
 @Composable
 fun UploadScreenVm(
-    vm: UploadViewModel,
-    onGoSucces: () -> Unit,
-    userId : Long,
-    goHome: () -> Unit
+    vm: UploadApiViewModel,
+    onGoSuccess: () -> Unit,
+    userId: Long
 ) {
     val context = LocalContext.current
-    val state by vm.upload.collectAsStateWithLifecycle()
+    val state by vm.uiState.collectAsStateWithLifecycle()
 
     if (state.success) {
-        vm.clearForm()
-        vm.clearUpload()
-        onGoSucces()
-    }
-
-    BackHandler {
-        vm.clearForm()
-        goHome()
+        vm.clearState()
+        onGoSuccess()
     }
 
     UploadScreen(
-        song = state.song,
         songName = state.songName,
         songDescription = state.songDescription,
-        releaseDate = state.releaseDate,
-        coverArt = state.coverArt,
+        coverArt = state.coverArtUri,
+        song = state.songUri,
         songNameError = state.songNameError,
         coverArtError = state.coverArtError,
         songError = state.songError,
         isSubmitting = state.isSubmitting,
         canSubmit = state.canSubmit,
-        success = state.success,
-        errorMsg = state.errorMsg,
+        errorMessage = state.errorMessage,
         onSongNameChange = vm::onSongNameChange,
-        onSongDescription = vm::onSongDescriptionChange,
-        onSongCoverChange = { uri -> vm.onSongCoverChange(context, uri) },
-        onSongChange = { uri -> vm.onSongChange(context, uri) },
-        submitMusic = { vm.submitMusic(context, userId) },
-        onCancel = {
-            vm.clearForm()
-            goHome()
-        }
+        onSongDescriptionChange = vm::onSongDescriptionChange,
+        onSelectCoverArt = { uri -> vm.onCoverArtChange(context, uri) },
+        onSelectSongFile = { uri -> vm.onSongFileChange(context, uri) },
+        submit = { vm.submitUpload(userId) }
     )
 }
 
 @Composable
-private fun UploadScreen(
+fun UploadScreen(
     songName: String,
     songDescription: String?,
-    releaseDate: Date,
     coverArt: Uri?,
     song: Uri?,
     songNameError: String?,
@@ -127,63 +113,46 @@ private fun UploadScreen(
     songError: String?,
     isSubmitting: Boolean,
     canSubmit: Boolean,
-    success: Boolean,
-    errorMsg: String?,
+    errorMessage: String?,
     onSongNameChange: (String) -> Unit,
-    onSongDescription: (String) -> Unit,
-    onSongCoverChange: (Uri?) -> Unit,
-    onSongChange: (Uri?) -> Unit,
-    submitMusic: () -> Unit,
-    onCancel: () -> Unit
+    onSongDescriptionChange: (String) -> Unit,
+    onSelectCoverArt: (Uri?) -> Unit,
+    onSelectSongFile: (Uri?) -> Unit,
+    submit: () -> Unit
 ) {
-    val bg = Resaltado
-
+    val context = LocalContext.current
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-
     var isPlaying by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+    // ------------------------------------------------------------------
+    // Pickers
+    // ------------------------------------------------------------------
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            val localPath = saveAudioLocally(context, it)
-            onSongChange(Uri.fromFile(File(localPath)))
-        }
+        onSelectSongFile(uri)
     }
 
-   val photoPickerLauncher = rememberLauncherForActivityResult(
+    val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { selec ->try {
-       val inputStream = context.contentResolver.openInputStream(selec)
-       val tempFile = createTempImageFile(context)
-       inputStream?.use { input ->
-           tempFile.outputStream().use { output -> input.copyTo(output)
-           }
-       }
-       val savedUri = getImageUriFile(context,tempFile)
-       onSongCoverChange(savedUri)
-    }catch (e: Exception){
-       Toast.makeText(context,"Error canceled upload", Toast.LENGTH_SHORT).show()
+    ) { uri: Uri? ->
+        onSelectCoverArt(uri)
     }
-   }
-   }
 
-    Box( Modifier.background(bg)
+    // ------------------------------------------------------------------
+    // UI
+    // ------------------------------------------------------------------
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Resaltado)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Text(
-                text = "",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
 
             Spacer(Modifier.height(20.dp))
 
@@ -193,10 +162,9 @@ private fun UploadScreen(
                     .height(700.dp)
                     .padding(bottom = 40.dp),
                 shape = MaterialTheme.shapes.large,
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = SecondaryBg,
-                    contentColor = Color(0xFF03000A)
+                    contentColor = Color.Black
                 )
             ) {
                 Column(
@@ -205,43 +173,30 @@ private fun UploadScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
+                    // ---------------------------
+                    // AUDIO PICKER
+                    // ---------------------------
                     Text(
-                        "Upload your audio file (wav & mp3)",
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center,
-                        fontFamily = Lato
+                        "Upload your audio file ( mp3)",
+                        style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(Modifier.height(12.dp))
 
-                    // Audio picker
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),
-                        onClick = { audioPickerLauncher.launch("audio/*") }
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg),
+                        onClick = {audioPickerLauncher.launch("audio/mpeg")}
                     ) {
-                        Icon(Icons.Filled.Add, "Upload your music!")
-                    }
-
-                    Spacer(Modifier.height(4.dp))
-
-                    if (songError != null) {
-                        Text(
-                            songError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = Lato,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        Icon(Icons.Filled.Add, "Music")
+                        Text(" Select Audio", fontFamily = Lato)
                     }
 
                     Spacer(Modifier.height(10.dp))
 
                     if (song != null) {
-                        Text(
-                            text = song.lastPathSegment ?: "Audio Name",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Text(song.lastPathSegment ?: "Audio")
+
                         LaunchedEffect(song) {
                             mediaPlayer?.release()
                             mediaPlayer = MediaPlayer.create(context, song)
@@ -254,63 +209,47 @@ private fun UploadScreen(
                             }
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 8.dp)
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = {
-                                mediaPlayer?.let { player ->
+                                mediaPlayer?.let {
                                     if (isPlaying) {
-                                        player.pause()
+                                        it.pause()
                                         isPlaying = false
                                     } else {
-                                        player.start()
+                                        it.start()
                                         isPlaying = true
                                     }
                                 }
                             }) {
                                 Icon(
-                                    imageVector = if (isPlaying) Icons.Filled.Clear else Icons.Filled.PlayArrow,
-                                    contentDescription = if (isPlaying) "Pause" else "Play"
+                                    imageVector = if (isPlaying)
+                                        Icons.Filled.Clear else Icons.Filled.PlayArrow,
+                                    contentDescription = "Play/Pause"
                                 )
                             }
-                            Text(
-                                text = if (isPlaying) "Reproduciendo..." else "Reproducir",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontFamily = Lato
-                            )
+                            Text(if (isPlaying) "Reproduciendo..." else "Reproducir")
                         }
                     } else {
-                        Text("The Song cannot be empty", textAlign = TextAlign.Center,color = MaterialTheme.colorScheme.error, fontFamily = Lato)
+                        if (songError != null)
+                            Text(songError, color = MaterialTheme.colorScheme.error)
                     }
 
                     Spacer(Modifier.height(10.dp))
 
+                    // ---------------------------
+                    // COVER ART
+                    // ---------------------------
                     Text(
-                        "Upload your Covert Art",
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center,
-                        fontFamily = Lato
+                        "Upload your Cover Art",
+                        style = MaterialTheme.typography.titleMedium
                     )
-                    // Cover art
+
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg),
                         onClick = { photoPickerLauncher.launch("image/*") }
                     ) {
-                        Icon(Icons.Filled.Add, "Upload your cover art")
-                    }
-
-                    Spacer(Modifier.height(4.dp))
-
-                    if (coverArtError != null) {
-                        Text(
-                            coverArtError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = Lato,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        Icon(Icons.Filled.Add, "Cover Art")
+                        Text(" Select Image", fontFamily = Lato)
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -318,82 +257,76 @@ private fun UploadScreen(
                     if (coverArt != null) {
                         AsyncImage(
                             model = coverArt,
-                            contentDescription = "Cover Art",
                             modifier = Modifier
-                                .height(250.dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentDescription = "Cover Art",
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Text("Cover art has not been selected",color = MaterialTheme.colorScheme.error,textAlign = TextAlign.Center, fontFamily = Lato)
+                        if (coverArtError != null)
+                            Text(coverArtError, color = MaterialTheme.colorScheme.error)
                     }
 
                     Spacer(Modifier.height(10.dp))
 
-                    // Song name
+                    // ---------------------------
+                    // SONG NAME
+                    // ---------------------------
                     OutlinedTextField(
                         value = songName,
                         onValueChange = onSongNameChange,
-                        label = { Text("Song name", color = Color.Black, fontFamily = Lato) },
+                        label = { Text("Song name") },
                         singleLine = true,
                         isError = songNameError != null,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.Black)
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    if (songNameError != null) {
-                        Text(
-                            songNameError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = Lato
-                        )
-                    }
+
+                    if (songNameError != null)
+                        Text(songNameError, color = MaterialTheme.colorScheme.error)
+
                     Spacer(Modifier.height(10.dp))
-                    // Description
+
+                    // ---------------------------
+                    // DESCRIPTION
+                    // ---------------------------
                     OutlinedTextField(
                         value = songDescription ?: "",
-                        onValueChange = onSongDescription,
-                        label = { Text("Song description (optional)", color = Color.Black, fontFamily = Lato) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(color = Color.Black)
+                        onValueChange = onSongDescriptionChange,
+                        label = { Text("Song description (optional)") },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(Modifier.height(16.dp))
-                    // Submit button
+
+                    Spacer(Modifier.height(15.dp))
+
+                    // ---------------------------
+                    // SUBMIT
+                    // ---------------------------
                     Button(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Resaltado),
-                        onClick = submitMusic,
+                        onClick = submit,
                         enabled = canSubmit && !isSubmitting,
+                        colors = ButtonDefaults.buttonColors(containerColor = Resaltado),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         if (isSubmitting) {
                             CircularProgressIndicator(
-                                strokeWidth = 2.dp,
                                 modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Uploading Music...", fontFamily = Lato)
-                            Toast.makeText(context, "Music upload Successfully", Toast.LENGTH_SHORT).show()
+                            Text("Uploading...")
                         } else {
-                            Text("Upload", fontFamily = Lato)
+                            Text("Upload")
                         }
                     }
 
-                    Spacer(Modifier.height(10.dp))
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Resaltado),
-                        onClick = onCancel,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Cancel", fontFamily = Lato)
+                    if (errorMessage != null) {
+                        Spacer(Modifier.height(10.dp))
+                        Text(errorMessage, color = MaterialTheme.colorScheme.error)
                     }
                 }
             }
         }
     }
 }
+
