@@ -1,32 +1,32 @@
 package com.example.melora.data.repository
 
-import com.example.melora.data.local.song.SongDao
-import com.example.melora.data.local.song.SongDetailed
-import com.example.melora.data.local.users.UserDao
-import com.example.melora.data.local.users.UserEntity
-
-data class ArtistProfilData(
-    val artist: UserEntity,
-    val songs: List<SongDetailed>
-)
+import com.example.melora.data.remote.SongApi
+import com.example.melora.data.remote.dto.ArtistProfileData
+import com.example.melora.data.storage.UserPreferences
+import kotlinx.coroutines.flow.first
 
 class ArtistRepository(
-    private val userDao: UserDao,
-    private val songDao: SongDao
-){
-    suspend fun getSongByArtist(artistId: Long): ArtistProfilData?{
-        val artist = userDao.getById(artistId)?: return null
-        val songs = songDao.getSongsForArtist(artistId)
-        return ArtistProfilData(artist,songs)
-    }
+    private val musicApi: SongApi,
+    private val prefs: UserPreferences
+) {
 
-    suspend fun banUser(userId: Long): Result<Unit> {
-        return try {
-            userDao.banUser(userId)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    suspend fun getMyProfile(): ArtistProfileData {
 
+        val idUser = prefs.userId.first() ?: error("User not logged")
+        val nickname = prefs.nickname.first() ?: "Unknown"
+        val email = prefs.email.first() ?: "Unknown"
+        val roleId = prefs.userRoleId.first() ?: 1L
+        val photo = prefs.profilePicture.first()
+
+        val songs = musicApi.getByArtist(idUser)
+
+        return ArtistProfileData(
+            idUser = idUser,
+            nickname = nickname,
+            email = email,
+            roleId = roleId,
+            profilePhotoBase64 = photo,
+            songs = songs
+        )
+    }
 }

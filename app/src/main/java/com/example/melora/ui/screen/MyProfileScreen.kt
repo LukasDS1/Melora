@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
@@ -34,44 +35,21 @@ fun MyProfileScreenVm(
     favVm: FavoriteViewModel,
     onEditProfile: () -> Unit
 ) {
-    val context = LocalContext.current
-    val prefs = remember { UserPreferences(context) }
-    val scope = rememberCoroutineScope()
-
-    var nickname by remember { mutableStateOf<String?>(null) }
-    var profilePicture by remember { mutableStateOf<String?>(null) }
-    var songs by remember { mutableStateOf<List<SongDetailed>>(emptyList()) }
-
-
-
-
-
     LaunchedEffect(Unit) {
-        val id = prefs.userId.firstOrNull()
-        if (id != null) {
-            vm.loadArtist(id)
-        }
+        vm.loadMyProfile()
     }
 
-    val artistData = vm.artistData
-
-    LaunchedEffect(artistData) {
-        artistData?.let {
-            nickname = it.artist.nickname
-            profilePicture = it.artist.profilePicture
-            songs = it.songs
-        }
-    }
+    val artist = vm.artistData
 
     MyProfileScreen(
-        nickname = nickname,
-        profilePicture = profilePicture,
-        songs = songs,
+        nickname = artist?.nickname,
+        profilePicture = artist?.profilePhotoBase64,
+        songs = artist?.songs ?: emptyList(),
         goPlayer = goPlayer,
         onDeleteSong = vm::deleteSong,
         onToggleFavorite = favVm::toggleFavorite,
-        onEditProfile = onEditProfile,
-        updateSong =  vm::updateSongDetails
+        updateSong = vm::updateSongDetails,
+        onEditProfile = onEditProfile
     )
 }
 
@@ -79,7 +57,7 @@ fun MyProfileScreenVm(
 fun MyProfileScreen(
     nickname: String?,
     profilePicture: String?,
-    songs: List<SongDetailed>,
+    songs: List<SongDetailedDto>,
     goPlayer: (Long) -> Unit,
     onDeleteSong: (Long) -> Unit,
     onEditProfile: () -> Unit,
@@ -89,7 +67,7 @@ fun MyProfileScreen(
     val bg = Resaltado
     var expanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var selectedSong by remember { mutableStateOf<SongDetailed?>(null) }
+    var selectedSong by remember { mutableStateOf<SongDetailedDto?>(null) }
     var newName by remember { mutableStateOf("") }
     var newDesc by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -165,7 +143,7 @@ fun MyProfileScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             TextButton(
-                                onClick = { goPlayer(song.songId) },
+                                onClick = { goPlayer(song.idSong) },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Column(
@@ -204,7 +182,7 @@ fun MyProfileScreen(
                                         text = { Text("Delete Song", color = Color.White) },
                                         onClick = {
                                             expanded = false
-                                            onDeleteSong(song.songId)
+                                            onDeleteSong(song.idSong)
                                         }
                                     )
 
@@ -212,7 +190,7 @@ fun MyProfileScreen(
                                         text = { Text("Add Favorite", color = Color.White) },
                                         onClick = {
                                             expanded = false
-                                            onToggleFavorite(song.songId)
+                                            onToggleFavorite(song.idSong)
                                         }
                                     )
 
@@ -233,7 +211,7 @@ fun MyProfileScreen(
                                         confirmButton = {
                                             TextButton(onClick = {
                                                 showEditDialog = false
-                                                updateSong(selectedSong!!.songId, newName, newDesc)
+                                                updateSong(selectedSong!!.idSong, newName, newDesc)
                                                 Toast.makeText(context,"Song updated sucefully", Toast.LENGTH_SHORT).show()
                                             }) {
                                                 Text("Save", color = Color.White)

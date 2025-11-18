@@ -1,5 +1,6 @@
 package com.example.melora.data.remote
 
+import com.example.melora.data.remote.dto.LoginResponse
 import com.example.melora.data.remote.dto.RegisterUserDto
 import retrofit2.Response
 import retrofit2.http.Body
@@ -18,12 +19,6 @@ interface RegisterApi {
         @Body dto: RegisterUserDto
     ): Response<Any>
 
-    // Obtener usuario por ID
-    @GET("api-v1/auth/exists/{idUser}")
-    suspend fun getUserById(
-        @Path("idUser") id: Long
-    ): Response<Any>
-
     // Actualizar usuario
     @PATCH("api-v1/auth/update/{idUser}")
     suspend fun updateUser(
@@ -36,5 +31,12 @@ interface RegisterApi {
     suspend fun deleteUser(
         @Path("idUser") id: Long
     ): Response<Any>
+
+    @GET("api-v1/auth/exists/{idUser}")
+    suspend fun getUserById(
+        @Path("idUser") idUser: Long
+    ): Response<RegisterUserDto>
+
+
 
 }

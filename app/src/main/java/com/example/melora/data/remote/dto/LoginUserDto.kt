@@ -17,3 +17,5 @@ data class LoginData(
     val rolId: Long,
     val profilePhotoBase64: String?
 )
+
+

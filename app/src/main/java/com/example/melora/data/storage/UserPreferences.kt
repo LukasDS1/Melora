@@ -18,6 +18,10 @@ class UserPreferences(private val context: Context) {
     private val roleIdKey = longPreferencesKey("role_id")
     private val profilePictureKey = stringPreferencesKey("profile_picture_url")
 
+    private val nicknameKey = stringPreferencesKey("nickname")
+    private val emailKey = stringPreferencesKey("email")
+
+
     suspend fun saveLoginState(isLoggedIn: Boolean, userId: Long?, roleId: Long?) {
         context.dataStore.edit { prefs ->
             prefs[isLoggedInKey] = isLoggedIn
@@ -42,6 +46,12 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    val nickname: Flow<String?> = context.dataStore.data
+        .map { it[nicknameKey] }
+
+    val email: Flow<String?> = context.dataStore.data
+        .map { it[emailKey] }
+
     val isLoggedIn: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[isLoggedInKey] ?: false }
 
@@ -59,4 +69,27 @@ class UserPreferences(private val context: Context) {
             prefs.clear()
         }
     }
+
+    suspend fun saveUserData(
+        idUser: Long,
+        roleId: Long,
+        nickname: String,
+        email: String,
+        profilePhotoBase64: String?
+    ) {
+        context.dataStore.edit { prefs ->
+            prefs[userIdKey] = idUser
+            prefs[roleIdKey] = roleId
+            prefs[nicknameKey] = nickname
+            prefs[emailKey] = email
+
+            if (profilePhotoBase64 != null)
+                prefs[profilePictureKey] = profilePhotoBase64
+            else
+                prefs.remove(profilePictureKey)
+
+            prefs[isLoggedInKey] = true
+        }
+    }
+
 }

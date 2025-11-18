@@ -1,18 +1,7 @@
 package com.example.melora.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,13 +25,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.R
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.HomeScreenViewModel
-import com.example.melora.R
-import com.example.melora.ui.theme.PrimaryBg
-import com.example.melora.ui.theme.SecondaryBg
+import java.util.Base64
 
 @Composable
 fun HomeScreenVm(
@@ -61,7 +49,7 @@ fun HomeScreenVm(
 
 @Composable
 fun HomeScreen(
-    songs: List<SongDetailed>,
+    songs: List<SongDetailedDto>,
     goPlayer: (Long) -> Unit
 ) {
     val context = LocalContext.current
@@ -74,15 +62,16 @@ fun HomeScreen(
         contentAlignment = Alignment.Center
     ) {
         if (songs.isEmpty()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                 Icon(
                     painter = painterResource(R.drawable.music_not_found),
-                    contentDescription = "music not found icon",
+                    contentDescription = "music not found",
                     tint = Color.Unspecified
                 )
+
                 Spacer(Modifier.height(10.dp))
+
                 Text(
                     text = "No songs available",
                     color = Color.Black,
@@ -91,48 +80,51 @@ fun HomeScreen(
             }
 
         } else {
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 items(songs) { song ->
+
                     Button(
-                        onClick = { goPlayer(song.songId) },
+                        onClick = { goPlayer(song.idSong) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Resaltado, // primarybg
+                            containerColor = Resaltado,
                             contentColor = Color.Black
                         ),
                         contentPadding = PaddingValues(
-                            4.dp,
-                            8.dp,
-                            16.dp,
-                            8.dp
+                            4.dp, 8.dp, 16.dp, 8.dp
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            // Portada
+
+                            val imageBytes = song.coverArt?.let {
+                                Base64.getDecoder().decode(it)
+                            }
+
                             AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(song.coverArt ?: R.drawable.music_not_found_placeholder)
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(imageBytes)
                                     .crossfade(true)
                                     .build(),
-                                contentDescription = "Cover Art",
-                                contentScale = ContentScale.Crop,
+                                contentDescription = "Cover art",
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(4.dp))
+                                    .size(100.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
                             )
 
                             Spacer(modifier = Modifier.width(12.dp))
 
-                            // Información
                             Column(
                                 verticalArrangement = Arrangement.Center,
                                 modifier = Modifier.weight(1f)
@@ -145,6 +137,7 @@ fun HomeScreen(
                                     maxLines = 1,
                                     fontFamily = Lato
                                 )
+
                                 Text(
                                     text = "by ${song.nickname}",
                                     color = Color.Black,
@@ -152,14 +145,7 @@ fun HomeScreen(
                                     maxLines = 1,
                                     fontFamily = Lato
                                 )
-//                                Text(
-//                                    text = formatTime(song.durationSong),
-//                                    color = Color.Black,
-//                                    fontSize = 12.sp,
-//                                    fontFamily = Lato
-//                                )
                             }
-                            // TODO: add button to make song favorite
                         }
                     }
                 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
@@ -37,18 +38,18 @@ fun ArtistProfileScreenVm(
 ) {
     var nickname by remember { mutableStateOf<String?>(null) }
     var profilePicture by remember { mutableStateOf<String?>(null) }
-    var songs by remember { mutableStateOf<List<SongDetailed>>(emptyList()) }
+    var songs by remember { mutableStateOf<List<SongDetailedDto>>(emptyList()) }
 
     LaunchedEffect(artistId) {
-        vm.loadArtist(artistId)
+        vm.loadMyProfile()
     }
 
     val artistData = vm.artistData
 
     LaunchedEffect(artistData) {
         artistData?.let {
-            nickname = it.artist.nickname
-            profilePicture = it.artist.profilePicture
+            nickname = it.nickname
+            profilePicture = it.profilePhotoBase64
             songs = it.songs
         }
     }
@@ -60,7 +61,7 @@ fun ArtistProfileScreenVm(
         songs = songs,
         goPlayer = goPlayer,
         roleId = roleId,
-        banUser = vm::banUser
+//        banUser = vm::banUser
     )
 }
 
@@ -69,9 +70,9 @@ fun ArtistProfileScreen(
     artistId:Long,
     nickname: String?,
     profilePicture: String?,
-    songs: List<SongDetailed>,
+    songs: List<SongDetailedDto>,
     goPlayer: (Long) -> Unit,
-    banUser: (Long) -> Unit,
+//    banUser: (Long) -> Unit,
     roleId: Long?
 ) {
     val bg = Resaltado
@@ -152,7 +153,7 @@ fun ArtistProfileScreen(
                             )
 
                             IconButton(
-                                onClick = { goPlayer(song.songId) }
+                                onClick = { goPlayer(song.idSong) }
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.PlayArrow, // tu ícono de play
@@ -179,35 +180,35 @@ fun ArtistProfileScreen(
                 )
             }
         }
-        if (showBanDialog) {
-            AlertDialog(
-                onDismissRequest = { showBanDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showBanDialog = false
-                        scope.launch {
-                            banUser(artistId)
-                            Toast.makeText(context, "User banned successfully", Toast.LENGTH_SHORT).show()
-                        }
-                    }) {
-                        Text("Confirm", color = Color.Red)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showBanDialog = false }) {
-                        Text("Cancel", color = Color.White)
-                    }
-                },
-                title = { Text("Ban user", color = Color.White) },
-                text = {
-                    Text(
-                        "Are you sure you want to ban this user? This action cannot be undone.",
-                        color = Color.White
-                    )
-                },
-                containerColor = Color(0xFF222222)
-            )
-        }
+//        if (showBanDialog) {
+//            AlertDialog(
+//                onDismissRequest = { showBanDialog = false },
+//                confirmButton = {
+//                    TextButton(onClick = {
+//                        showBanDialog = false
+//                        scope.launch {
+//                            banUser(artistId)
+//                            Toast.makeText(context, "User banned successfully", Toast.LENGTH_SHORT).show()
+//                        }
+//                    }) {
+//                        Text("Confirm", color = Color.Red)
+//                    }
+//                },
+//                dismissButton = {
+//                    TextButton(onClick = { showBanDialog = false }) {
+//                        Text("Cancel", color = Color.White)
+//                    }
+//                },
+//                title = { Text("Ban user", color = Color.White) },
+//                text = {
+//                    Text(
+//                        "Are you sure you want to ban this user? This action cannot be undone.",
+//                        color = Color.White
+//                    )
+//                },
+//                containerColor = Color(0xFF222222)
+//            )
+//        }
 
     }
 }

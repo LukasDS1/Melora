@@ -17,11 +17,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.remote.SongRemoteModule
 import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.repository.LoginApiRepository
 import com.example.melora.data.repository.PlayListRepository
 import com.example.melora.data.repository.PlayListUserRepository
+import com.example.melora.data.repository.SongApiRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
 import com.example.melora.data.repository.UserRepository
@@ -93,14 +95,17 @@ fun AppRoot() {
     val userRepository = UserRepository(userDao,rolDao,estadoDao)
 
     val uploadRepository = UploadRepository(uploadDao)
+    val songApi = SongRemoteModule.api()
 
     val prefs = UserPreferences(context)
 
     val loginRepository = UserRepository(userDao,rolDao,estadoDao)
 
-    val artistRepository = ArtistRepository(userDao,songDao)
+    val artistRepository = ArtistRepository(songApi, prefs )
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
+
+    val songApiRepository = SongApiRepository()
 
     val registerApiViewModel: RegisterApiViewModel = viewModel()
 
@@ -126,7 +131,7 @@ fun AppRoot() {
     )
 
     val homeScreenViewModel: HomeScreenViewModel = viewModel(
-        factory = HomeScreenViewModelFactory(songRepository)
+        factory = HomeScreenViewModelFactory(songApiRepository)
     )
     val playlistViewModel: PlaylistViewModel = viewModel(
         factory = PlaylistViewModelFactory(playlistRepository,playlistUserRepository)
@@ -136,7 +141,7 @@ fun AppRoot() {
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
     val artistProfileViewModel: ArtistProfileViewModel = viewModel(
-        factory = ArtistProfileViewModelFactory(artistRepository,songRepository)
+        factory = ArtistProfileViewModelFactory(artistRepository, songApiRepository  )
     )
 
     val searchViewModel: SearchViewModel = viewModel(
