@@ -10,6 +10,7 @@ data class LoginResponse(
     val self: String?,
     val data: LoginData?
 )
+
 data class LoginData(
     val idUser: Long,
     val email: String,

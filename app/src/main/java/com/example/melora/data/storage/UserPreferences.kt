@@ -21,13 +21,13 @@ class UserPreferences(private val context: Context) {
     private val nicknameKey = stringPreferencesKey("nickname")
     private val emailKey = stringPreferencesKey("email")
 
-
     suspend fun saveLoginState(isLoggedIn: Boolean, userId: Long?, roleId: Long?) {
         context.dataStore.edit { prefs ->
             prefs[isLoggedInKey] = isLoggedIn
 
             if (userId != null) prefs[userIdKey] = userId
             else prefs.remove(userIdKey)
+
             if (roleId != null) prefs[roleIdKey] = roleId
             else prefs.remove(roleIdKey)
         }
@@ -43,6 +43,18 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { prefs ->
             if (uri != null) prefs[profilePictureKey] = uri
             else prefs.remove(profilePictureKey)
+        }
+    }
+
+    suspend fun setNickname(value: String) {
+        context.dataStore.edit { prefs ->
+            prefs[nicknameKey] = value
+        }
+    }
+
+    suspend fun setEmail(value: String) {
+        context.dataStore.edit { prefs ->
+            prefs[emailKey] = value
         }
     }
 
@@ -91,5 +103,4 @@ class UserPreferences(private val context: Context) {
             prefs[isLoggedInKey] = true
         }
     }
-
 }

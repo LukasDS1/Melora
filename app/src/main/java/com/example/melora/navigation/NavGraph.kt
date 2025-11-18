@@ -258,7 +258,7 @@ fun AppNavGraph(
                 )
             }
 
-            composable(Route.editProfile.path) {
+            composable(Route.   editProfile.path) {
                 EditProfileScreenVm(
                     vm = editProfileViewModel,
                     onExit = goMyProfile,

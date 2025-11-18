@@ -79,7 +79,6 @@ fun EditProfileScreenVm(
     onProfileUpdated: () -> Unit,
     onLogout: () -> Unit
 ) {
-
     val state by vm.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.success) {
@@ -92,9 +91,8 @@ fun EditProfileScreenVm(
     var showExitDialog by remember { mutableStateOf(false) }
 
     BackHandler {
-        if (state.canSubmit) {
-            showExitDialog = true
-        } else {
+        if (state.canSubmit) showExitDialog = true
+        else {
             vm.resetFormToOriginalUser()
             onExit()
         }
@@ -113,31 +111,29 @@ fun EditProfileScreenVm(
                         onExit()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3261E))
-                ) {
-                    Text("Salir sin guardar", color = Color.White)
-                }
+                ) { Text("Salir sin guardar", color = Color.White) }
             },
             dismissButton = {
                 Button(
                     onClick = { showExitDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Resaltado)
-                ) {
-                    Text("Cancelar", color = Color.White)
-                }
+                ) { Text("Cancelar", color = Color.White) }
             }
         )
     }
-    
+
     EditProfileScreen(
         nickname = state.nickname,
         email = state.email,
         password = state.password,
+        confirmPass = state.confirmPassword,
         nicknameError = state.nicknameError,
         emailError = state.emailError,
         passwordError = state.passwordError,
+        passwordConfirmErr = state.passwordConfirmError,
+        profilePicture = state.profilePictureUrl,
         currentPassword = state.currentPassword,
         currentPasswordError = state.currentPasswordError,
-        profilePicture = state.profilePictureUrl,
         canSubmit = state.canSubmit,
         isSubmitting = state.isSubmitting,
         success = state.success,
@@ -145,17 +141,16 @@ fun EditProfileScreenVm(
         onNicknameChange = vm::onNicknameChange,
         onEmailChange = vm::onEmailChange,
         onPasswordChange = vm::onPasswordChange,
+        onConfirmPasswordChange = vm::onConfirmPasswordChange,
+        onCurrentPasswordChange = vm::onCurrentPasswordChange,
         onPictureChange = vm::onProfilePictureChange,
         onSubmit = vm::submitChanges,
         resetForm = vm::resetFormToOriginalUser,
-        confirmPass = state.confirmPassword,
-        passwordConfirmErr = state.passwordConfirmError,
-        onConfirmPasswordChange = vm::onConfirmPasswordChange,
-        onCurrentPasswordChange = vm::onCurrentPasswordChange,
         onExit = onExit,
         onLogoutClick = {
             vm.resetFormToOriginalUser()
-            vm.logout(onLogout) }
+            vm.logout(onLogout)
+        }
     )
 }
 

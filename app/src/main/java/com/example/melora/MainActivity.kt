@@ -17,6 +17,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.remote.LoginRemoteModule
+import com.example.melora.data.remote.RegisterApi
+import com.example.melora.data.remote.RegisterRemoteModule
 import com.example.melora.data.remote.SongRemoteModule
 import com.example.melora.data.repository.ArtistRepository
 import com.example.melora.data.repository.FavoriteRepository
@@ -107,6 +110,11 @@ fun AppRoot() {
 
     val songApiRepository = SongApiRepository()
 
+    val registerApi = RegisterRemoteModule.api()
+
+    val loginApi = LoginRemoteModule.api()
+
+
     val registerApiViewModel: RegisterApiViewModel = viewModel()
 
     val authViewModel: AuthViewModel = viewModel(
@@ -127,7 +135,7 @@ fun AppRoot() {
     val userPreferences = UserPreferences(context)
 
     val editProfileViewModel: EditProfileViewModel = viewModel(
-        factory = EditProfileViewModelFactory(userRepository, userPreferences)
+        factory = EditProfileViewModelFactory(registerApi , loginApi,userPreferences)
     )
 
     val homeScreenViewModel: HomeScreenViewModel = viewModel(
