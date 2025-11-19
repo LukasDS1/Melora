@@ -42,6 +42,8 @@ import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserEntity
 import com.example.melora.R
 import com.example.melora.data.local.playlist.PlaylistEntity
+import com.example.melora.data.remote.dto.ArtistProfileData
+import com.example.melora.data.remote.dto.SongDetailedDto
 import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,14 +51,14 @@ import java.text.SimpleDateFormat
 fun MeloraSearchBar(
     textFieldState: TextFieldState,
     onSearch: (String) -> Unit,
-    searchResults: List<SongDetailed>,
-    artistResult: List<UserEntity>,
+    searchResults: List<SongDetailedDto>,
+    artistResult: List<ArtistProfileData>,
     playlistResults: List<PlaylistEntity>,
     modifier: Modifier = Modifier,
     goArtistProfile: (Long) -> Unit,
     goPlayer: (Long) -> Unit,
     goPlaylist: (Long) -> Unit
-    ) {
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box(
@@ -64,8 +66,7 @@ fun MeloraSearchBar(
             .fillMaxSize()
     ) {
         SearchBar(
-            modifier = Modifier
-                .align(Alignment.TopCenter),
+            modifier = Modifier.align(Alignment.TopCenter),
             colors = SearchBarDefaults.colors(
                 containerColor = Color.White,
                 dividerColor = Color.Transparent,
@@ -73,8 +74,10 @@ fun MeloraSearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
                     query = textFieldState.text.toString(),
-                    onQueryChange = { new -> textFieldState.edit { replace(0, length, new) }
-                    onSearch(new)},
+                    onQueryChange = { new ->
+                        textFieldState.edit { replace(0, length, new) }
+                        onSearch(new)
+                    },
                     onSearch = {
                         onSearch(textFieldState.text.toString())
                         expanded = false
@@ -88,27 +91,30 @@ fun MeloraSearchBar(
             onExpandedChange = { expanded = it },
         ) {
             LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        items(artistResult){ artist ->
-                            ArtistItem(artist = artist,goArtistProfile = goArtistProfile)
-                            HorizontalDivider(
-                                color = Color.LightGray,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                        }
-                        items(searchResults) { song ->
-                            SongItem(song = song,goPlayer = goPlayer)
-                            HorizontalDivider(
-                                color = Color.LightGray,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                        }
-                     items(playlistResults) { playlist ->
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+
+                items(artistResult) { artist ->
+                    ArtistItem(artist = artist, goArtistProfile = goArtistProfile)
+                    HorizontalDivider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+
+                items(searchResults) { song ->
+                    SongItem(song = song, goPlayer = goPlayer)
+                    HorizontalDivider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+
+                items(playlistResults) { playlist ->
                     PlaylistItem(playlist = playlist, goPlaylist = goPlaylist)
                     HorizontalDivider(
                         color = Color.LightGray,
@@ -116,10 +122,10 @@ fun MeloraSearchBar(
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
-                }
             }
         }
     }
+}
 
 @Composable
 fun PlaylistItem(playlist: PlaylistEntity, goPlaylist: (Long) -> Unit) {
@@ -143,7 +149,7 @@ fun PlaylistItem(playlist: PlaylistEntity, goPlaylist: (Long) -> Unit) {
 }
 
 @Composable
-fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
+fun ArtistItem(artist: ArtistProfileData,goArtistProfile: (Long) -> Unit){
     val context = LocalContext.current
 
     Column(
@@ -166,7 +172,7 @@ fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
                 // Foto de perfil del artista
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(artist.profilePicture ?: R.drawable.defaultprofilepicture)
+                        .data(artist.profilePhotoBase64 ?: R.drawable.defaultprofilepicture)
                         .crossfade(true)
                         .build(),
                     contentDescription = "Artist photo",
@@ -192,7 +198,8 @@ fun ArtistItem(artist: UserEntity,goArtistProfile: (Long) -> Unit){
 }
 
 @Composable
-fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
+fun SongItem(song: SongDetailedDto, goPlayer: (Long) -> Unit) {
+
     fun formatTime(seconds: Int): String {
         val minutes = seconds / 60
         val remainingSeconds = seconds % 60
@@ -202,7 +209,7 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
     val context = LocalContext.current
 
     Button(
-        onClick = { goPlayer(song.songId) },
+        onClick = { goPlayer(song.idSong) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -211,14 +218,20 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
             contentColor = Color.Black
         )
     ) {
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Portada
+
+            // Portada BASE64
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(song.coverArt ?: R.drawable.defaultprofilepicture)
+                    .data(
+                        if (song.coverArt != null)
+                            "data:image/png;base64,${song.coverArt}"
+                        else R.drawable.defaultprofilepicture
+                    )
                     .crossfade(true)
                     .build(),
                 contentDescription = "Cover Art",
@@ -230,11 +243,11 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Información de la canción
             Column(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.weight(1f)
             ) {
+
                 Text(
                     text = song.songName,
                     color = Color.Black,
@@ -242,21 +255,22 @@ fun SongItem(song: SongDetailed, goPlayer: (Long) -> Unit) {
                     fontSize = 16.sp,
                     maxLines = 1
                 )
-                // Artista
+
                 Text(
-                    text = song.nickname,
+                    text = song.nickname ?: "Unknown",
                     color = Color.Gray,
                     fontSize = 14.sp,
                     maxLines = 1
                 )
-                // Duración
+
                 Text(
-                    text = formatTime(song.durationSong),
+                    text = formatTime(song.songDuration),
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
             }
         }
     }
-
 }
+
+

@@ -48,6 +48,8 @@ fun AppNavGraph(
     val roleId by prefs.userRoleId.collectAsStateWithLifecycle(initialValue = null)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val roleName by prefs.roleName.collectAsStateWithLifecycle(initialValue = "")
+
 
     // ================= START DESTINATION CORRECTO =====================
     val startDestination = if (isLoggedIn) Route.Home.path else Route.Login.path
@@ -242,7 +244,7 @@ fun AppNavGraph(
                         vm = musicPlayerViewModel,
                         onExitPlayer = { navController.popBackStack() },
                         favVm = favoriteModel,
-                        roleId = roleId,
+                        roleName = roleName ?: "",
                         banVm = banViewModel
                     )
                 }

@@ -3,7 +3,7 @@ package com.example.melora.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class SongDetailedDto(
-    @SerializedName("idSong")
+    @SerializedName("songId")
     val idSong: Long,
 
     @SerializedName("songName")
@@ -28,7 +28,13 @@ data class SongDetailedDto(
     val artistId: Long,
 
     @SerializedName("nickname")
-    val nickname: String?
+    val nickname: String?,
+
+    @SerializedName("coverArtBase64")
+    val coverArtBase64: String?,
+
+    @SerializedName("audioBase64")
+    val audioBase64: String?,
 )
 
 

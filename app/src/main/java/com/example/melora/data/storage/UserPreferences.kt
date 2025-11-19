@@ -18,8 +18,11 @@ class UserPreferences(private val context: Context) {
     private val roleIdKey = longPreferencesKey("role_id")
     private val profilePictureKey = stringPreferencesKey("profile_picture_url")
 
+    private val roleNameKey = stringPreferencesKey("role_name")
+
     private val nicknameKey = stringPreferencesKey("nickname")
     private val emailKey = stringPreferencesKey("email")
+
 
     suspend fun saveLoginState(isLoggedIn: Boolean, userId: Long?, roleId: Long?) {
         context.dataStore.edit { prefs ->
@@ -58,6 +61,9 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    val roleName: Flow<String?> = context.dataStore.data
+        .map { prefs -> prefs[roleNameKey] }
+
     val nickname: Flow<String?> = context.dataStore.data
         .map { it[nicknameKey] }
 
@@ -87,11 +93,13 @@ class UserPreferences(private val context: Context) {
         roleId: Long,
         nickname: String,
         email: String,
-        profilePhotoBase64: String?
+        profilePhotoBase64: String?,
+        roleName: String
     ) {
         context.dataStore.edit { prefs ->
             prefs[userIdKey] = idUser
             prefs[roleIdKey] = roleId
+            prefs[roleNameKey] = roleName
             prefs[nicknameKey] = nickname
             prefs[emailKey] = email
 

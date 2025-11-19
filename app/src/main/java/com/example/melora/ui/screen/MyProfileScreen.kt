@@ -1,33 +1,45 @@
 package com.example.melora.ui.screen
-
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.melora.R
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.remote.dto.SongDetailedDto
-import com.example.melora.data.storage.UserPreferences
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
+import com.example.melora.ui.theme.ResaltadoNegative
+import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
-import kotlinx.coroutines.flow.firstOrNull
 
+
+// ------------------------------------------------------
+// VIEWMODEL WRAPPER
+// ------------------------------------------------------
 @Composable
 fun MyProfileScreenVm(
     vm: ArtistProfileViewModel,
@@ -35,9 +47,7 @@ fun MyProfileScreenVm(
     favVm: FavoriteViewModel,
     onEditProfile: () -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        vm.loadMyProfile()
-    }
+    LaunchedEffect(Unit) { vm.loadMyProfile() }
 
     val artist = vm.artistData
 
@@ -53,6 +63,12 @@ fun MyProfileScreenVm(
     )
 }
 
+
+
+// ------------------------------------------------------
+// MAIN SCREEN
+// ------------------------------------------------------
+
 @Composable
 fun MyProfileScreen(
     nickname: String?,
@@ -60,193 +76,356 @@ fun MyProfileScreen(
     songs: List<SongDetailedDto>,
     goPlayer: (Long) -> Unit,
     onDeleteSong: (Long) -> Unit,
-    onEditProfile: () -> Unit,
+    onToggleFavorite: (Long) -> Unit,
     updateSong: (Long, String?, String?) -> Unit,
-    onToggleFavorite: (Long) -> Unit
+    onEditProfile: () -> Unit
 ) {
-    val bg = Resaltado
-    var expanded by remember { mutableStateOf(false) }
-    var showEditDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val density = LocalDensity.current
+
+    // Global UI state
+    var expandedMenuForSong by remember { mutableStateOf<Long?>(null) }
+    var menuOffset by remember { mutableStateOf<IntOffset?>(null) }
+
     var selectedSong by remember { mutableStateOf<SongDetailedDto?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var songToDelete by remember { mutableStateOf<Long?>(null) }
+
+
     var newName by remember { mutableStateOf("") }
     var newDesc by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(Resaltado)
             .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+
+        // --------------------------------------------------
+        // CONTENT LIST
+        // --------------------------------------------------
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Image(
-                painter = if (profilePicture != null)
-                    rememberAsyncImagePainter(profilePicture)
-                else
-                    painterResource(R.drawable.defaultprofilepicture),
-                contentDescription = "Profile picture",
-                modifier = Modifier.size(120.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = onEditProfile,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryBg
+            item {
+                Image(
+                    painter =
+                        if (profilePicture != null) rememberAsyncImagePainter(profilePicture)
+                        else painterResource(R.drawable.defaultprofilepicture),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
                 )
-            ) {
-                Text("Edit profile", fontFamily = Lato)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = nickname ?: "Unknown Artist",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Your Songs:",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                songs.forEach { song ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(bg),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f))
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            TextButton(
-                                onClick = { goPlayer(song.idSong) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.Start,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        text = song.songName,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = song.songDescription ?: "No description yet",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.White.copy(alpha = 0.8f)
-                                    )
-                                }
-                            }
-
-                            Box {
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "Menu options",
-                                        tint = Color.White
-                                    )
-                                }
-
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier.background(Color(0xFF222222))
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Delete Song", color = Color.White) },
-                                        onClick = {
-                                            expanded = false
-                                            onDeleteSong(song.idSong)
-                                        }
-                                    )
-
-                                    DropdownMenuItem(
-                                        text = { Text("Add Favorite", color = Color.White) },
-                                        onClick = {
-                                            expanded = false
-                                            onToggleFavorite(song.idSong)
-                                        }
-                                    )
-
-                                    DropdownMenuItem(
-                                        text = { Text("Edit your song", color = Color.White) },
-                                        onClick = {
-                                            expanded = false
-                                            selectedSong = song
-                                            newName = song.songName
-                                            newDesc = song.songDescription?: ""
-                                            showEditDialog = true
-                                        }
-                                    )
-                                }
-                                if (showEditDialog && selectedSong != null) {
-                                    AlertDialog(
-                                        onDismissRequest = { showEditDialog = false },
-                                        confirmButton = {
-                                            TextButton(onClick = {
-                                                showEditDialog = false
-                                                updateSong(selectedSong!!.idSong, newName, newDesc)
-                                                Toast.makeText(context,"Song updated sucefully", Toast.LENGTH_SHORT).show()
-                                            }) {
-                                                Text("Save", color = Color.White)
-                                            }
-                                        },
-                                        dismissButton = {
-                                            TextButton(onClick = { showEditDialog = false }) {
-                                                Text("Cancel", color = Color.Gray)
-                                            }
-                                        },
-                                        title = { Text("Edit your song", color = Color.White) },
-                                        text = {
-                                            Column {
-                                                OutlinedTextField(
-                                                    value = newName,
-                                                    onValueChange = { newName = it },
-                                                    label = { Text("Song name") },
-                                                    singleLine = true
-                                                )
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                OutlinedTextField(
-                                                    value = newDesc,
-                                                    onValueChange = { newDesc = it },
-                                                    label = { Text("Description") }
-                                                )
-                                            }
-                                        },
-                                        containerColor = Color(0xFF222222)
-                                    )
-                                }
-
-                            }
-                        }
-                    }
+            item {
+                Button(
+                    onClick = onEditProfile,
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBg)
+                ) {
+                    Text("Edit profile", fontFamily = Lato)
                 }
+            }
+
+            item {
+                Text(
+                    text = nickname ?: "Unknown Artist",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White
+                )
+            }
+
+            item {
+                Text(
+                    text = "Your Songs:",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+            }
+
+            items(songs) { song ->
+                SongItem(
+                    song = song,
+                    onExpandMenu = { id, offset ->
+                        expandedMenuForSong = id
+                        menuOffset = offset
+                    },
+                    goPlayer = goPlayer
+                )
+            }
+        }
+
+        // --------------------------------------------------
+        // GLOBAL FIXED DROPDOWN MENU
+        // --------------------------------------------------
+
+        if (menuOffset != null) {
+
+            DropdownMenu(
+                expanded = expandedMenuForSong != null,
+                onDismissRequest = {
+                    expandedMenuForSong = null
+                },
+                offset = with(density) {
+                    androidx.compose.ui.unit.DpOffset(
+                        x = menuOffset!!.x.toDp(),
+                        y = menuOffset!!.y.toDp()
+                    )
+                },
+                properties = PopupProperties(
+                    clippingEnabled = false,
+                    focusable = true
+                )
+            ) {
+
+                val currentId = expandedMenuForSong
+                val song = songs.find { it.idSong == currentId }
+
+                if (song != null) {
+
+                    DropdownMenuItem(
+                        text = { Text("Delete Song") },
+                        onClick = {
+                            expandedMenuForSong = null
+                            songToDelete = song.idSong
+                            showDeleteDialog = true
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Add Favorite") },
+                        onClick = {
+                            expandedMenuForSong = null
+                            onToggleFavorite(song.idSong)
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            expandedMenuForSong = null
+                            selectedSong = song
+                            newName = song.songName
+                            newDesc = song.songDescription ?: ""
+                            showEditDialog = true
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------
+    // EDIT SONG DIALOG
+    // ------------------------------------------------------
+    if (showEditDialog && selectedSong != null) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+
+            containerColor = SecondaryBg, // Fondo blanco suave del diálogo
+
+            title = {
+                Text(
+                    "Edit your song",
+                    color = PrimaryBg, // texto verde oscuro
+                    fontFamily = Lato
+                )
+            },
+
+            text = {
+                Column {
+
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("Song name", color = PrimaryBg) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryBg,
+                            unfocusedBorderColor = ResaltadoNegative,
+                            focusedLabelColor = PrimaryBg,
+                            unfocusedLabelColor = ResaltadoNegative,
+                            cursorColor = PrimaryBg,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        )
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+
+                    OutlinedTextField(
+                        value = newDesc,
+                        onValueChange = { newDesc = it },
+                        label = { Text("Description", color = PrimaryBg) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryBg,
+                            unfocusedBorderColor = ResaltadoNegative,
+                            focusedLabelColor = PrimaryBg,
+                            unfocusedLabelColor = ResaltadoNegative,
+                            cursorColor = PrimaryBg,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        )
+                    )
+                }
+            },
+
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        updateSong(selectedSong!!.idSong, newName, newDesc)
+                        showEditDialog = false
+                        Toast.makeText(context, "Song updated!", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = PrimaryBg // verde oscuro
+                    )
+                ) {
+                    Text("Save")
+                }
+            },
+
+
+            dismissButton = {
+                TextButton(
+                    onClick = { showEditDialog = false },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showDeleteDialog && songToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+
+            containerColor = SecondaryBg,
+
+            title = {
+                Text(
+                    "Delete song",
+                    color = PrimaryBg,
+                    fontFamily = Lato
+                )
+            },
+
+            text = {
+                Text(
+                    "Are you sure you want to delete this song?",
+                    color = PrimaryBg,
+                    fontFamily = Lato
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteSong(songToDelete!!)
+                        showDeleteDialog = false
+                        songToDelete = null
+                        Toast.makeText(context, "Song deleted!", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.Red // Botón rojo como advertencia
+                    )
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        songToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.Black  // Texto visible y elegante
+                    )
+                ) {
+                    Text("No")
+                }
+            }
+        )
+    }
+}
+
+
+@Composable
+fun SongItem(
+    song: SongDetailedDto,
+    onExpandMenu: (Long, IntOffset?) -> Unit,
+    goPlayer: (Long) -> Unit
+) {
+    val context = LocalContext.current
+
+    var iconOffset by remember { mutableStateOf<IntOffset?>(null) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f))
+    ) {
+
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            val bytes = song.coverArt?.let {
+                java.util.Base64.getDecoder().decode(it)
+            }
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(bytes)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(song.songName, color = Color.White)
+                Text(
+                    song.songDescription ?: "No description yet",
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
+
+            // CAPTURA LAS COORDENADAS DEL ICON BUTTON
+            IconButton(
+                modifier = Modifier.onGloballyPositioned { coords ->
+                    val windowPos = coords.localToWindow(Offset.Zero)
+                    iconOffset = IntOffset(windowPos.x.toInt(), windowPos.y.toInt() + 40)
+                },
+                onClick = {
+                    onExpandMenu(song.idSong, iconOffset)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = null,
+                    tint = Color.White
+                )
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.melora.data.repository
 import android.net.http.HttpException
 import com.example.melora.data.remote.RegisterApi
 import com.example.melora.data.remote.RegisterRemoteModule
+import com.example.melora.data.remote.dto.ArtistProfileData
 import com.example.melora.data.remote.dto.RegisterUserDto
 import java.io.IOException
 
@@ -28,7 +29,6 @@ class RegisterApiRepository(
             Result.failure(e)
         }
     }
-
 
     suspend fun updateUser(idUser: Long, dto: RegisterUserDto): Result<String> {
         return try {
@@ -73,6 +73,12 @@ class RegisterApiRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    suspend fun searchByNickname(query: String): Result<List<ArtistProfileData>> = try {
+        Result.success(api.searchUsers(query))
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 
 }

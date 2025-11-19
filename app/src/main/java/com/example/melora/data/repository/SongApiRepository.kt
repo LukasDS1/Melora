@@ -49,17 +49,19 @@ class SongApiRepository(
     // PATCH
     // -----------------------------------------
     suspend fun changeSongDetails(id: Long, name: String?, desc: String?): Result<Unit> = try {
-        api.patchSong(
-            id,
-            mapOf(
-                "songName" to name,
-                "songDescription" to desc
-            )
-        )
+
+        val body = mutableMapOf<String, String?>()
+
+        if (name != null) body["songName"] = name
+        if (desc != null) body["songDescription"] = desc
+
+        api.patchSong(id, body)
         Result.success(Unit)
+
     } catch (e: Exception) {
         Result.failure(e)
     }
+
 
     // -----------------------------------------
     // DELETE

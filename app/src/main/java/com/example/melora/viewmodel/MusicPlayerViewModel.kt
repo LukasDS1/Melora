@@ -3,9 +3,9 @@ package com.example.melora.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.player.MusicPlayerManager
-import com.example.melora.data.repository.SongRepository
+import com.example.melora.data.remote.dto.SongDetailedDto
+import com.example.melora.data.repository.SongApiRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,55 +14,61 @@ import kotlinx.coroutines.launch
 
 class MusicPlayerViewModel(
     app: Application,
-    private val songRepository: SongRepository
-): AndroidViewModel(app) {
+    private val apiRepository: SongApiRepository
+) : AndroidViewModel(app) {
 
     private val playerManager = MusicPlayerManager(app)
+
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
-    private val _current_song = MutableStateFlow<SongDetailed?>(null)
-    val currentSong: StateFlow<SongDetailed?> = _current_song
+    private val _currentSong = MutableStateFlow<SongDetailedDto?>(null)
+    val currentSong: StateFlow<SongDetailedDto?> = _currentSong.asStateFlow()
 
-    // Current position of song, for the slider
     private val _currentPosition = MutableStateFlow(0L)
     val currentPosition = _currentPosition.asStateFlow()
 
     private val _duration = MutableStateFlow(0L)
     val duration = _duration.asStateFlow()
 
-    // Coroutine that updates current position every half a second
     init {
         viewModelScope.launch {
             while (true) {
-                val pos = playerManager.getCurrentPosition()
-                val dur = playerManager.getDuration()
-                _currentPosition.value = pos
-                _duration.value = dur
-                delay(500L)
+                _currentPosition.value = playerManager.getCurrentPosition()
+                _duration.value = playerManager.getDuration()
+                delay(500)
             }
         }
     }
 
     fun playSong(songId: Long) {
         viewModelScope.launch {
-            val song = songRepository.playSongByID(songId)
+            val result = apiRepository.getSongById(songId)
 
-            val current = _current_song.value
-            if (current == null || current.songId != song.songId) {
-                _current_song.value = song
-                playerManager.playSongPath(song.songPath)
+            if (result.isSuccess) {
+                val song = result.getOrNull() ?: return@launch
+
+                _currentSong.value = song
+
+                val audio = song.audioBase64
+                if (audio.isNullOrBlank()) {
+                    _isPlaying.value = false
+                    return@launch
+                }
+
+                playerManager.playBase64Audio(audio, song.idSong)
+                _isPlaying.value = true
+
             } else {
-                playerManager.playSongPath(song.songPath)
+                _isPlaying.value = false
             }
-
-            _isPlaying.value = true
         }
     }
+
     fun getSongDetails(songId: Long) {
         viewModelScope.launch {
-            val song = songRepository.playSongByID(songId)
-            _current_song.value = song
+            val result = apiRepository.getSongById(songId)
+            _currentSong.value = result.getOrNull()
         }
     }
 
@@ -81,8 +87,8 @@ class MusicPlayerViewModel(
         _isPlaying.value = false
     }
 
-    fun seekTo(positionMs: Long) {
-        playerManager.seekTo(positionMs)
+    fun seekTo(position: Long) {
+        playerManager.seekTo(position)
     }
 
     override fun onCleared() {

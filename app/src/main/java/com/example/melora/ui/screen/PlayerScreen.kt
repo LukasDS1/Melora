@@ -3,6 +3,7 @@ package com.example.melora.ui.screen
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -36,6 +37,7 @@ import coil.compose.AsyncImage
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.Lato
 import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.FavoriteViewModel
@@ -46,7 +48,7 @@ fun PlayerScreenVm(
     onExitPlayer: () -> Unit,
     vm: MusicPlayerViewModel,
     favVm: FavoriteViewModel,
-    roleId: Long?,
+    roleName: String,
     banVm: BanViewModel
 ) {
 
@@ -55,12 +57,14 @@ fun PlayerScreenVm(
     val currentPosition by vm.currentPosition.collectAsStateWithLifecycle()
     val duration by vm.duration.collectAsStateWithLifecycle()
     val isFavorite by favVm.currentIsFavorite.collectAsStateWithLifecycle()
-    var showBanCard by remember { mutableStateOf(false) }
-    var banReason by remember { mutableStateOf("") }
 
-    LaunchedEffect(songId){
+    LaunchedEffect(songId) {
         vm.playSong(songId)
         favVm.updateFavoriteState(songId)
+    }
+
+    LaunchedEffect(Unit) {
+        println("DEBUG ROLE NAME = '$roleName'")
     }
 
     PlayerScreen(
@@ -77,31 +81,31 @@ fun PlayerScreenVm(
         seekTo = vm::seekTo,
         currentPosition = currentPosition,
         duration = duration,
-        roleId = roleId,
+        roleName = roleName,
         onBanSong = banVm::banSong
     )
 }
 
 @Composable
 fun PlayerScreen(
-    songId:Long,
-    currentSong: SongDetailed?,
+    songId: Long,
+    currentSong: SongDetailedDto?,
     isPlaying: Boolean,
     isFavorite: Boolean,
     toggleFavorite: (Long) -> Unit,
     exitPlayer: () -> Unit,
-    playSong:(Long) -> Unit,
-    resume:() -> Unit,
-    pause:() -> Unit,
+    playSong: (Long) -> Unit,
+    resume: () -> Unit,
+    pause: () -> Unit,
     stop: () -> Unit,
     seekTo: (Long) -> Unit,
     currentPosition: Long,
     duration: Long,
-    roleId: Long?,
+    roleName: String,
     onBanSong: (Long, String) -> Unit
 ) {
-    val context = LocalContext.current
 
+    val context = LocalContext.current
     var showBanCard by remember { mutableStateOf(false) }
     var banReason by remember { mutableStateOf("") }
 
@@ -110,39 +114,44 @@ fun PlayerScreen(
         exitPlayer()
     }
 
-
-    fun formatTime(millis: Long): String {
-        val totalSeconds = millis / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%02d:%02d".format(minutes, seconds)
+    // --- Format time for slider
+    fun formatTime(ms: Long): String {
+        val total = ms / 1000
+        return "%02d:%02d".format(total / 60, total % 60)
     }
 
-    val bg = PrimaryBg
-
+    // Background
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush = Brush.verticalGradient(
+                Brush.verticalGradient(
                     colors = listOf(
-                        bg,
+                        PrimaryBg,
                         Color(0xFF31453E)
                     )
                 )
             )
     ) {
+
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            // ============================
+            //      TOP BAR
+            // ============================
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 10.dp, start = 10.dp, end = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+
                 IconButton(
                     onClick = {
                         stop()
@@ -151,69 +160,98 @@ fun PlayerScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = "Go back to home button"
+                        contentDescription = "Back"
                     )
                 }
 
                 Text(
                     text = "Melora",
                     fontSize = 24.sp,
+                    color = Color.White,
                     fontFamily = Lato,
-                    modifier = Modifier.padding(top = 8.dp)
+                    fontWeight = FontWeight.Bold
                 )
 
                 IconButton(
                     onClick = {
-                        if (roleId == 1L) {
+                        if (roleName == "ADMIN")
                             showBanCard = !showBanCard
-                        }
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Block,
-                        contentDescription = "Ban song",
-                        tint = if (roleId == 1L) Color.Black else bg
+                        contentDescription = "Ban",
+                        tint = if (roleName == "ADMIN") Color.White else Color.Transparent
                     )
                 }
-
             }
-            Spacer(Modifier.height(30.dp))
 
+            Spacer(Modifier.height(25.dp))
+
+            // ============================
+            //       SONG INFO
+            // ============================
             Text(
-                text = currentSong?.songName ?: "No song selected",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Lato
+                text = currentSong?.songName ?: "---",
+                fontSize = 26.sp,
+                color = Color.White,
+                fontFamily = Lato,
+                fontWeight = FontWeight.Bold
             )
+
             Text(
                 text = currentSong?.nickname ?: "Unknown Artist",
                 fontSize = 18.sp,
-                fontFamily = Lato
+                color = Color.LightGray,
+                fontFamily = Lato,
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
+
+            // ============================
+            //       COVER ART
+            // ============================
+            val coverModel: Any? = remember(currentSong) {
+                when {
+                    !currentSong?.coverArtBase64.isNullOrBlank() ->
+                        android.util.Base64.decode(
+                            currentSong!!.coverArtBase64,
+                            android.util.Base64.DEFAULT
+                        )
+
+                    !currentSong?.coverArt.isNullOrBlank() ->
+                        android.util.Base64.decode(
+                            currentSong!!.coverArt,
+                            android.util.Base64.DEFAULT
+                        )
+
+                    else -> null
+                }
+            }
 
             AsyncImage(
-                model = currentSong?.coverArt,
-                contentDescription = "Cover art",
+                model = coverModel,
+                contentDescription = "Cover",
                 modifier = Modifier
-                    .size(250.dp),
+                    .size(260.dp)
+                    .padding(16.dp),
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(30.dp))
 
+            // ============================
+            //       SLIDER
+            // ============================
             Column(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Slider(
-                    value = if (duration > 0) currentPosition.toFloat() / duration.toFloat() else 0f,
-                    onValueChange = { newValue ->
-                        seekTo((newValue * duration).toLong())
-                    },
+                    value = if (duration > 0) currentPosition / duration.toFloat() else 0f,
+                    onValueChange = { seekTo((it * duration).toLong()) },
                     colors = SliderDefaults.colors(
                         thumbColor = Color.White,
                         activeTrackColor = Color.White,
@@ -222,77 +260,79 @@ fun PlayerScreen(
                 )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = formatTime(currentPosition),
-                        fontSize = 14.sp,
-                        color = Color.White
-                    )
-                    Text(
-                        text = formatTime(duration),
-                        fontSize = 14.sp,
-                        color = Color.White
-                    )
+                    Text(formatTime(currentPosition), color = Color.White)
+                    Text(formatTime(duration), color = Color.White)
                 }
             }
 
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(30.dp))
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+                    .height(80.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {}
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Abc,
-                        contentDescription = "Lyrics button"
-                    )
-                }
 
-                IconButton(
-                    onClick = {}
+                // PREV BUTTON
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardDoubleArrowLeft,
-                        contentDescription = "Last song button"
-                    )
-                }
-
-                this@Row.AnimatedVisibility( // kotlin se confunde con tipos de animatedVisibility por estar en Row(){Row(){}}, por eso usamos this@Row
-                    visible = !isPlaying,
-                    enter = fadeIn() + scaleIn(),
-                    exit = fadeOut() + scaleOut()
-                ) {
-                    IconButton(onClick = { resume() }) {
-                        Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(60.dp))
+                    IconButton(onClick = {}) {
+                        Icon(
+                            Icons.Filled.KeyboardDoubleArrowLeft,
+                            contentDescription = "Prev",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
                 }
 
-                this@Row.AnimatedVisibility(
-                    visible = isPlaying,
-                    enter = fadeIn() + scaleIn(),
-                    exit = fadeOut() + scaleOut()
+                // PLAY / PAUSE CENTER BUTTON
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    IconButton(onClick = { pause() }) {
-                        Icon(Icons.Filled.Pause, contentDescription = "Pause", tint = Color.White, modifier = Modifier.size(60.dp))
+                    IconButton(
+                        onClick = { if (isPlaying) pause() else resume() },
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = Color.White,
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 }
 
-                IconButton(
-                    onClick = {}
+                // NEXT BUTTON
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardDoubleArrowRight,
-                        contentDescription = "Forward song button"
-                    )
+                    IconButton(onClick = {}) {
+                        Icon(
+                            Icons.Filled.KeyboardDoubleArrowRight,
+                            contentDescription = "Next",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
-                IconButton(onClick = {toggleFavorite(songId)}) {
+                // FAVORITE BUTTON (opcional mover)
+                IconButton(onClick = { toggleFavorite(songId) }) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Favorite",
@@ -301,29 +341,38 @@ fun PlayerScreen(
                 }
             }
         }
-        if (showBanCard && roleId == 1L && currentSong != null) {
+
+            // ============================
+        //      BAN CARD
+        // ============================
+        if (showBanCard && roleName == "ADMIN" && currentSong != null) {
             ElevatedCard(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(20.dp)
-                    .fillMaxWidth(0.9f),
-                colors = CardDefaults.elevatedCardColors(containerColor = PrimaryBg)
+                    .fillMaxWidth(0.9f)
+                    .padding(24.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = Color(0xFF1C1C1C)
+                )
             ) {
+
                 Column(
                     Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Ban Song", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = Lato)
-                    Spacer(Modifier.height(8.dp))
-                    Text("ID: ${currentSong.songId}", color = Color.LightGray, fontFamily = Lato)
-                    Text("Name: ${currentSong.songName}", color = Color.White, fontFamily = Lato)
-                    Text("Artist: ${currentSong.nickname}", color = Color.White, fontFamily = Lato)
-                    Spacer(Modifier.height(12.dp))
+
+                    Text("Ban Song", color = Color.White, fontSize = 20.sp, fontFamily = Lato)
+
+                    Text("ID: ${currentSong!!.idSong}", color = Color.White)
+                    Text("Name: ${currentSong!!.songName}", color = Color.White)
+                    Text("Artist: ${currentSong!!.nickname}", color = Color.White)
+
+                    Spacer(Modifier.height(15.dp))
 
                     OutlinedTextField(
                         value = banReason,
                         onValueChange = { banReason = it },
-                        label = { Text("Ban reason", fontFamily = Lato) },
+                        label = { Text("Ban reason") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
@@ -334,49 +383,40 @@ fun PlayerScreen(
                         )
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(20.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
+
                         Button(
                             onClick = {
-                                if (banReason.isNotBlank()) {
+                                if (banReason.isBlank()) {
+                                    Toast.makeText(context, "Enter a reason", Toast.LENGTH_SHORT).show()
+                                } else {
                                     onBanSong(songId, banReason)
                                     stop()
-                                        Toast.makeText(
-                                            context,
-                                            "The song has been banned",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        showBanCard = false
-                                        banReason = ""
-                                        exitPlayer()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "You must enter a reason",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    banReason = ""
+                                    showBanCard = false
+                                    exitPlayer()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                         ) {
-                            Text("Confirm", color = Color.White, fontFamily = Lato)
+                            Text("Confirm", color = Color.White)
                         }
 
                         OutlinedButton(onClick = {
                             showBanCard = false
                             banReason = ""
                         }) {
-                            Text("Cancel", color = Color.White, fontFamily = Lato)
+                            Text("Cancel", color = Color.White)
                         }
                     }
                 }
             }
         }
-
-
     }
 }
+

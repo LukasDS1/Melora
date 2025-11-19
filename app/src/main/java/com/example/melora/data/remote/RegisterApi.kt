@@ -1,5 +1,6 @@
 package com.example.melora.data.remote
 
+import com.example.melora.data.remote.dto.ArtistProfileData
 import com.example.melora.data.remote.dto.LoginResponse
 import com.example.melora.data.remote.dto.RegisterUserDto
 import retrofit2.Response
@@ -9,6 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface RegisterApi {
 
@@ -36,6 +38,13 @@ interface RegisterApi {
     suspend fun getUserById(
         @Path("idUser") idUser: Long
     ): Response<RegisterUserDto>
+
+        @GET("api-v1/auth/search")
+        suspend fun searchUsers(
+            @Query("nickname") nickname: String
+        ): List<ArtistProfileData>
+
+
 
 
 

@@ -99,7 +99,8 @@ class LoginApiViewModel(
                     roleId = data.rolId,
                     nickname = data.nickname,
                     email = data.email,
-                    profilePhotoBase64 = data.profilePhotoBase64
+                    profilePhotoBase64 = data.profilePhotoBase64,
+                    roleName = data.rolName
                 )
 
                 _login.update {
