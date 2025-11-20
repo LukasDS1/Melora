@@ -27,10 +27,10 @@ fun AppNavGraph(
     authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
-    favoriteModel: FavoriteViewModel,
+    favoriteModel: FavoriteApiViewModel,
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
-    playlistViewModel: PlaylistViewModel,
+    playlistApiViewModel: PlaylistApiViewModel,
     homeScreenViewModel: HomeScreenViewModel,
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
@@ -254,7 +254,7 @@ fun AppNavGraph(
                 FavoriteScreenVm(
                     favoriteViewModel = favoriteModel,
                     goPlayer = goPlayer,
-                    playlistViewModel = playlistViewModel,
+                    playlistViewModel = playlistApiViewModel,
                     searchViewModel = searchViewModel,
                     goPlaylistDetail = goPlaylist
                 )
@@ -285,7 +285,7 @@ fun AppNavGraph(
                 val playlistId = entry.arguments?.getLong("playlistId") ?: return@composable
                 PlaylistDetailScreenVm(
                     playlistId = playlistId,
-                    playlistViewModel = playlistViewModel,
+                    playlistViewModel = playlistApiViewModel,
                     goPlayer = goPlayer,
                     onBack = { navController.popBackStack() }
                 )

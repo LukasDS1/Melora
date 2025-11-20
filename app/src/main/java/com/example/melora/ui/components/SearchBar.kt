@@ -43,6 +43,7 @@ import com.example.melora.data.local.users.UserEntity
 import com.example.melora.R
 import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.remote.dto.ArtistProfileData
+import com.example.melora.data.remote.dto.PlaylistDto
 import com.example.melora.data.remote.dto.SongDetailedDto
 import java.text.SimpleDateFormat
 
@@ -53,7 +54,7 @@ fun MeloraSearchBar(
     onSearch: (String) -> Unit,
     searchResults: List<SongDetailedDto>,
     artistResult: List<ArtistProfileData>,
-    playlistResults: List<PlaylistEntity>,
+    playlistResults: List<PlaylistDto>,
     modifier: Modifier = Modifier,
     goArtistProfile: (Long) -> Unit,
     goPlayer: (Long) -> Unit,
@@ -128,19 +129,29 @@ fun MeloraSearchBar(
 }
 
 @Composable
-fun PlaylistItem(playlist: PlaylistEntity, goPlaylist: (Long) -> Unit) {
+fun PlaylistItem(playlist: PlaylistDto, goPlaylist: (Long) -> Unit) {
+
     Button(
         onClick = { goPlaylist(playlist.idPlaylist) },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             contentColor = Color.Black
         )
     ) {
+
         Column(modifier = Modifier.fillMaxWidth()) {
-            Text(playlist.playListName, color = Color.Black, fontWeight = FontWeight.Medium, fontSize = 16.sp)
             Text(
-                text = "Created on ${SimpleDateFormat("dd/MM/yyyy").format(playlist.creationDate)}",
+                playlist.playlistName,
+                color = Color.Black,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+
+            Text(
+                text = "Created on ${playlist.fechaCreacion ?: "Unknown"}",
                 color = Color.Gray,
                 fontSize = 12.sp
             )

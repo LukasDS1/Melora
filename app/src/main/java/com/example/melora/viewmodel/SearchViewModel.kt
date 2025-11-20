@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.playlist.PlaylistEntity
 import com.example.melora.data.local.users.UserEntity
 import com.example.melora.data.remote.dto.ArtistProfileData
+import com.example.melora.data.remote.dto.PlaylistDto
 import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.data.repository.PlayListRepository
+import com.example.melora.data.repository.PlaylistApiRepository
 import com.example.melora.data.repository.RegisterApiRepository
 import com.example.melora.data.repository.SongApiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val songApiRepository: SongApiRepository,
-    private val playlistRepository: PlayListRepository,
+    private val playlistRepository: PlaylistApiRepository,
     private val registerApiRepository: RegisterApiRepository
 ) : ViewModel() {
 
@@ -27,13 +29,17 @@ class SearchViewModel(
 
 
 
-    private val _playlists = MutableStateFlow<List<PlaylistEntity>>(emptyList())
-    val playlists: StateFlow<List<PlaylistEntity>> = _playlists
+    private val _playlists = MutableStateFlow<List<PlaylistDto>>(emptyList())
+    val playlists: StateFlow<List<PlaylistDto>> = _playlists
 
     fun loadAll() {
         viewModelScope.launch {
             _songs.value = songApiRepository.getAllSongs().getOrElse { emptyList() }
-            _playlists.value = playlistRepository.getAllPlaylist()
+            _playlists.value = try {
+                playlistRepository.getAllPlaylists()
+            } catch (e: Exception) {
+                emptyList()
+            }
         }
     }
 
@@ -52,7 +58,7 @@ class SearchViewModel(
 
             _songs.value = songResult.getOrElse { emptyList() }
             _artists.value = artistsResult.getOrElse { emptyList() }
-            _playlists.value = playlistResult.getOrElse { emptyList() }
+            _playlists.value = playlistResult
         }
     }
 }

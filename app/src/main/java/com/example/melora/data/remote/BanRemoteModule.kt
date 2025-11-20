@@ -10,7 +10,7 @@ object BanRemoteModule {
     private const val BASE_URL = "https://l6k80b0k-8084.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = HttpLoggingInterceptor.Level.HEADERS
     }
 
     private val client = OkHttpClient.Builder()

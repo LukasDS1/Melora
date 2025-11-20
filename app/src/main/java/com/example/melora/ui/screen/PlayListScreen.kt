@@ -18,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.PlaylistSongDto
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.ui.theme.PrimaryBg
-import com.example.melora.viewmodel.PlaylistViewModel
+import com.example.melora.viewmodel.PlaylistApiViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.launch
@@ -29,7 +31,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlaylistDetailScreenVm(
     playlistId: Long,
-    playlistViewModel: PlaylistViewModel,
+    playlistViewModel: PlaylistApiViewModel,
     goPlayer: (Long) -> Unit,
     onBack: () -> Unit
 ) {
@@ -38,33 +40,35 @@ fun PlaylistDetailScreenVm(
     val scope = rememberCoroutineScope()
 
     var currentUserId by remember { mutableStateOf<Long?>(null) }
+
+    // Cargar ID usuario
     LaunchedEffect(Unit) {
         currentUserId = prefs.userId.firstOrNull()
     }
 
+    // Estados del ViewModel API
+    val playlist by playlistViewModel.currentPlaylist.collectAsState()
     val songs by playlistViewModel.songsInPlaylist.collectAsState()
-    val myPlaylists by playlistViewModel.myPlaylists.collectAsState()
-    val followedPlaylists by playlistViewModel.followedPlaylists.collectAsState()
-    val currentPlaylist by playlistViewModel.currentPlaylist.collectAsState()
+    val followed by playlistViewModel.followedPlaylists.collectAsState()
 
-    val playlist = (myPlaylists + followedPlaylists)
-        .find { it.idPlaylist == playlistId } ?: currentPlaylist
+    val isFollowing = followed.any { it.idPlaylist == playlistId }
 
+    // Cargar datos
     LaunchedEffect(playlistId) {
+        playlistViewModel.loadPlaylistById(playlistId)
         playlistViewModel.loadSongsFromPlaylist(playlistId)
-        if (playlist == null) playlistViewModel.loadPlaylistById(playlistId)
     }
 
     PlaylistDetailScreen(
-        playlistName = playlist?.playListName ?: "Unknown Playlist",
-        creationDate = playlist?.creationDate ?: System.currentTimeMillis(),
-        songs = songs,
+        playlistName = playlist?.playlistName ?: "Unknown Playlist",
+        creationDate = playlist?.fechaCreacion ?: "",
+        songs = songs ?: emptyList(),
         isMine = playlist?.userId == currentUserId,
-        isFollowing = followedPlaylists.any { it.idPlaylist == playlistId },
+        isFollowing = isFollowing,
         onToggleFollow = {
-            if (currentUserId != null && playlist != null) {
+            if (currentUserId != null) {
                 scope.launch {
-                    playlistViewModel.toggleFollow(currentUserId!!, playlist.idPlaylist)
+                    playlistViewModel.toggleFollow(currentUserId!!, playlistId)
                 }
             }
         },
@@ -73,29 +77,28 @@ fun PlaylistDetailScreenVm(
     )
 }
 
+
 @Composable
 fun PlaylistDetailScreen(
     playlistName: String,
-    creationDate: Long,
-    songs: List<SongDetailed>,
+    creationDate: String,
+    songs: List<PlaylistSongDto>,
     isMine: Boolean,
     isFollowing: Boolean,
     onToggleFollow: () -> Unit,
     goPlayer: (Long) -> Unit,
     onBack: () -> Unit
 ) {
-    val formattedDate = SimpleDateFormat("dd/MM/yyyy").format(creationDate)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(PrimaryBg)
             .padding(16.dp)
     ) {
+
+        // Título + fecha
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -106,76 +109,46 @@ fun PlaylistDetailScreen(
                     color = Color.Black
                 )
                 Text(
-                    text = "Created on $formattedDate",
+                    text = "Created on $creationDate",
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.Gray
                 )
             }
 
             if (!isMine) {
-                val tintColor by animateColorAsState(
-                    targetValue = if (isFollowing) Color.Red else Color.Black,
-                    label = ""
+                val tint by animateColorAsState(
+                    if (isFollowing) Color.Red else Color.Black
                 )
-                IconButton(
-                    onClick = onToggleFollow,
-                    modifier = Modifier.size(48.dp)
-                ) {
+
+                IconButton(onClick = onToggleFollow) {
                     Icon(
-                        imageVector = if (isFollowing)
-                            Icons.Filled.Favorite
-                        else
-                            Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isFollowing) "Unfollow Playlist" else "Follow Playlist",
-                        tint = tintColor,
-                        modifier = Modifier.size(30.dp)
+                        imageVector = if (isFollowing) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        tint = tint,
+                        contentDescription = null
                     )
                 }
             }
-
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(12.dp))
 
         if (songs.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("This playlist has no songs yet", color = Color.Gray)
             }
         } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(0.dp)
-            ) {
+            LazyColumn {
                 items(songs) { song ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(PrimaryBg)
                             .clickable { goPlayer(song.songId) }
-                            .padding(vertical = 10.dp, horizontal = 12.dp)
+                            .padding(vertical = 8.dp)
                     ) {
-                        Text(
-                            text = song.songName,
-                            color = Color.Black,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "by ${song.nickname}",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                        Text(song.songName, color = Color.Black)
+                        Text("by ${song.nickname}", color = Color.Gray, fontSize = 12.sp)
                     }
-
-                    Divider(
-                        color = Color.Black,
-                        thickness = 1.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp)
-                    )
+                    HorizontalDivider()
                 }
             }
         }

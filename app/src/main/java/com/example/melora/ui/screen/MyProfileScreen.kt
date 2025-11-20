@@ -34,7 +34,7 @@ import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.ResaltadoNegative
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.ArtistProfileViewModel
-import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteApiViewModel
 
 
 // ------------------------------------------------------
@@ -44,7 +44,7 @@ import com.example.melora.viewmodel.FavoriteViewModel
 fun MyProfileScreenVm(
     vm: ArtistProfileViewModel,
     goPlayer: (Long) -> Unit,
-    favVm: FavoriteViewModel,
+    favVm: FavoriteApiViewModel,
     onEditProfile: () -> Unit
 ) {
     LaunchedEffect(Unit) { vm.loadMyProfile() }

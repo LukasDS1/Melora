@@ -5,7 +5,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object SongRemoteModule {
+object FavoriteRemoteModule {
 
     private const val BASE_URL = "https://l6k80b0k-8084.brs.devtunnels.ms/"
 
@@ -23,5 +23,5 @@ object SongRemoteModule {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    fun api(): SongApi = retrofit.create(SongApi::class.java)
+    fun api(): FavoriteApi = retrofit.create(FavoriteApi::class.java)
 }

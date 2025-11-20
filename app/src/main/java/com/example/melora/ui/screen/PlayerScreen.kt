@@ -2,17 +2,10 @@ package com.example.melora.ui.screen
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -36,18 +29,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.viewmodel.MusicPlayerViewModel
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.Lato
 import com.example.melora.viewmodel.BanViewModel
-import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteApiViewModel
 
 @Composable
 fun PlayerScreenVm(
     songId: Long,
     onExitPlayer: () -> Unit,
     vm: MusicPlayerViewModel,
-    favVm: FavoriteViewModel,
+    favVm: FavoriteApiViewModel,
     roleName: String,
     banVm: BanViewModel
 ) {
@@ -56,11 +48,12 @@ fun PlayerScreenVm(
     val isPlaying by vm.isPlaying.collectAsStateWithLifecycle()
     val currentPosition by vm.currentPosition.collectAsStateWithLifecycle()
     val duration by vm.duration.collectAsStateWithLifecycle()
-    val isFavorite by favVm.currentIsFavorite.collectAsStateWithLifecycle()
+    val isFavorite by favVm.currentIsFavorite.collectAsState()
+
 
     LaunchedEffect(songId) {
         vm.playSong(songId)
-        favVm.updateFavoriteState(songId)
+        favVm.checkIfFavorite(songId)
     }
 
     LaunchedEffect(Unit) {
