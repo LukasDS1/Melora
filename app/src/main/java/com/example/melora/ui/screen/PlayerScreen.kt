@@ -33,6 +33,7 @@ import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.Lato
 import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.FavoriteApiViewModel
+import com.example.melora.R
 
 @Composable
 fun PlayerScreenVm(
@@ -202,28 +203,16 @@ fun PlayerScreen(
             Spacer(Modifier.height(24.dp))
 
             // ============================
-            //       COVER ART
+            //       COVER ART (THUMBNAIL)
             // ============================
             val coverModel: Any? = remember(currentSong) {
-                when {
-                    !currentSong?.coverArtBase64.isNullOrBlank() ->
-                        android.util.Base64.decode(
-                            currentSong!!.coverArtBase64,
-                            android.util.Base64.DEFAULT
-                        )
-
-                    !currentSong?.coverArt.isNullOrBlank() ->
-                        android.util.Base64.decode(
-                            currentSong!!.coverArt,
-                            android.util.Base64.DEFAULT
-                        )
-
-                    else -> null
+                currentSong?.coverArtBase64?.let { base64 ->
+                    android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
                 }
             }
 
             AsyncImage(
-                model = coverModel,
+                model = coverModel ?: R.drawable.music_not_found_placeholder,
                 contentDescription = "Cover",
                 modifier = Modifier
                     .size(260.dp)

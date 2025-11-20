@@ -8,7 +8,7 @@ object RegisterRemoteModule {
     private const val REGISTER_URL = "https://l6k80b0k-8082.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.HEADERS
+        level = HttpLoggingInterceptor.Level.NONE
     }
     private val okHttp = okhttp3.OkHttpClient.Builder()
         .addInterceptor(logging).build()

@@ -7,7 +7,7 @@ object LoginRemoteModule {
 
 
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.HEADERS
+        level = HttpLoggingInterceptor.Level.NONE
     }
 
     private val okHttp = okhttp3.OkHttpClient.Builder()

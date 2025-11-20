@@ -385,8 +385,8 @@ fun SongItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            val bytes = song.coverArt?.let {
-                java.util.Base64.getDecoder().decode(it)
+            val bytes = song.coverArtBase64?.let {
+                android.util.Base64.decode(it, android.util.Base64.DEFAULT)
             }
 
             AsyncImage(

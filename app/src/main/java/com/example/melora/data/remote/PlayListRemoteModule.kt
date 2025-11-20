@@ -9,7 +9,7 @@ object PlaylistRemoteModule {
     private const val PLAYLIST_URL = "https://l6k80b0k-8085.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.HEADERS
+        level = HttpLoggingInterceptor.Level.NONE
     }
 
     private val client = OkHttpClient.Builder()

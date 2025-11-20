@@ -72,6 +72,7 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(10.dp))
 
+
                 Text(
                     text = "No songs available",
                     color = Color.Black,
@@ -107,8 +108,8 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
 
-                            val imageBytes = song.coverArt?.let {
-                                Base64.getDecoder().decode(it)
+                            val imageBytes = song.coverArtBase64?.let {
+                                android.util.Base64.decode(it, android.util.Base64.DEFAULT)
                             }
 
                             AsyncImage(
