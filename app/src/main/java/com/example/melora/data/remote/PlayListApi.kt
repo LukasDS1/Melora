@@ -37,10 +37,11 @@ interface PlayListApi {
     // 4. CANCIONES DE PLAYLIST
     // GET /api-v1/playlists/get/{id}/songs
     // ------------------------------
-    @GET("api-v1/playlists/get/{id}/songs")
+    @GET("api-v1/playlist-songs/{playlistId}/songs")
     suspend fun getSongsFromPlaylist(
-        @Path("id") playlistId: Long
+        @Path("playlistId") playlistId: Long
     ): List<PlaylistSongDto>
+
 
 
     // ------------------------------

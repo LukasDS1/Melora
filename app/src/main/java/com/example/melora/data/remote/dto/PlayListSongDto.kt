@@ -9,5 +9,7 @@ data class PlaylistSongDto(
     val durationSong: Int,
     val uploadDate: Long,
     val nickname: String,
-    val artistId: Long
+    val artistId: Long,
+    val coverArtBase64: String?,
+    val audioBase64: String?
 )
