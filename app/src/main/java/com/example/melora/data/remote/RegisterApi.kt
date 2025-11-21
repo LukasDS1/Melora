@@ -37,16 +37,14 @@ interface RegisterApi {
     @GET("api-v1/auth/exists/{idUser}")
     suspend fun getRawUserById(@Path("idUser") idUser: Long): Map<String, Any>
 
-
+    // Obtener usuario
     @GET("api-v1/auth/exists/{idUser}")
     suspend fun getUserById(
         @Path("idUser") idUser: Long
     ): Response<RegisterUserDto>
 
-        @GET("api-v1/auth/search")
-        suspend fun searchUsers(
-            @Query("nickname") nickname: String
-        ): List<ArtistProfileData>
+    @GET("api-v1/auth/search")
+    suspend fun searchUsers(@Query("nickname") nickname: String): List<ArtistProfileData>
 
 
 

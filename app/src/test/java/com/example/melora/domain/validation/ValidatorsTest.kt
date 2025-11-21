@@ -13,7 +13,8 @@ import org.robolectric.annotation.Config
 class ValidatorsTest {
 
     private val context = mockk<Context>(relaxed = true)
-     // ============ validacion de song ==============================
+
+    // ============ validacion de song ==============================
     @Test
     fun songValidation_nullUri_returnsError() {
         val error = songValidation(context, null)
@@ -188,11 +189,6 @@ class ValidatorsTest {
         assertNull(error)
     }
     //==============================================================================================
-
-
-
-
-
 
 
 }
