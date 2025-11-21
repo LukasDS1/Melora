@@ -30,6 +30,10 @@ class RegisterApiRepository(
         }
     }
 
+    suspend fun getUserAsMap(id: Long): Map<String, Any> {
+        return api.getRawUserById(id)
+    }
+
     suspend fun updateUser(idUser: Long, dto: RegisterUserDto): Result<String> {
         return try {
             val response = api.updateUser(idUser, dto)

@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object PlaylistRemoteModule {
     private const val PLAYLIST_URL = "https://l6k80b0k-8085.brs.devtunnels.ms/"
@@ -12,8 +13,12 @@ object PlaylistRemoteModule {
         level = HttpLoggingInterceptor.Level.NONE
     }
 
-    private val client = OkHttpClient.Builder()
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(logging)
+        .retryOnConnectionFailure(true)
         .build()
 
     private val retrofit = Retrofit.Builder()

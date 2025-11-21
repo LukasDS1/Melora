@@ -5,6 +5,7 @@ import com.example.melora.data.remote.LoginApi
 import com.example.melora.data.remote.RegisterApi
 import com.example.melora.data.remote.dto.LoginUserDto
 import com.example.melora.data.remote.dto.RegisterUserDto
+import com.example.melora.data.remote.dto.RolDto
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.domain.validation.validateEmail
 import com.example.melora.domain.validation.validateNickname
@@ -181,7 +182,7 @@ class EditProfileViewModel(
                 val dto = RegisterUserDto(
                     email = s.email,
                     nickname = s.nickname,
-                    rolId = initialRoleId ?: 1L,
+                    rol = RolDto(2),
                     profilePhotoBase64 = s.profilePictureUrl,
 
                     password = if (wantsPasswordChange) {

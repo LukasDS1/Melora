@@ -1,6 +1,8 @@
 package com.example.melora.data.remote
 
+import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
 
 object LoginRemoteModule {
     private const val LOGIN_URL = "https://l6k80b0k-8082.brs.devtunnels.ms/"
@@ -10,11 +12,17 @@ object LoginRemoteModule {
         level = HttpLoggingInterceptor.Level.NONE
     }
 
-    private val okHttp = okhttp3.OkHttpClient.Builder()
-        .addInterceptor(logging).build()
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(logging)
+        .retryOnConnectionFailure(true)
+        .build()
+
 
     private val retrofit = retrofit2.Retrofit.Builder()
-        .baseUrl(LOGIN_URL).client(okHttp)
+        .baseUrl(LOGIN_URL).client(client)
         .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
         .build()
 

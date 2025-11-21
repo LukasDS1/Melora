@@ -35,6 +35,19 @@ import com.example.melora.ui.theme.ResaltadoNegative
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.FavoriteApiViewModel
+import android.util.Base64
+
+
+
+fun isBase64Image(s: String?): Boolean {
+    if (s.isNullOrBlank()) return false
+    return try {
+        android.util.Base64.decode(s, android.util.Base64.DEFAULT)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
 
 
 // ------------------------------------------------------
@@ -114,12 +127,17 @@ fun MyProfileScreen(
         ) {
 
             item {
-                Image(
-                    painter =
-                        if (profilePicture != null) rememberAsyncImagePainter(profilePicture)
-                        else painterResource(R.drawable.defaultprofilepicture),
+                val context = LocalContext.current
+                val decodedProfile = profilePicture?.let {
+                    runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull()
+                }
+
+                AsyncImage(
+                    model = decodedProfile ?: R.drawable.defaultprofilepicture,
                     contentDescription = null,
-                    modifier = Modifier.size(120.dp)
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
                 )
             }
 

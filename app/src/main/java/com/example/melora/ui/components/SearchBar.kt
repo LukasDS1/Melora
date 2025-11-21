@@ -160,128 +160,97 @@ fun PlaylistItem(playlist: PlaylistDto, goPlaylist: (Long) -> Unit) {
 }
 
 @Composable
-fun ArtistItem(artist: ArtistProfileData,goArtistProfile: (Long) -> Unit){
+fun ArtistItem(
+    artist: ArtistProfileData,
+    goArtistProfile: (Long) -> Unit
+) {
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Button(
-            onClick = { goArtistProfile(artist.idUser) },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Foto de perfil del artista
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(artist.profilePhotoBase64 ?: R.drawable.defaultprofilepicture)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Artist photo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(50.dp)       // tamaño uniforme
-                        .clip(CircleShape) // círculo
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // Nombre del artista
-                Text(
-                    text = artist.nickname,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp,
-                    maxLines = 1
-                )
-            }
-        }
+    // Decodificar Base64
+    val decodedProfile = artist.profilePhotoBase64?.let {
+        runCatching { android.util.Base64.decode(it, android.util.Base64.DEFAULT) }
+            .getOrNull()
     }
-}
-
-@Composable
-fun SongItem(song: SongDetailedDto, goPlayer: (Long) -> Unit) {
-
-    fun formatTime(seconds: Int): String {
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-        return "%02d:%02d".format(minutes, remainingSeconds)
-    }
-
-    val context = LocalContext.current
 
     Button(
-        onClick = { goPlayer(song.idSong) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        onClick = { goArtistProfile(artist.idUser) },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             contentColor = Color.Black
-        )
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-
-            // Portada BASE64
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(
-                        if (song.coverArt != null)
-                            "data:image/png;base64,${song.coverArt}"
-                        else R.drawable.defaultprofilepicture
-                    )
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Cover Art",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(8.dp))
+            // Nombre del artista pegado a la izquierda
+            Text(
+                text = artist.nickname,
+                color = Color.Black,
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.weight(1f)
-            ) {
+            // Foto pegada a la DERECHA
+            AsyncImage(
+                model = decodedProfile ?: R.drawable.defaultprofilepicture,
+                contentDescription = "Artist photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(40.dp)               // pequeño
+                    .clip(RoundedCornerShape(8.dp)) // cuadrado con bordes
+            )
+        }
+    }
+}
 
-                Text(
-                    text = song.songName,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                    maxLines = 1
-                )
 
-                Text(
-                    text = song.nickname ?: "Unknown",
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                    maxLines = 1
-                )
 
-                Text(
-                    text = formatTime(song.songDuration),
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+@Composable
+fun SongItem(song: SongDetailedDto, goPlayer: (Long) -> Unit) {
+
+    val decodedCover = song.coverArtBase64?.let {
+        runCatching { android.util.Base64.decode(it, android.util.Base64.DEFAULT) }.getOrNull()
+    }
+
+    Button(
+        onClick = { goPlayer(song.idSong) },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+
+            AsyncImage(
+                model = decodedCover ?: R.drawable.defaultprofilepicture,
+                contentDescription = "Cover",
+                modifier = Modifier
+                    .size(55.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(Modifier.weight(1f)) {
+                Text(song.songName, color = Color.Black)
+                Text(song.nickname ?: "Unknown", color = Color.Gray)
             }
         }
     }
 }
+
+
 
 

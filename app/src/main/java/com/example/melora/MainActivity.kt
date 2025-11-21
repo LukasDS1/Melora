@@ -34,6 +34,7 @@ import com.example.melora.data.repository.RegisterApiRepository
 import com.example.melora.data.repository.SongApiRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
+import com.example.melora.data.repository.UserArtistApiPublicRepository
 import com.example.melora.data.repository.UserRepository
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
@@ -62,6 +63,7 @@ import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadApiViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.viewmodel.UploadViewModelFactory
+import com.example.melora.viewmodel.UserArtistApiPublicViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,14 +106,16 @@ fun AppRoot() {
 
     val registerApiRepository = RegisterApiRepository()
 
+
     val uploadRepository = UploadRepository(uploadDao)
     val songApi = SongRemoteModule.api()
+    val userArtistApiPublicRepository = UserArtistApiPublicRepository(songApi,registerApiRepository)
 
     val prefs = UserPreferences(context)
 
     val loginRepository = UserRepository(userDao,rolDao,estadoDao)
 
-    val artistRepository = ArtistRepository(songApi, prefs )
+    val artistRepository = ArtistRepository(songApi, prefs,registerApiRepository )
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
 
@@ -164,6 +168,8 @@ fun AppRoot() {
         factory = PlaylistApiViewModelFactory(playListRepository)
     )
 
+    val userArtistApiPublicViewModel  = UserArtistApiPublicViewModel(userArtistApiPublicRepository)
+
     val uploadViewModel: UploadViewModel = viewModel(
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
@@ -201,7 +207,8 @@ fun AppRoot() {
                 homeScreenViewModel = homeScreenViewModel,
                 registerApiViewModel = registerApiViewModel,
                 loginApiViewModel = loginApiViewModel,
-                uploadApiViewModel = uploadApiViewModel
+                uploadApiViewModel = uploadApiViewModel,
+                userArtistApiPublicViewModel = userArtistApiPublicViewModel
             )
         }
     }

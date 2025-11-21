@@ -70,5 +70,15 @@ class ArtistProfileViewModel(
             }
         }
     }
+
+    fun banUser(userId: Long, onFinish: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.deleteUser(userId)
+            onFinish(result.isSuccess)
+        }
+    }
+
+
+
 }
 

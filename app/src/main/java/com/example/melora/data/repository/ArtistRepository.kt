@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.first
 
 class ArtistRepository(
     private val musicApi: SongApi,
-    private val prefs: UserPreferences
+    private val prefs: UserPreferences,
+    private val registerApiRepository: RegisterApiRepository
 ) {
 
     suspend fun getMyProfile(): ArtistProfileData {
@@ -29,6 +30,12 @@ class ArtistRepository(
             songs = songs
         )
     }
+
+    suspend fun deleteUser(userId: Long): Result<String> {
+        return registerApiRepository.deleteUser(userId)
+    }
+
+
 
 
 }

@@ -35,6 +35,10 @@ interface RegisterApi {
     ): Response<Any>
 
     @GET("api-v1/auth/exists/{idUser}")
+    suspend fun getRawUserById(@Path("idUser") idUser: Long): Map<String, Any>
+
+
+    @GET("api-v1/auth/exists/{idUser}")
     suspend fun getUserById(
         @Path("idUser") idUser: Long
     ): Response<RegisterUserDto>

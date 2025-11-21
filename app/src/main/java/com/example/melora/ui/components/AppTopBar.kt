@@ -30,6 +30,8 @@ import coil.request.ImageRequest
 import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.R
+import android.util.Base64
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable // Composable reutilizable: barra superior
@@ -47,17 +49,15 @@ fun AppTopBar(
         ),
         navigationIcon = {
             IconButton(onClick = onMyProfile) {
+
+                val context = LocalContext.current
+
+                val decodedBytes = profileImageUrl?.let {
+                    runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull()
+                }
+
                 AsyncImage(
-                    model = if (profileImageUrl.isNullOrEmpty()) {
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(R.drawable.defaultprofilepicture)
-                            .build()
-                    } else {
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(profileImageUrl)
-                            .crossfade(true)
-                            .build()
-                    },
+                    model = decodedBytes ?: R.drawable.defaultprofilepicture,
                     contentDescription = "Profile Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

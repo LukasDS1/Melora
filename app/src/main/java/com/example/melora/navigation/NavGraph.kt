@@ -34,7 +34,8 @@ fun AppNavGraph(
     homeScreenViewModel: HomeScreenViewModel,
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
-    uploadApiViewModel: UploadApiViewModel
+    uploadApiViewModel: UploadApiViewModel,
+    userArtistApiPublicViewModel: UserArtistApiPublicViewModel
 ) {
 
     // =============== NUEVO: leer el login real desde UserPreferences =====================
@@ -223,9 +224,10 @@ fun AppNavGraph(
                 val id = backStackEntry.arguments?.getLong("artistId") ?: 0L
                 ArtistProfileScreenVm(
                     artistId = id,
-                    vm = artistModel,
+                    vm = userArtistApiPublicViewModel,
                     goPlayer = goPlayer,
-                    roleId = roleId
+                    roleName = roleName,
+                    arVm = artistModel
                 )
             }
 
