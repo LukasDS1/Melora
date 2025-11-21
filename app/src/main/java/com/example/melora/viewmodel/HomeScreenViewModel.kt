@@ -3,19 +3,24 @@ package com.example.melora.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.SongDetailedDto
+import com.example.melora.data.repository.SongApiRepository
 import com.example.melora.data.repository.SongRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HomeScreenViewModel(private val songRepository: SongRepository) : ViewModel() {
+class HomeScreenViewModel(
+    private val repository: SongApiRepository
+) : ViewModel() {
 
-    private val _songs = MutableStateFlow<List<SongDetailed>>(emptyList())
-    val songs: StateFlow<List<SongDetailed>> = _songs
+    private val _songs = MutableStateFlow<List<SongDetailedDto>>(emptyList())
+    val songs: StateFlow<List<SongDetailedDto>> = _songs
 
     fun loadSongs() {
         viewModelScope.launch {
-            _songs.value = songRepository.getAllSongs()
+            val res = repository.getAllSongs()
+            _songs.value = res.getOrElse { emptyList() }
         }
     }
 }

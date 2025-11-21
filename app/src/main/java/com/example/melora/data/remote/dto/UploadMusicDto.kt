@@ -8,4 +8,5 @@ data class UploadMusicDto(
     val coverArt:String?,
     val songDuration: Int,
     val creationDate: Long
+
 )

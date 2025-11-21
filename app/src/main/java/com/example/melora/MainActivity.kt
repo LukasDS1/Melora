@@ -17,13 +17,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.local.database.MeloraDB
+import com.example.melora.data.remote.FavoriteRemoteModule
+import com.example.melora.data.remote.LoginRemoteModule
+import com.example.melora.data.remote.PlaylistRemoteModule
+import com.example.melora.data.remote.RegisterRemoteModule
+import com.example.melora.data.remote.SongRemoteModule
 import com.example.melora.data.repository.ArtistRepository
+import com.example.melora.data.repository.BanApiRepository
+import com.example.melora.data.repository.FavoriteApiRepository
 import com.example.melora.data.repository.FavoriteRepository
 import com.example.melora.data.repository.LoginApiRepository
 import com.example.melora.data.repository.PlayListRepository
 import com.example.melora.data.repository.PlayListUserRepository
+import com.example.melora.data.repository.PlaylistApiRepository
+import com.example.melora.data.repository.RegisterApiRepository
+import com.example.melora.data.repository.SongApiRepository
 import com.example.melora.data.repository.SongRepository
 import com.example.melora.data.repository.UploadRepository
+import com.example.melora.data.repository.UserArtistApiPublicRepository
 import com.example.melora.data.repository.UserRepository
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
@@ -36,7 +47,7 @@ import com.example.melora.viewmodel.BanViewModel
 import com.example.melora.viewmodel.BanviewModelFactory
 import com.example.melora.viewmodel.EditProfileViewModel
 import com.example.melora.viewmodel.EditProfileViewModelFactory
-import com.example.melora.viewmodel.FavoriteViewModel
+import com.example.melora.viewmodel.FavoriteApiViewModel
 import com.example.melora.viewmodel.FavoriteViewModelFactory
 import com.example.melora.viewmodel.HomeScreenViewModel
 import com.example.melora.viewmodel.HomeScreenViewModelFactory
@@ -44,14 +55,15 @@ import com.example.melora.viewmodel.LoginApiViewModel
 import com.example.melora.viewmodel.LoginApiViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
-import com.example.melora.viewmodel.PlaylistViewModel
-import com.example.melora.viewmodel.PlaylistViewModelFactory
+import com.example.melora.viewmodel.PlaylistApiViewModel
+import com.example.melora.viewmodel.PlaylistApiViewModelFactory
 import com.example.melora.viewmodel.RegisterApiViewModel
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadApiViewModel
 import com.example.melora.viewmodel.UploadViewModel
 import com.example.melora.viewmodel.UploadViewModelFactory
+import com.example.melora.viewmodel.UserArtistApiPublicViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,15 +104,32 @@ fun AppRoot() {
 
     val userRepository = UserRepository(userDao,rolDao,estadoDao)
 
+    val registerApiRepository = RegisterApiRepository()
+
+
     val uploadRepository = UploadRepository(uploadDao)
+    val songApi = SongRemoteModule.api()
+    val userArtistApiPublicRepository = UserArtistApiPublicRepository(songApi,registerApiRepository)
 
     val prefs = UserPreferences(context)
 
     val loginRepository = UserRepository(userDao,rolDao,estadoDao)
 
-    val artistRepository = ArtistRepository(userDao,songDao)
+    val artistRepository = ArtistRepository(songApi, prefs,registerApiRepository )
 
     val favoriteRepository = FavoriteRepository(favoriteDao,userDao,songDao)
+
+    val songApiRepository = SongApiRepository()
+
+    val banApiRepository = BanApiRepository()
+
+    val registerApi = RegisterRemoteModule.api()
+
+    val loginApi = LoginRemoteModule.api()
+
+    val playListApi = PlaylistRemoteModule.api()
+    val favoriteApi = FavoriteRemoteModule.api()
+
 
     val registerApiViewModel: RegisterApiViewModel = viewModel()
 
@@ -114,42 +143,51 @@ fun AppRoot() {
             prefs = prefs
         )
     )
+
+    val playListRepository = PlaylistApiRepository(playListApi)
+
+
     val uploadApiViewModel: UploadApiViewModel = viewModel()
+
 
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     val currentUserId = currentUser?.idUser
 
+    val favoriteApiRepository = FavoriteApiRepository(favoriteApi)
+
     val userPreferences = UserPreferences(context)
 
     val editProfileViewModel: EditProfileViewModel = viewModel(
-        factory = EditProfileViewModelFactory(userRepository, userPreferences)
+        factory = EditProfileViewModelFactory(registerApi , loginApi,userPreferences)
     )
 
     val homeScreenViewModel: HomeScreenViewModel = viewModel(
-        factory = HomeScreenViewModelFactory(songRepository)
+        factory = HomeScreenViewModelFactory(songApiRepository)
     )
-    val playlistViewModel: PlaylistViewModel = viewModel(
-        factory = PlaylistViewModelFactory(playlistRepository,playlistUserRepository)
+    val playlistViewModel: PlaylistApiViewModel = viewModel(
+        factory = PlaylistApiViewModelFactory(playListRepository)
     )
+
+    val userArtistApiPublicViewModel  = UserArtistApiPublicViewModel(userArtistApiPublicRepository)
 
     val uploadViewModel: UploadViewModel = viewModel(
         factory = UploadViewModelFactory(songRepository,uploadRepository)
     )
     val artistProfileViewModel: ArtistProfileViewModel = viewModel(
-        factory = ArtistProfileViewModelFactory(artistRepository,songRepository)
+        factory = ArtistProfileViewModelFactory(artistRepository, songApiRepository  )
     )
 
     val searchViewModel: SearchViewModel = viewModel(
-        factory = SearchViewModelFactory(songRepository,userRepository,playlistRepository)
+        factory = SearchViewModelFactory(songApiRepository,playListRepository,registerApiRepository)
     )
     val musicPlayerViewModel : MusicPlayerViewModel = viewModel (
-        factory = MusicPlayerViewModelFactory(application,songRepository)
+        factory = MusicPlayerViewModelFactory(application,songApiRepository)
     )
-    val favoriteViewModel: FavoriteViewModel = viewModel(
-        factory = FavoriteViewModelFactory(favoriteRepository,prefs)
+    val favoriteViewModel: FavoriteApiViewModel = viewModel(
+        factory = FavoriteViewModelFactory(favoriteApiRepository,prefs)
     )
     val banViewModel: BanViewModel = viewModel(
-        factory = BanviewModelFactory(uploadRepository, application)
+        factory = BanviewModelFactory(banApiRepository, application)
     )
     val navController = rememberNavController()
 
@@ -165,11 +203,12 @@ fun AppRoot() {
                 musicPlayerViewModel = musicPlayerViewModel,
                 banViewModel = banViewModel,
                 editProfileViewModel = editProfileViewModel,
-                playlistViewModel =playlistViewModel,
+                playlistApiViewModel =playlistViewModel,
                 homeScreenViewModel = homeScreenViewModel,
                 registerApiViewModel = registerApiViewModel,
                 loginApiViewModel = loginApiViewModel,
-                uploadApiViewModel = uploadApiViewModel
+                uploadApiViewModel = uploadApiViewModel,
+                userArtistApiPublicViewModel = userArtistApiPublicViewModel
             )
         }
     }

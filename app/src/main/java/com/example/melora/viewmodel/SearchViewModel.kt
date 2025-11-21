@@ -3,48 +3,62 @@ package com.example.melora.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.local.playlist.PlaylistEntity
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.local.users.UserEntity
+import com.example.melora.data.remote.dto.ArtistProfileData
+import com.example.melora.data.remote.dto.PlaylistDto
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.data.repository.PlayListRepository
-import com.example.melora.data.repository.SongRepository
-import com.example.melora.data.repository.UserRepository
+import com.example.melora.data.repository.PlaylistApiRepository
+import com.example.melora.data.repository.RegisterApiRepository
+import com.example.melora.data.repository.SongApiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class SearchViewModel (private val repository: SongRepository, private val userRepository: UserRepository,private val playlistRepository: PlayListRepository): ViewModel() {
-    private val _songs = MutableStateFlow<List<SongDetailed>>(emptyList())
-    val songs: StateFlow<List<SongDetailed>> = _songs.asStateFlow()
+class SearchViewModel(
+    private val songApiRepository: SongApiRepository,
+    private val playlistRepository: PlaylistApiRepository,
+    private val registerApiRepository: RegisterApiRepository
+) : ViewModel() {
 
-    private val _artists = MutableStateFlow<List<UserEntity>>(emptyList())
-    val artists: StateFlow<List<UserEntity>> = _artists.asStateFlow()
+    private val _songs = MutableStateFlow<List<SongDetailedDto>>(emptyList())
+    val songs: StateFlow<List<SongDetailedDto>> = _songs
 
-    private val _playlists = MutableStateFlow<List<PlaylistEntity>>(emptyList())
-    val playlists: StateFlow<List<PlaylistEntity>> = _playlists.asStateFlow()
+    private val _artists = MutableStateFlow<List<ArtistProfileData>>(emptyList())
+    val artists: StateFlow<List<ArtistProfileData>> = _artists
 
-    fun loadAllSongs() {
+
+
+    private val _playlists = MutableStateFlow<List<PlaylistDto>>(emptyList())
+    val playlists: StateFlow<List<PlaylistDto>> = _playlists
+
+    fun loadAll() {
         viewModelScope.launch {
-            _songs.value = repository.getAllSongs()
-            _playlists.value = playlistRepository.getAllPlaylist()
+            _songs.value = songApiRepository.getAllSongs().getOrElse { emptyList() }
+            _playlists.value = try {
+                playlistRepository.getAllPlaylists()
+            } catch (e: Exception) {
+                emptyList()
+            }
         }
     }
 
     fun search(query: String) {
         viewModelScope.launch {
-            if (query.isBlank()) {
-                _songs.value = repository.getAllSongs()
-                _artists.value = emptyList()
-                _playlists.value = playlistRepository.getAllPlaylist()
-            } else {
-                val songsResult = repository.getSong(query)
-                val artistsResult = userRepository.searchByNickname(query)
-                val playlistsResult = playlistRepository.searchPlaylistsByName(query)
 
-                _playlists.value = playlistsResult.getOrElse { emptyList() }
-                _songs.value = songsResult.getOrElse { emptyList() }
-                _artists.value = artistsResult.getOrElse { emptyList() }
+            if (query.isBlank()) {
+                loadAll()
+                _artists.value = emptyList()
+                return@launch
             }
+
+            val songResult = songApiRepository.search(query)
+            val artistsResult = registerApiRepository.searchByNickname(query)
+            val playlistResult = playlistRepository.searchPlaylistsByName(query)
+
+            _songs.value = songResult.getOrElse { emptyList() }
+            _artists.value = artistsResult.getOrElse { emptyList() }
+            _playlists.value = playlistResult
         }
     }
 }

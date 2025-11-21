@@ -1,18 +1,32 @@
 package com.example.melora.data.remote
 
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
+
 object UploadRemoteModule {
+
 
     private const val UPLOAD_URL = "https://l6k80b0k-8084.brs.devtunnels.ms/"
 
-    private val logging = okhttp3.logging.HttpLoggingInterceptor().apply {
-        level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+    private val logging = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.NONE
     }
+
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(logging)
+        .retryOnConnectionFailure(true)
+        .build()
+
 
     private val okHttp = okhttp3.OkHttpClient.Builder()
         .addInterceptor(logging).build()
 
     private val retrofit = retrofit2.Retrofit.Builder()
-        .baseUrl(UPLOAD_URL).client(okHttp)
+        .baseUrl(UPLOAD_URL).client(client)
         .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
         .build()
 

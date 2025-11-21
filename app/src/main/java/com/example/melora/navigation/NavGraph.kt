@@ -27,14 +27,15 @@ fun AppNavGraph(
     authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
-    favoriteModel: FavoriteViewModel,
+    favoriteModel: FavoriteApiViewModel,
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
-    playlistViewModel: PlaylistViewModel,
+    playlistApiViewModel: PlaylistApiViewModel,
     homeScreenViewModel: HomeScreenViewModel,
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
-    uploadApiViewModel: UploadApiViewModel
+    uploadApiViewModel: UploadApiViewModel,
+    userArtistApiPublicViewModel: UserArtistApiPublicViewModel
 ) {
 
     // =============== NUEVO: leer el login real desde UserPreferences =====================
@@ -48,6 +49,8 @@ fun AppNavGraph(
     val roleId by prefs.userRoleId.collectAsStateWithLifecycle(initialValue = null)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val roleName by prefs.roleName.collectAsStateWithLifecycle(initialValue = "")
+
 
     // ================= START DESTINATION CORRECTO =====================
     val startDestination = if (isLoggedIn) Route.Home.path else Route.Login.path
@@ -221,9 +224,10 @@ fun AppNavGraph(
                 val id = backStackEntry.arguments?.getLong("artistId") ?: 0L
                 ArtistProfileScreenVm(
                     artistId = id,
-                    vm = artistModel,
+                    vm = userArtistApiPublicViewModel,
                     goPlayer = goPlayer,
-                    roleId = roleId
+                    roleName = roleName,
+                    arVm = artistModel
                 )
             }
 
@@ -242,7 +246,7 @@ fun AppNavGraph(
                         vm = musicPlayerViewModel,
                         onExitPlayer = { navController.popBackStack() },
                         favVm = favoriteModel,
-                        roleId = roleId,
+                        roleName = roleName ?: "",
                         banVm = banViewModel
                     )
                 }
@@ -252,13 +256,13 @@ fun AppNavGraph(
                 FavoriteScreenVm(
                     favoriteViewModel = favoriteModel,
                     goPlayer = goPlayer,
-                    playlistViewModel = playlistViewModel,
+                    playlistViewModel = playlistApiViewModel,
                     searchViewModel = searchViewModel,
                     goPlaylistDetail = goPlaylist
                 )
             }
 
-            composable(Route.editProfile.path) {
+            composable(Route.   editProfile.path) {
                 EditProfileScreenVm(
                     vm = editProfileViewModel,
                     onExit = goMyProfile,
@@ -283,7 +287,7 @@ fun AppNavGraph(
                 val playlistId = entry.arguments?.getLong("playlistId") ?: return@composable
                 PlaylistDetailScreenVm(
                     playlistId = playlistId,
-                    playlistViewModel = playlistViewModel,
+                    playlistViewModel = playlistApiViewModel,
                     goPlayer = goPlayer,
                     onBack = { navController.popBackStack() }
                 )
