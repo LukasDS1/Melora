@@ -1,6 +1,5 @@
 package com.example.melora.ui.screen
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,12 +18,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.melora.R
 import com.example.melora.data.remote.dto.SongDetailedDto
@@ -36,7 +33,7 @@ import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.FavoriteApiViewModel
 import android.util.Base64
-
+import androidx.compose.foundation.clickable
 
 
 fun isBase64Image(s: String?): Boolean {
@@ -49,10 +46,6 @@ fun isBase64Image(s: String?): Boolean {
     }
 }
 
-
-// ------------------------------------------------------
-// VIEWMODEL WRAPPER
-// ------------------------------------------------------
 @Composable
 fun MyProfileScreenVm(
     vm: ArtistProfileViewModel,
@@ -392,7 +385,11 @@ fun SongItem(
     var iconOffset by remember { mutableStateOf<IntOffset?>(null) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                goPlayer(song.idSong)
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f))
     ) {
 
@@ -429,7 +426,6 @@ fun SongItem(
                 )
             }
 
-            // CAPTURA LAS COORDENADAS DEL ICON BUTTON
             IconButton(
                 modifier = Modifier.onGloballyPositioned { coords ->
                     val windowPos = coords.localToWindow(Offset.Zero)
@@ -448,3 +444,4 @@ fun SongItem(
         }
     }
 }
+
