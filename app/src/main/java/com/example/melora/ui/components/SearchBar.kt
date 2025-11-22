@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -62,7 +63,7 @@ fun MeloraSearchBar(
         SearchBar(
             modifier = Modifier.align(Alignment.TopCenter),
             colors = SearchBarDefaults.colors(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.onPrimary,
                 dividerColor = Color.Transparent,
             ),
             inputField = {

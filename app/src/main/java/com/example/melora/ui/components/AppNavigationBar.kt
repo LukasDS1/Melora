@@ -33,7 +33,7 @@ fun AppNavigationBar(
         Destination(Route.Home.path, "Home", Icons.Filled.Home, "Go home")
     )
 
-    val bg = PrimaryBg
+    val bg = MaterialTheme.colorScheme.background
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
