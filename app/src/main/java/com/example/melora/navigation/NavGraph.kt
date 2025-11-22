@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -34,7 +35,9 @@ fun AppNavGraph(
     homeScreenViewModel: HomeScreenViewModel,
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
-    uploadApiViewModel: UploadApiViewModel
+    uploadApiViewModel: UploadApiViewModel,
+    recoverPassViewModel: RecoverPassViewModel,
+    resetPasswordViewModel: ResetPasswordViewModel
 ) {
 
     // =============== NUEVO: leer el login real desde UserPreferences =====================
@@ -74,6 +77,10 @@ fun AppNavGraph(
             popUpTo(Route.Login.path) { inclusive = false }
             launchSingleTop = true
         }
+    }
+
+    val goResetPassword: (String) -> Unit = { token ->
+        navController.navigate("reset_password/$token") { launchSingleTop = true }
     }
 
     val goSearch = {
@@ -120,12 +127,18 @@ fun AppNavGraph(
         navController.navigate(Route.MyProfile.path) { launchSingleTop = true }
     }
 
+    val goRecoverPass = {
+        navController.navigate(Route.RecoverPass.path) { launchSingleTop = true }
+    }
+
     val hideBars = currentRoute in listOf(
         Route.Login.path,
         Route.Register.path,
         Route.UploadScreenForm.path,
         Route.editProfile.path,
-        Route.Player.path
+        Route.Player.path,
+        Route.RecoverPass.path,
+        Route.resetPassword.path
     )
 
     // ======================= UI + NavHost ======================
@@ -162,7 +175,8 @@ fun AppNavGraph(
                 LoginScreenVm(
                     vm = loginApiViewModel,
                     onLoginOk = goHome,
-                    onGoRegister = goRegister
+                    onGoRegister = goRegister,
+                    goRecover = goRecoverPass
                 )
             }
 
@@ -184,6 +198,31 @@ fun AppNavGraph(
                     }
                 )
             }
+
+            composable(Route.RecoverPass.path) {
+                RecoverPassScreenVm(
+                    vm = recoverPassViewModel,
+                    onBackToLogin = goLogin,
+                    onGoToResetPassword = { token ->
+                        navController.navigate("reset_password/$token")
+                    }
+                )
+            }
+
+            composable(
+                route = Route.resetPassword.path,
+                arguments = listOf(navArgument("token") { type = NavType.StringType })
+            ) { backStackEntry ->
+
+                val token = backStackEntry.arguments?.getString("token") ?: ""
+
+                ResetPasswordScreenVm(
+                    token = token,
+                    vm = resetPasswordViewModel,
+                    onBackToLogin = { navController.navigate(Route.Login.path) }
+                )
+            }
+
 
             // =================== RESTO IGUAL ====================
             composable(Route.UploadScreenForm.path) {
@@ -211,19 +250,6 @@ fun AppNavGraph(
                     goArtistProfile = goArtistProfile,
                     goPlayer = goPlayer,
                     goPlaylist = goPlaylist
-                )
-            }
-
-            composable(
-                route = "artistProfile/{artistId}",
-                arguments = listOf(navArgument("artistId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getLong("artistId") ?: 0L
-                ArtistProfileScreenVm(
-                    artistId = id,
-                    vm = artistModel,
-                    goPlayer = goPlayer,
-                    roleId = roleId
                 )
             }
 

@@ -46,7 +46,11 @@ import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
 import com.example.melora.viewmodel.PlaylistViewModel
 import com.example.melora.viewmodel.PlaylistViewModelFactory
+import com.example.melora.viewmodel.RecoverPassViewModel
+import com.example.melora.viewmodel.RecoverPassViewModelFactory
 import com.example.melora.viewmodel.RegisterApiViewModel
+import com.example.melora.viewmodel.ResetPasswordViewModel
+import com.example.melora.viewmodel.ResetPasswordViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
 import com.example.melora.viewmodel.UploadApiViewModel
@@ -128,6 +132,15 @@ fun AppRoot() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel(
         factory = HomeScreenViewModelFactory(songRepository)
     )
+
+    val recoverPassViewModel: RecoverPassViewModel = viewModel(
+        factory = RecoverPassViewModelFactory(application)
+    )
+
+    val resetPasswordViewModel: ResetPasswordViewModel = viewModel(
+        factory = ResetPasswordViewModelFactory(application)
+    )
+
     val playlistViewModel: PlaylistViewModel = viewModel(
         factory = PlaylistViewModelFactory(playlistRepository,playlistUserRepository)
     )
@@ -169,7 +182,9 @@ fun AppRoot() {
                 homeScreenViewModel = homeScreenViewModel,
                 registerApiViewModel = registerApiViewModel,
                 loginApiViewModel = loginApiViewModel,
-                uploadApiViewModel = uploadApiViewModel
+                uploadApiViewModel = uploadApiViewModel,
+                recoverPassViewModel = recoverPassViewModel,
+                resetPasswordViewModel = resetPasswordViewModel
             )
         }
     }

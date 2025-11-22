@@ -2,7 +2,7 @@ package com.example.melora.data.remote
 
 object UploadRemoteModule {
 
-    private const val UPLOAD_URL = "https://l6k80b0k-8084.brs.devtunnels.ms/"
+    private const val UPLOAD_URL = "https://3rx2vqh0-8084.brs.devtunnels.ms/"
 
     private val logging = okhttp3.logging.HttpLoggingInterceptor().apply {
         level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY

@@ -61,7 +61,8 @@ import com.example.melora.viewmodel.LoginApiViewModel
 fun LoginScreenVm(
     vm: LoginApiViewModel,                            // MOD: recibimos el VM desde NavGraph
     onLoginOk: () -> Unit,                       // Navega a Home cuando el login es exitoso
-    onGoRegister: () -> Unit                                 // Navega a Registro
+    onGoRegister: () -> Unit,                                 // Navega a Registro
+    goRecover: () -> Unit
 ) {
 
     val state by vm.login.collectAsStateWithLifecycle()      // Observa el StateFlow en tiempo real
@@ -87,7 +88,8 @@ fun LoginScreenVm(
         onPassChange = vm::onPasswordChange,
         onSubmit = vm::submitLogin,
 
-        onGoRegister = onGoRegister
+        onGoRegister = onGoRegister,
+        onGoRecover = goRecover
     )
 }
 @Composable
@@ -102,7 +104,8 @@ fun LoginScreen(
     onEmailChange: (String) -> Unit,                         // Handler cambio email
     onPassChange: (String) -> Unit,                          // Handler cambio password
     onSubmit: () -> Unit,                                    // Acción enviar
-    onGoRegister: () -> Unit                                 // Acción ir a registro
+    onGoRegister: () -> Unit,                                 // Acción ir a registro
+    onGoRecover: () -> Unit
 ) {
     var showPass by remember { mutableStateOf(false)}
     val bg = PrimaryBg
@@ -279,7 +282,7 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { /* acción */ } // TODO CREAR SCREEN DE FORGOTTEN PASSWORD
+                        onClick = onGoRecover
                     ) {
                         Text("Forgot password?", color = Resaltado, fontFamily = Lato)
                     }
