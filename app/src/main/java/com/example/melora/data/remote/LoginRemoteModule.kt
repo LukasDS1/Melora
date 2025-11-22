@@ -5,7 +5,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 object LoginRemoteModule {
-    private const val LOGIN_URL = "https://l6k80b0k-8082.brs.devtunnels.ms/"
+    private const val LOGIN_URL = "https://3rx2vqh0-8082.brs.devtunnels.ms/"
 
 
     private val logging = HttpLoggingInterceptor().apply {

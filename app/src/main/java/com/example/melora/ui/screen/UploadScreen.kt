@@ -35,7 +35,6 @@ import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.UploadApiViewModel
-import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date

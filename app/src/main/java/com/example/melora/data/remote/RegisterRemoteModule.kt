@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 object RegisterRemoteModule {
 
     //TODO:CAMBIAR URL DEVTUNELS SIEMPRE LA CAMBIA YA ME PASO :(
-    private const val REGISTER_URL = "https://l6k80b0k-8082.brs.devtunnels.ms/"
+    private const val REGISTER_URL = "https://3rx2vqh0-8082.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.NONE
