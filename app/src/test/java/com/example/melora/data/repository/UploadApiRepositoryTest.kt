@@ -37,16 +37,17 @@ class UploadApiRepositoryTest {
 
         val sample = UploadMusicDto(1,"Test",null,null,null,100,10L)
 
-        val response = Response.error<Any>(
-            404,"Error al subir la cancion".toResponseBody()
+        val error = Response.error<Any>(
+            404, "Error al subir la cancion".toResponseBody()
         )
 
-        coEvery { api.uploadSong(sample) } returns response
+        coEvery { api.uploadSong(sample) } returns error
 
         val result = repo.uploadSong(sample)
-        assertTrue(result.isFailure)
-        assertEquals("Error al subir la cancion",result.getOrNull())
+
+        assertTrue(result.exceptionOrNull()!!.message!!.startsWith("Error 404"))
     }
+
 
 
 

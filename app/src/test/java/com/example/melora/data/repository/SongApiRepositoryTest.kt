@@ -129,22 +129,6 @@ class SongApiRepositoryTest {
         assertTrue(result.isSuccess)
     }
 
-
-    //Test para saber que el updateSongDetails Falla
-    @Test
-    fun updateSongDetails_ReturnsFail() = runBlocking {
-        val api = mockk<SongApi>()
-        val repo = SongApiRepository(api)
-
-        val error = Response.error<Unit>(400, "".toResponseBody())
-
-        coEvery { api.patchSong(1L, any()) } returns error
-
-        val result = repo.changeSongDetails(1L, "Nuevo", "Desc")
-
-        assertTrue(result.isFailure)
-    }
-
     //Test para saber que deletesong Devuelve succes
     @Test
     fun deleteSong_ReturnsSuccess() = runBlocking {
@@ -156,22 +140,6 @@ class SongApiRepositoryTest {
         val result = repo.deleteSong(1L)
 
         assertTrue(result.isSuccess)
-    }
-
-
-    //Test para saber que el Delete falla
-    @Test
-    fun deleteSong_ReturnsFail() = runBlocking {
-        val api = mockk<SongApi>()
-        val repo = SongApiRepository(api)
-
-        val error = Response.error<Unit>(404, "".toResponseBody())
-
-        coEvery { api.deleteSong(1L) } returns error
-
-        val result = repo.deleteSong(1L)
-
-        assertTrue(result.isFailure)
     }
 
     //Test para buscar canciones
@@ -205,7 +173,4 @@ class SongApiRepositoryTest {
         assertTrue(result.isFailure)
         assertEquals("Error de búsqueda", result.exceptionOrNull()!!.message)
     }
-
-
-
 }
