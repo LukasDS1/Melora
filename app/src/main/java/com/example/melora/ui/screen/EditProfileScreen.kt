@@ -172,7 +172,9 @@ fun EditProfileScreen(
 ) {
     val context = LocalContext.current
     val bg = PrimaryBg
-    var showPass by remember { mutableStateOf(false) }
+    var showCurrentPass by remember { mutableStateOf(false) }
+    var showNewPass by remember { mutableStateOf(false) }
+    var showConfirmPass by remember { mutableStateOf(false) }
     var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
 
     val scrollState = rememberScrollState()
@@ -277,17 +279,18 @@ fun EditProfileScreen(
                 )
             }
 
-            // -----------------------------
-            //  PROFILE IMAGE (BASE64 FIX)
-            // -----------------------------
-            val imageModel = when {
-                profilePicture != null && profilePicture.startsWith("/9j/") -> {
-                    decodeBase64Image(profilePicture)
-                }
-                profilePicture != null -> {
-                    Uri.fromFile(File(profilePicture))
-                }
-                else -> null
+            val imageModel by remember(profilePicture) {
+                mutableStateOf(
+                    when {
+                        profilePicture != null && profilePicture.startsWith("/9j/") -> {
+                            decodeBase64Image(profilePicture)
+                        }
+                        profilePicture != null -> {
+                            Uri.fromFile(File(profilePicture))
+                        }
+                        else -> null
+                    }
+                )
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -383,11 +386,11 @@ fun EditProfileScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showCurrentPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showCurrentPass = !showCurrentPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null
                         )
                     }
@@ -410,11 +413,11 @@ fun EditProfileScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showNewPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showNewPass = !showNewPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null
                         )
                     }
@@ -437,11 +440,11 @@ fun EditProfileScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showConfirmPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showConfirmPass = !showConfirmPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null
                         )
                     }
