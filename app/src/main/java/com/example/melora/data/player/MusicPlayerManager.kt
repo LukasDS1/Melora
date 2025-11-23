@@ -5,70 +5,88 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import java.io.File
+import java.util.Base64
 
 class MusicPlayerManager(private val context: Context) {
-    private var player: ExoPlayer? = null
 
-    fun initializePlayer() {
-        if (player == null) player = ExoPlayer.Builder(context).build()
+    private var player: ExoPlayer? = null
+    private var currentTempFile: File? = null
+
+
+    private fun initializePlayer() {
+        if (player == null) {
+            player = ExoPlayer.Builder(context).build()
+        }
     }
 
-    // Play song from path
-    fun playSongPath(songPath: String) {
+    fun playBase64Audio(base64Audio: String, songId: Long) {
         initializePlayer()
 
-        val cleanPath = songPath.removePrefix("file://")
+        currentTempFile?.delete()
 
-        val file = File(cleanPath)
-        if (!file.exists()) {
+        val audioBytes = try {
+            Base64.getDecoder().decode(base64Audio)
+        } catch (e: Exception) {
+            e.printStackTrace()
             return
         }
 
-        val uri = Uri.fromFile(file)
+        val tempFile = File(context.cacheDir, "melora_song_$songId.mp3")
+        tempFile.writeBytes(audioBytes)
 
+        currentTempFile = tempFile
+
+        val uri = Uri.fromFile(tempFile)
         val mediaItem = MediaItem.fromUri(uri)
-        player!!.setMediaItem(mediaItem)
-        player!!.prepare()
-        player!!.volume = 1f
-        player!!.playWhenReady = true
-        player!!.play()
+
+        player!!.apply {
+            stop()
+            setMediaItem(mediaItem)
+            prepare()
+            playWhenReady = true
+            play()
+        }
     }
 
-    // Pause song
-    fun pause() {
-        player?.pause()
-    }
-
+    // Resume la reproducción
     fun resume() {
         player?.play()
     }
 
-    // Stop song
+    // Pausa la reproducción
+    fun pause() {
+        player?.pause()
+    }
+
+    // Detiene la reproducción
     fun stop() {
         player?.stop()
     }
 
-    // Release resources of ExoPlayer
-    fun release() {
-        player?.release()
-        player = null
-    }
-
-    // Move to new position (miliseconds)
+    // Llevar a una posición específica
     fun seekTo(positionMs: Long) {
         player?.seekTo(positionMs)
     }
 
-    // Get total duration (miliseconds)
+    // Duración total
     fun getDuration(): Long {
-        return player?.duration?.coerceAtLeast(0L) ?: 0L
+        return player?.duration?.takeIf { it > 0 } ?: 0L
     }
 
-    // Get current position of song (miliseconds)
+    // Posición actual
     fun getCurrentPosition(): Long {
         return player?.currentPosition ?: 0L
     }
 
-    // Check if is playing
+    // ¿Está sonando?
     fun isPlaying(): Boolean = player?.isPlaying ?: false
+
+    // Libera ExoPlayer y borra archivo temporal
+    fun release() {
+        player?.release()
+        player = null
+
+        currentTempFile?.delete()
+        currentTempFile = null
+    }
 }

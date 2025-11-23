@@ -6,43 +6,15 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -70,7 +42,23 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.String
+
+// -----------------------------
+//  BASE64 UTILITIES
+// -----------------------------
+fun fileToBase64(path: String): String {
+    val file = File(path)
+    val bytes = file.readBytes()
+    return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+}
+
+fun decodeBase64Image(base64: String): ByteArray? {
+    return try {
+        android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+    } catch (e: Exception) {
+        null
+    }
+}
 
 @Composable
 fun EditProfileScreenVm(
@@ -79,7 +67,6 @@ fun EditProfileScreenVm(
     onProfileUpdated: () -> Unit,
     onLogout: () -> Unit
 ) {
-
     val state by vm.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.success) {
@@ -92,16 +79,15 @@ fun EditProfileScreenVm(
     var showExitDialog by remember { mutableStateOf(false) }
 
     BackHandler {
-        if (state.canSubmit) {
-            showExitDialog = true
-        } else {
+        if (state.canSubmit) showExitDialog = true
+        else {
             vm.resetFormToOriginalUser()
             onExit()
         }
     }
 
     if (showExitDialog) {
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = { showExitDialog = false },
             title = { Text("Cambios sin guardar") },
             text = { Text("Tienes cambios sin guardar. ¿Seguro que deseas salir sin guardar?") },
@@ -113,31 +99,29 @@ fun EditProfileScreenVm(
                         onExit()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3261E))
-                ) {
-                    Text("Salir sin guardar", color = Color.White)
-                }
+                ) { Text("Salir sin guardar", color = Color.White) }
             },
             dismissButton = {
                 Button(
                     onClick = { showExitDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Resaltado)
-                ) {
-                    Text("Cancelar", color = Color.White)
-                }
+                ) { Text("Cancelar", color = Color.White) }
             }
         )
     }
-    
+
     EditProfileScreen(
         nickname = state.nickname,
         email = state.email,
         password = state.password,
+        confirmPass = state.confirmPassword,
         nicknameError = state.nicknameError,
         emailError = state.emailError,
         passwordError = state.passwordError,
+        passwordConfirmErr = state.passwordConfirmError,
+        profilePicture = state.profilePictureUrl,
         currentPassword = state.currentPassword,
         currentPasswordError = state.currentPasswordError,
-        profilePicture = state.profilePictureUrl,
         canSubmit = state.canSubmit,
         isSubmitting = state.isSubmitting,
         success = state.success,
@@ -145,17 +129,16 @@ fun EditProfileScreenVm(
         onNicknameChange = vm::onNicknameChange,
         onEmailChange = vm::onEmailChange,
         onPasswordChange = vm::onPasswordChange,
+        onConfirmPasswordChange = vm::onConfirmPasswordChange,
+        onCurrentPasswordChange = vm::onCurrentPasswordChange,
         onPictureChange = vm::onProfilePictureChange,
         onSubmit = vm::submitChanges,
         resetForm = vm::resetFormToOriginalUser,
-        confirmPass = state.confirmPassword,
-        passwordConfirmErr = state.passwordConfirmError,
-        onConfirmPasswordChange = vm::onConfirmPasswordChange,
-        onCurrentPasswordChange = vm::onCurrentPasswordChange,
         onExit = onExit,
         onLogoutClick = {
             vm.resetFormToOriginalUser()
-            vm.logout(onLogout) }
+            vm.logout(onLogout)
+        }
     )
 }
 
@@ -189,13 +172,17 @@ fun EditProfileScreen(
 ) {
     val context = LocalContext.current
     val bg = PrimaryBg
-    var showPass by remember { mutableStateOf(false) }
+    var showCurrentPass by remember { mutableStateOf(false) }
+    var showNewPass by remember { mutableStateOf(false) }
+    var showConfirmPass by remember { mutableStateOf(false) }
     var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Scroll State
     val scrollState = rememberScrollState()
 
-    // Funciones para cámara y galería
+    // -----------------------------
+    // File creation utilities
+    // -----------------------------
+
     fun createPermanentImageFile(context: Context): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir = File(context.filesDir, "images").apply {
@@ -217,22 +204,27 @@ fun EditProfileScreen(
         return FileProvider.getUriForFile(context, authority, file)
     }
 
+    // -----------------------------
+    //  Launchers convert to BASE64
+    // -----------------------------
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
             pendingCaptureUri?.let { uri ->
-                onPictureChange(uri.path)
+                val base64 = fileToBase64(uri.path!!)
+                onPictureChange(base64)
             }
         }
     }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
+    ) { uri ->
         uri?.let {
             val savedPath = savePermanentImage(context, it)
-            onPictureChange(savedPath)
+            val base64 = fileToBase64(savedPath!!)
+            onPictureChange(base64)
         }
     }
 
@@ -256,7 +248,9 @@ fun EditProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Encabezado
+            // -----------------------------
+            // HEADER
+            // -----------------------------
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -285,10 +279,24 @@ fun EditProfileScreen(
                 )
             }
 
-            // Imagen de perfil
+            val imageModel by remember(profilePicture) {
+                mutableStateOf(
+                    when {
+                        profilePicture != null && profilePicture.startsWith("/9j/") -> {
+                            decodeBase64Image(profilePicture)
+                        }
+                        profilePicture != null -> {
+                            Uri.fromFile(File(profilePicture))
+                        }
+                        else -> null
+                    }
+                )
+            }
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
                 AsyncImage(
-                    model = profilePicture?.takeIf { it.isNotBlank() }?.let { path -> Uri.fromFile(File(path)) },
+                    model = imageModel,
                     contentDescription = "User profile picture",
                     modifier = Modifier
                         .size(120.dp)
@@ -298,6 +306,7 @@ fun EditProfileScreen(
                     error = painterResource(id = R.drawable.defaultprofilepicture),
                     contentScale = ContentScale.Crop
                 )
+
                 Column {
                     IconButton(onClick = {
                         val file = createPermanentImageFile(context)
@@ -307,7 +316,9 @@ fun EditProfileScreen(
                     }) {
                         Icon(Icons.Filled.CameraAlt, contentDescription = "Camera icon")
                     }
+
                     Spacer(Modifier.height(20.dp))
+
                     IconButton(onClick = { pickImageLauncher.launch("image/*") }) {
                         Icon(Icons.Filled.PhotoLibrary, contentDescription = "Gallery icon")
                     }
@@ -316,7 +327,9 @@ fun EditProfileScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // --- Nickname ---
+            // -----------------------------
+            // NICKNAME
+            // -----------------------------
             OutlinedTextField(
                 value = nickname,
                 onValueChange = onNicknameChange,
@@ -333,11 +346,13 @@ fun EditProfileScreen(
                 )
             )
             if (nicknameError != null)
-                Text(nicknameError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
+                Text(nicknameError, color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(20.dp))
 
-            // --- Email ---
+            // -----------------------------
+            // EMAIL
+            // -----------------------------
             OutlinedTextField(
                 value = email,
                 onValueChange = onEmailChange,
@@ -355,52 +370,40 @@ fun EditProfileScreen(
                 )
             )
             if (emailError != null)
-                Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
+                Text(emailError, color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(20.dp))
 
+            // -----------------------------
             // CURRENT PASSWORD
+            // -----------------------------
             OutlinedTextField(
                 value = currentPassword,
                 onValueChange = onCurrentPasswordChange,
                 placeholder = { Text("Current password", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Lock,
-                        contentDescription = "Current password icon",
-                        tint = Color.Gray
-                    )
-                },
+                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Current password icon", tint = Color.Gray) },
                 isError = currentPasswordError != null,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showCurrentPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showCurrentPass = !showCurrentPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = if (showPass) "Hide password" else "Show password"
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null
                         )
                     }
-                },
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = SecondaryBg,
-                    focusedIndicatorColor = Resaltado,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                }
             )
             if (currentPasswordError != null)
-                Text(
-                    currentPasswordError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato)
-                )
+                Text(currentPasswordError, color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(20.dp))
 
-            // --- Password ---
+            // -----------------------------
+            // NEW PASSWORD
+            // -----------------------------
             OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChange,
@@ -410,28 +413,24 @@ fun EditProfileScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showNewPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showNewPass = !showNewPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = if (showPass) "Hide password" else "Show password"
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null
                         )
                     }
-                },
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = SecondaryBg,
-                    focusedIndicatorColor = Resaltado,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                }
             )
             if (passwordError != null)
-                Text(passwordError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
+                Text(passwordError, color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(20.dp))
 
-            // --- Confirm Password ---
+            // -----------------------------
+            // CONFIRM PASSWORD
+            // -----------------------------
             OutlinedTextField(
                 value = confirmPass,
                 onValueChange = onConfirmPasswordChange,
@@ -441,53 +440,54 @@ fun EditProfileScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(30.dp),
-                visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (showConfirmPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { showPass = !showPass }) {
+                    IconButton(onClick = { showConfirmPass = !showConfirmPass }) {
                         Icon(
-                            imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = if (showPass) "Hide password" else "Show password"
+                            imageVector = if (showCurrentPass) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null
                         )
                     }
-                },
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = SecondaryBg,
-                    focusedIndicatorColor = Resaltado,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                }
             )
             if (passwordConfirmErr != null)
-                Text(passwordConfirmErr, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
+                Text(passwordConfirmErr, color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(20.dp))
 
             if (errorMessage != null)
-                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall.copy(fontFamily = Lato))
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+
             if (success)
-                Text("Saved changes.", color = Color(0xFF008000), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato))
+                Text("Saved changes.", color = Color(0xFF008000))
 
             Spacer(Modifier.height(20.dp))
 
-            // --- Botón guardar ---
+            // -----------------------------
+            // SAVE BUTTON
+            // -----------------------------
             Button(
                 onClick = onSubmit,
                 enabled = canSubmit && !isSubmitting,
-                colors = ButtonDefaults.buttonColors(disabledContainerColor = ResaltadoNegative, containerColor = Resaltado),
+                colors = ButtonDefaults.buttonColors(
+                    disabledContainerColor = ResaltadoNegative,
+                    containerColor = Resaltado
+                ),
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .height(50.dp)
             ) {
                 Text(
                     if (isSubmitting) "Saving..." else "Save changes",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato)
+                    color = Color.White
                 )
             }
 
             Spacer(Modifier.height(30.dp))
 
-            // --- Botón logout ---
+            // -----------------------------
+            // LOGOUT
+            // -----------------------------
             Button(
                 onClick = onLogoutClick,
                 colors = ButtonDefaults.buttonColors(containerColor = ResaltadoNegative),
@@ -495,7 +495,7 @@ fun EditProfileScreen(
                     .fillMaxWidth(0.9f)
                     .height(50.dp)
             ) {
-                Text("Log out", color = Color.White, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Lato))
+                Text("Log out", color = Color.White)
             }
 
             Spacer(Modifier.height(40.dp))

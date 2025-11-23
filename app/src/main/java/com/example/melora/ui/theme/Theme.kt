@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -33,40 +34,29 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
-private val Lightcolors = lightColorScheme(
-    primary = Resaltado
+private val LightColors = lightColorScheme(
+    primary = Resaltado,
+    onPrimary = Color.White,
+    secondary = ResaltadoNegative,
+    onSecondary = Color.White,
+    background = PrimaryBg,
+    onBackground = Color.White,
+    surface = SecondaryBg,
+    onSurface = Color.Black,
+    error = Color(0xFFB00020),
+    onError = Color.White
 )
 
 @Composable
-fun MeloraTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
+fun MeloraTheme(content: @Composable () -> Unit) {
     val systemUiController = rememberSystemUiController()
-    if (darkTheme) {
-        systemUiController.setSystemBarsColor(
-            color = Resaltado
-        )
-    } else {
-        systemUiController.setSystemBarsColor(
-            color = Resaltado
-        )
-    }
 
-    val colorScheme = when {
-        dynamicColor -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    systemUiController.setSystemBarsColor(
+        color = LightColors.primary
+    )
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = LightColors,
         typography = Typography,
         content = content
     )

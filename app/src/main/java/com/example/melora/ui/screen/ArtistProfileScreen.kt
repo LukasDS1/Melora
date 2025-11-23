@@ -21,34 +21,39 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.melora.R
-import com.example.melora.data.local.song.SongDetailed
+import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.PlayfairDisplay
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.viewmodel.ArtistProfileViewModel
+import com.example.melora.viewmodel.UserArtistApiPublicViewModel
 import kotlinx.coroutines.launch
+import android.util.Base64
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun ArtistProfileScreenVm(
     artistId: Long,
-    vm: ArtistProfileViewModel,
+    arVm: ArtistProfileViewModel,
+    vm: UserArtistApiPublicViewModel,
     goPlayer: (Long) -> Unit,
-    roleId: Long?
+    roleName: String?
 ) {
     var nickname by remember { mutableStateOf<String?>(null) }
     var profilePicture by remember { mutableStateOf<String?>(null) }
-    var songs by remember { mutableStateOf<List<SongDetailed>>(emptyList()) }
+    var songs by remember { mutableStateOf<List<SongDetailedDto>>(emptyList()) }
 
     LaunchedEffect(artistId) {
-        vm.loadArtist(artistId)
+        vm.loadArtistById(artistId)
     }
 
     val artistData = vm.artistData
 
     LaunchedEffect(artistData) {
         artistData?.let {
-            nickname = it.artist.nickname
-            profilePicture = it.artist.profilePicture
+            nickname = it.nickname
+            profilePicture = it.profilePhotoBase64
             songs = it.songs
         }
     }
@@ -59,33 +64,32 @@ fun ArtistProfileScreenVm(
         profilePicture = profilePicture,
         songs = songs,
         goPlayer = goPlayer,
-        roleId = roleId,
-        banUser = vm::banUser
+        roleName = roleName,
+        banUser = arVm::banUser
     )
 }
 
 @Composable
 fun ArtistProfileScreen(
-    artistId:Long,
+    artistId: Long,
     nickname: String?,
     profilePicture: String?,
-    songs: List<SongDetailed>,
+    songs: List<SongDetailedDto>,
     goPlayer: (Long) -> Unit,
-    banUser: (Long) -> Unit,
-    roleId: Long?
+    roleName: String?,
+    banUser: (Long, (Boolean) -> Unit) -> Unit
 ) {
-    val bg = Resaltado
     val context = LocalContext.current
-    var showBanDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
+    var showBanDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(Resaltado)
             .padding(16.dp)
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -93,19 +97,27 @@ fun ArtistProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Image(
-                painter = if (profilePicture != null)
-                    rememberAsyncImagePainter(profilePicture)
-                else
-                    painterResource(R.drawable.defaultprofilepicture),
-                contentDescription = "Artist picture",
+            // ================
+            // FOTO DE PERFIL
+            // ================
+            val decodedArtistPhoto = profilePicture?.let {
+                runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull()
+            }
+
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(decodedArtistPhoto ?: R.drawable.defaultprofilepicture)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Artist",
                 modifier = Modifier
-                    .aspectRatio(1f)
-                    .size(120.dp),
+                    .size(120.dp)
+                    .clip(MaterialTheme.shapes.medium), // cuadrada con bordecito
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+
+            Spacer(Modifier.height(20.dp))
 
             Text(
                 text = nickname ?: "Unknown Artist",
@@ -113,49 +125,64 @@ fun ArtistProfileScreen(
                 color = Color.White
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             Text(
                 text = "Songs:",
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = PlayfairDisplay),
                 color = Color.White,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 10.dp)
+                    .padding(10.dp)
             )
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 10.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 songs.forEach { song ->
+
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = PrimaryBg),
-                        elevation = CardDefaults.cardElevation(4.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = PrimaryBg)
                     ) {
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+
+                            // ================
+                            // THUMBNAIL SONG
+                            // ================
+                            val decodedCover = song.coverArtBase64?.let {
+                                runCatching { android.util.Base64.decode(it, android.util.Base64.DEFAULT) }
+                                    .getOrNull()
+                            }
+
+                            Image(
+                                painter = if (decodedCover != null)
+                                    rememberAsyncImagePainter(decodedCover)
+                                else painterResource(R.drawable.defaultprofilepicture),
+                                contentDescription = "Cover",
+                                modifier = Modifier
+                                    .size(55.dp)
+                                    .clip(MaterialTheme.shapes.medium),
+                                contentScale = ContentScale.Crop
+                            )
+
+                            Spacer(Modifier.width(12.dp))
+
                             Text(
-                                text = song.songName,
-                                style = MaterialTheme.typography.bodyLarge,
+                                song.songName,
                                 color = Color.White,
                                 modifier = Modifier.weight(1f)
                             )
 
-                            IconButton(
-                                onClick = { goPlayer(song.songId) }
-                            ) {
+                            IconButton(onClick = { goPlayer(song.idSong) }) {
                                 Icon(
-                                    imageVector = Icons.Filled.PlayArrow, // tu ícono de play
+                                    Icons.Default.PlayArrow,
                                     contentDescription = "Play",
                                     tint = Color.White
                                 )
@@ -165,50 +192,51 @@ fun ArtistProfileScreen(
                 }
             }
         }
-        if (roleId == 1L) {
-            IconButton(
-                onClick = { showBanDialog = true },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Block,
-                    contentDescription = "Ban user",
-                    tint = Color.Red
-                )
-            }
-        }
-        if (showBanDialog) {
-            AlertDialog(
-                onDismissRequest = { showBanDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showBanDialog = false
-                        scope.launch {
-                            banUser(artistId)
-                            Toast.makeText(context, "User banned successfully", Toast.LENGTH_SHORT).show()
-                        }
-                    }) {
-                        Text("Confirm", color = Color.Red)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showBanDialog = false }) {
-                        Text("Cancel", color = Color.White)
-                    }
-                },
-                title = { Text("Ban user", color = Color.White) },
-                text = {
-                    Text(
-                        "Are you sure you want to ban this user? This action cannot be undone.",
-                        color = Color.White
-                    )
-                },
-                containerColor = Color(0xFF222222)
+
+        IconButton(
+            onClick = { if (roleName == "ADMIN") showBanDialog = true },
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Block,
+                contentDescription = "Ban user",
+                tint = if (roleName == "ADMIN") Color.Red else Color.Transparent
             )
         }
 
+        if (showBanDialog) {
+            AlertDialog(
+                onDismissRequest = { showBanDialog = false },
+                title = { Text("Ban User") },
+                text = { Text("Are you sure you want to ban this user?") },
+
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                banUser(artistId) { success ->
+                                    if (success) {
+                                        Toast.makeText(context, "User banned successfully", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Error banning user", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            showBanDialog = false
+                        }
+                    ) {
+                        Text("Yes", color = Color.Red)
+                    }
+                },
+
+                dismissButton = {
+                    TextButton(onClick = { showBanDialog = false }) {
+                        Text("No", color = Color.White)
+                    }
+                },
+
+                containerColor = Color(0xFF222222)
+            )
+        }
     }
 }
-

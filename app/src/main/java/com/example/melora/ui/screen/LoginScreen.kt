@@ -51,7 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
-import com.example.melora.viewmodel.AuthViewModel
+//import com.example.melora.viewmodel.AuthViewModel
 import com.example.melora.R
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PlayfairDisplay

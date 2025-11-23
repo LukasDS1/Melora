@@ -74,11 +74,6 @@ dependencies {
     // Coil (solo 1 vez)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    //Bd Imports
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-
     // PlaySong dependencies
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
@@ -103,4 +98,7 @@ dependencies {
 
     // Accompanist
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
+
+    // SplashScreen
+    implementation("androidx.core:core-splashscreen:1.0.0")
 }

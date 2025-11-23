@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,7 +36,6 @@ import com.example.melora.ui.theme.PrimaryBg
 import com.example.melora.ui.theme.Resaltado
 import com.example.melora.ui.theme.SecondaryBg
 import com.example.melora.viewmodel.UploadApiViewModel
-import com.example.melora.viewmodel.UploadViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,6 +73,7 @@ private fun getImageUriFile(context: Context,file: File):Uri{
 fun UploadScreenVm(
     vm: UploadApiViewModel,
     onGoSuccess: () -> Unit,
+    onGoHome: () -> Unit,
     userId: Long
 ) {
     val context = LocalContext.current
@@ -98,7 +99,11 @@ fun UploadScreenVm(
         onSongDescriptionChange = vm::onSongDescriptionChange,
         onSelectCoverArt = { uri -> vm.onCoverArtChange(context, uri) },
         onSelectSongFile = { uri -> vm.onSongFileChange(context, uri) },
-        submit = { vm.submitUpload(userId) }
+        submit = { vm.submitUpload(userId) },
+        cancel = {
+            vm.clearState()
+            onGoHome()
+        }
     )
 }
 
@@ -118,7 +123,8 @@ fun UploadScreen(
     onSongDescriptionChange: (String) -> Unit,
     onSelectCoverArt: (Uri?) -> Unit,
     onSelectSongFile: (Uri?) -> Unit,
-    submit: () -> Unit
+    submit: () -> Unit,
+    cancel: () -> Unit
 ) {
     val context = LocalContext.current
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
@@ -223,7 +229,7 @@ fun UploadScreen(
                             }) {
                                 Icon(
                                     imageVector = if (isPlaying)
-                                        Icons.Filled.Clear else Icons.Filled.PlayArrow,
+                                        Icons.Filled.Pause else Icons.Filled.PlayArrow,
                                     contentDescription = "Play/Pause"
                                 )
                             }
@@ -323,6 +329,16 @@ fun UploadScreen(
                     if (errorMessage != null) {
                         Spacer(Modifier.height(10.dp))
                         Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Button(
+                        onClick = cancel,
+                        colors = ButtonDefaults.buttonColors(containerColor = Resaltado),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel")
                     }
                 }
             }

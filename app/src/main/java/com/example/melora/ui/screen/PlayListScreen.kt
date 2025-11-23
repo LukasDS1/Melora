@@ -1,13 +1,13 @@
 package com.example.melora.ui.screen
 
+import android.util.Base64
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -15,21 +15,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.melora.data.local.song.SongDetailed
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.melora.R
+import com.example.melora.data.remote.dto.PlaylistSongDto
 import com.example.melora.data.storage.UserPreferences
+import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.PrimaryBg
-import com.example.melora.viewmodel.PlaylistViewModel
+import com.example.melora.viewmodel.PlaylistApiViewModel
 import kotlinx.coroutines.flow.firstOrNull
-import java.text.SimpleDateFormat
 import kotlinx.coroutines.launch
 
 @Composable
 fun PlaylistDetailScreenVm(
     playlistId: Long,
-    playlistViewModel: PlaylistViewModel,
+    playlistViewModel: PlaylistApiViewModel,
     goPlayer: (Long) -> Unit,
     onBack: () -> Unit
 ) {
@@ -38,33 +44,32 @@ fun PlaylistDetailScreenVm(
     val scope = rememberCoroutineScope()
 
     var currentUserId by remember { mutableStateOf<Long?>(null) }
+
     LaunchedEffect(Unit) {
         currentUserId = prefs.userId.firstOrNull()
     }
 
+    val playlist by playlistViewModel.currentPlaylist.collectAsState()
     val songs by playlistViewModel.songsInPlaylist.collectAsState()
-    val myPlaylists by playlistViewModel.myPlaylists.collectAsState()
-    val followedPlaylists by playlistViewModel.followedPlaylists.collectAsState()
-    val currentPlaylist by playlistViewModel.currentPlaylist.collectAsState()
+    val followed by playlistViewModel.followedPlaylists.collectAsState()
 
-    val playlist = (myPlaylists + followedPlaylists)
-        .find { it.idPlaylist == playlistId } ?: currentPlaylist
+    val isFollowing = followed.any { it.idPlaylist == playlistId }
 
     LaunchedEffect(playlistId) {
+        playlistViewModel.loadPlaylistById(playlistId)
         playlistViewModel.loadSongsFromPlaylist(playlistId)
-        if (playlist == null) playlistViewModel.loadPlaylistById(playlistId)
     }
 
     PlaylistDetailScreen(
-        playlistName = playlist?.playListName ?: "Unknown Playlist",
-        creationDate = playlist?.creationDate ?: System.currentTimeMillis(),
+        playlistName = playlist?.playlistName ?: "Unknown playlist",
+        creationDate = playlist?.fechaCreacion ?: "",
         songs = songs,
-        isMine = playlist?.userId == currentUserId,
-        isFollowing = followedPlaylists.any { it.idPlaylist == playlistId },
+        isMine = (playlist?.userId == currentUserId),
+        isFollowing = isFollowing,
         onToggleFollow = {
-            if (currentUserId != null && playlist != null) {
+            if (currentUserId != null) {
                 scope.launch {
-                    playlistViewModel.toggleFollow(currentUserId!!, playlist.idPlaylist)
+                    playlistViewModel.toggleFollow(currentUserId!!, playlistId)
                 }
             }
         },
@@ -76,15 +81,19 @@ fun PlaylistDetailScreenVm(
 @Composable
 fun PlaylistDetailScreen(
     playlistName: String,
-    creationDate: Long,
-    songs: List<SongDetailed>,
+    creationDate: String,
+    songs: List<PlaylistSongDto>,
     isMine: Boolean,
     isFollowing: Boolean,
     onToggleFollow: () -> Unit,
     goPlayer: (Long) -> Unit,
     onBack: () -> Unit
 ) {
-    val formattedDate = SimpleDateFormat("dd/MM/yyyy").format(creationDate)
+    val context = LocalContext.current
+
+    val formattedDate = remember(creationDate) {
+        if (creationDate.contains("T")) creationDate.substringBefore("T") else creationDate
+    }
 
     Column(
         modifier = Modifier
@@ -99,83 +108,127 @@ fun PlaylistDetailScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = playlistName,
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color.Black
+                    color = Color.Black,
+                    fontFamily = Lato,
+                    fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = "Created on $formattedDate",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.Gray
-                )
-            }
 
-            if (!isMine) {
-                val tintColor by animateColorAsState(
-                    targetValue = if (isFollowing) Color.Red else Color.Black,
-                    label = ""
-                )
-                IconButton(
-                    onClick = onToggleFollow,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isFollowing)
-                            Icons.Filled.Favorite
-                        else
-                            Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isFollowing) "Unfollow Playlist" else "Follow Playlist",
-                        tint = tintColor,
-                        modifier = Modifier.size(30.dp)
+                if (formattedDate.isNotBlank()) {
+                    Text(
+                        text = "Created on $formattedDate",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.DarkGray,
+                        fontFamily = Lato
                     )
                 }
             }
 
+            if (!isMine) {
+                val tint by animateColorAsState(
+                    if (isFollowing) Color.Red else Color.Black,
+                    label = "followTint"
+                )
+
+                IconButton(onClick = onToggleFollow) {
+                    Icon(
+                        imageVector = if (isFollowing) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        tint = tint,
+                        contentDescription = "Follow playlist"
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(8.dp))
 
         if (songs.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("This playlist has no songs yet", color = Color.Gray)
+                Text(
+                    "This playlist has no songs yet",
+                    color = Color.DarkGray,
+                    fontFamily = Lato
+                )
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(songs) { song ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(PrimaryBg)
-                            .clickable { goPlayer(song.songId) }
-                            .padding(vertical = 10.dp, horizontal = 12.dp)
-                    ) {
-                        Text(
-                            text = song.songName,
-                            color = Color.Black,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "by ${song.nickname}",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.labelSmall
-                        )
+
+                    val coverImageBytes = song.coverArtBase64?.let {
+                        Base64.decode(it, Base64.DEFAULT)
                     }
 
-                    Divider(
-                        color = Color.Black,
-                        thickness = 1.dp,
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 2.dp)
-                    )
+                            .clickable { goPlayer(song.songId) },
+                        color = Color.White,
+                        shadowElevation = 4.dp,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(coverImageBytes ?: R.drawable.music_not_found_placeholder)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Cover",
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = song.songName,
+                                    fontFamily = Lato,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "by ${song.nickname ?: "Unknown"}",
+                                    fontFamily = Lato,
+                                    fontSize = 13.sp,
+                                    color = Color.Gray
+                                )
+                            }
+
+                            val durationText = remember(song.durationSong) {
+                                val totalSec = song.durationSong
+                                val min = totalSec / 60
+                                val sec = totalSec % 60
+                                String.format("%d:%02d", min, sec)
+                            }
+
+                            Text(
+                                text = durationText,
+                                fontFamily = Lato,
+                                fontSize = 12.sp,
+                                color = Color.DarkGray
+                            )
+                        }
+                    }
                 }
             }
         }

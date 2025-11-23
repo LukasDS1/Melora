@@ -5,52 +5,80 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.melora.data.repository.ArtistProfilData
+import com.example.melora.data.remote.dto.ArtistProfileData
 import com.example.melora.data.repository.ArtistRepository
-import com.example.melora.data.repository.SongRepository
+import com.example.melora.data.repository.SongApiRepository
 import kotlinx.coroutines.launch
 
-class ArtistProfileViewModel(private val repository: ArtistRepository,private val songRepository: SongRepository): ViewModel(){
+class ArtistProfileViewModel(
+    private val repository: ArtistRepository,
+    private val songRepository: SongApiRepository
+) : ViewModel() {
 
-    var artistData by mutableStateOf<ArtistProfilData?>(null)
+    var artistData by mutableStateOf<ArtistProfileData?>(null)
+        private set
 
-    fun loadArtist(artistId: Long){
-        viewModelScope.launch {
-            artistData = repository.getSongByArtist(artistId)
-        }
-    }
-
-    fun deleteSong(songId: Long) {
+    // ==========================
+    // CARGAR PERFIL DEL USUARIO LOGGEADO
+    // ==========================
+    fun loadMyProfile() {
         viewModelScope.launch {
             try {
-                songRepository.deleteSong(songId)
-                artistData?.artist?.idUser?.let { loadArtist(it) }
+                artistData = repository.getMyProfile()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    fun updateSongDetails(songId: Long, newName: String?, newDesc: String?) {
+    // ==========================
+    // ELIMINAR CANCIÓN
+    // ==========================
+    fun deleteSong(songId: Long) {
         viewModelScope.launch {
-            val result = songRepository.changeSongDetails(songId, newName, newDesc)
+            val result = songRepository.deleteSong(songId)
+
             result.onSuccess {
-                artistData?.artist?.idUser?.let { loadArtist(it) }
-            }.onFailure { e ->
+                // refrescar el perfil
+                loadMyProfile()
+            }
+
+            result.onFailure { e ->
                 e.printStackTrace()
             }
         }
     }
 
-    fun banUser(userId: Long) {
+    // ==========================
+    // EDITAR NOMBRE / DESCRIPCIÓN
+    // ==========================
+    fun updateSongDetails(songId: Long, newName: String?, newDesc: String?) {
         viewModelScope.launch {
-            val result = repository.banUser(userId)
+            val result = songRepository.changeSongDetails(
+                id = songId,
+                name = newName,
+                desc = newDesc
+            )
+
             result.onSuccess {
-            }.onFailure { e ->
+                // refrescar el perfil
+                loadMyProfile()
+            }
+
+            result.onFailure { e ->
                 e.printStackTrace()
             }
         }
     }
+
+    fun banUser(userId: Long, onFinish: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.deleteUser(userId)
+            onFinish(result.isSuccess)
+        }
+    }
+
 
 
 }
+

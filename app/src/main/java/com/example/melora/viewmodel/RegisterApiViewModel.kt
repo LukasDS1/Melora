@@ -3,33 +3,33 @@ package com.example.melora.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.remote.dto.RegisterUserDto
+import com.example.melora.data.remote.dto.RolDto
 import com.example.melora.data.repository.RegisterApiRepository
+import com.example.melora.domain.validation.validateEmail
+import com.example.melora.domain.validation.validateNickname
+import com.example.melora.domain.validation.validatePassword
+import com.example.melora.domain.validation.validateConfirmPassword
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Base64
 
-
 data class RegisterApiUiState(
     val nickname: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
-
     val nicknameError: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPassError: String? = null,
-
     val profilePhotoBase64: String? = null,
-
     val isSubmitting: Boolean = false,
     val canSubmit: Boolean = false,
     val success: Boolean = false,
     val errorMessage: String? = null
 )
-
 
 class RegisterApiViewModel(
     private val repository: RegisterApiRepository = RegisterApiRepository()
@@ -38,15 +38,11 @@ class RegisterApiViewModel(
     private val _uiState = MutableStateFlow(RegisterApiUiState())
     val uiState: StateFlow<RegisterApiUiState> = _uiState
 
-    // -------------------------
-    // Handlers
-    // -------------------------
-
     fun onNicknameChange(value: String) {
         _uiState.update {
             it.copy(
                 nickname = value,
-                nicknameError = if (value.length < 3) "Min 3 characters" else null
+                nicknameError = validateNickname(value)
             )
         }
         recomputeCanSubmit()
@@ -56,7 +52,7 @@ class RegisterApiViewModel(
         _uiState.update {
             it.copy(
                 email = value,
-                emailError = if (!value.contains("@")) "Invalid email" else null
+                emailError = validateEmail(value)
             )
         }
         recomputeCanSubmit()
@@ -66,8 +62,8 @@ class RegisterApiViewModel(
         _uiState.update {
             it.copy(
                 password = value,
-                passwordError = if (value.length < 6) "Min 6 characters" else null,
-                confirmPassError = if (it.confirmPassword != value) "Passwords don't match" else null
+                passwordError = validatePassword(value),
+                confirmPassError = validateConfirmPassword(value, it.confirmPassword)
             )
         }
         recomputeCanSubmit()
@@ -77,7 +73,7 @@ class RegisterApiViewModel(
         _uiState.update {
             it.copy(
                 confirmPassword = value,
-                confirmPassError = if (value != it.password) "Passwords don't match" else null
+                confirmPassError = validateConfirmPassword(it.password, value)
             )
         }
         recomputeCanSubmit()
@@ -91,6 +87,7 @@ class RegisterApiViewModel(
 
     private fun recomputeCanSubmit() {
         val s = _uiState.value
+
         val can =
             s.nicknameError == null &&
                     s.emailError == null &&
@@ -104,10 +101,6 @@ class RegisterApiViewModel(
         _uiState.update { it.copy(canSubmit = can) }
     }
 
-    // -------------------------
-    // SUBMIT
-    // -------------------------
-
     fun submitRegister() {
         val s = _uiState.value
         if (!s.canSubmit || s.isSubmitting) return
@@ -115,7 +108,7 @@ class RegisterApiViewModel(
         val dto = RegisterUserDto(
             email = s.email,
             password = s.password,
-            rolId = 1,
+            rol = RolDto(2),
             nickname = s.nickname,
             profilePhotoBase64 = s.profilePhotoBase64
         )
@@ -124,6 +117,7 @@ class RegisterApiViewModel(
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
 
             val result = repository.register(dto)
+
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSubmitting = false, success = true) }
             } else {

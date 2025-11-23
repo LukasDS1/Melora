@@ -94,13 +94,14 @@ class LoginApiViewModel(
                     return@launch
                 }
 
-                prefs.saveLoginState(
-                    isLoggedIn = true,
-                    userId = data.idUser,
-                    roleId = data.rolId
+                prefs.saveUserData(
+                    idUser = data.idUser,
+                    roleId = data.rolId,
+                    nickname = data.nickname,
+                    email = data.email,
+                    profilePhotoBase64 = data.profilePhotoBase64,
+                    roleName = data.rolName
                 )
-
-                prefs.setProfilePicture(data.profilePhotoBase64)
 
                 _login.update {
                     it.copy(

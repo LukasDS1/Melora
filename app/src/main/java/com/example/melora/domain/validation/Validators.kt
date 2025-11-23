@@ -13,12 +13,12 @@ fun songNameValidation(songName:String):String?{
 
 
 fun songValidation(context: Context,songUri:Uri?):String?{
-    if(songUri == null) return  "The song cant be empty"
+    if(songUri == null) return  "The song can't be empty"
     return null
     }
 
 fun songCoverArtValidation(context: Context, songCoverArtUri: Uri?): String?{
-    if(songCoverArtUri == null) return "The song covert art cant be empty"
+    if(songCoverArtUri == null) return "The song covert art can't be empty"
     return try {
         //obtiene la imagen de la uri
         val stream = context.contentResolver.openInputStream(songCoverArtUri)
