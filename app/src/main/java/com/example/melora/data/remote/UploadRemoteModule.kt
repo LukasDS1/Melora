@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit
 
 object UploadRemoteModule {
 
-
     private const val UPLOAD_URL = "https://3rx2vqh0-8084.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {

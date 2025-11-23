@@ -5,8 +5,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 object LoginRemoteModule {
+    // TODO: cambiar url al crear ruta devtunels
     private const val LOGIN_URL = "https://3rx2vqh0-8082.brs.devtunnels.ms/"
-
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.NONE

@@ -18,14 +18,14 @@ class ValidatorsTest {
     @Test
     fun songValidation_nullUri_returnsError() {
         val error = songValidation(context, null)
-        assertEquals("The song cant be empty", error)
+        assertEquals("The song can't be empty", error)
     }
 
     //======================= Validacion de cover =======================
     @Test
     fun songCoverArtValidation_nullUri_returnsError() {
         val error = songCoverArtValidation(context, null)
-        assertEquals("The song covert art cant be empty", error)
+        assertEquals("The song covert art can't be empty", error)
     }
 
 

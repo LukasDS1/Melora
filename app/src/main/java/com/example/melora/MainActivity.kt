@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.remote.FavoriteRemoteModule
 import com.example.melora.data.remote.LoginRemoteModule
 import com.example.melora.data.remote.PlaylistRemoteModule
+import com.example.melora.data.remote.RecoverPassRemoteModule
 import com.example.melora.data.remote.RegisterRemoteModule
 import com.example.melora.data.remote.SongRemoteModule
 import com.example.melora.data.repository.ArtistRepository
@@ -25,6 +26,7 @@ import com.example.melora.data.repository.BanApiRepository
 import com.example.melora.data.repository.FavoriteApiRepository
 import com.example.melora.data.repository.LoginApiRepository
 import com.example.melora.data.repository.PlaylistApiRepository
+import com.example.melora.data.repository.RecoverPassApiRepository
 import com.example.melora.data.repository.RegisterApiRepository
 import com.example.melora.data.repository.SongApiRepository
 import com.example.melora.data.repository.UploadApiRepository
@@ -47,9 +49,13 @@ import com.example.melora.viewmodel.LoginApiViewModel
 import com.example.melora.viewmodel.LoginApiViewModelFactory
 import com.example.melora.viewmodel.MusicPlayerViewModel
 import com.example.melora.viewmodel.MusicPlayerViewModelFactory
+import com.example.melora.viewmodel.RecoverPassViewModel
+import com.example.melora.viewmodel.RecoverPassViewModelFactory
+import com.example.melora.viewmodel.RegisterApiViewModel
+import com.example.melora.viewmodel.ResetPasswordViewModel
+import com.example.melora.viewmodel.ResetPasswordViewModelFactory
 import com.example.melora.viewmodel.PlaylistApiViewModel
 import com.example.melora.viewmodel.PlaylistApiViewModelFactory
-import com.example.melora.viewmodel.RegisterApiViewModel
 import com.example.melora.viewmodel.RegisterApiViewModelFactory
 import com.example.melora.viewmodel.SearchViewModel
 import com.example.melora.viewmodel.SearchViewModelFactory
@@ -101,13 +107,14 @@ fun AppRoot() {
 
     val playListApi = PlaylistRemoteModule.api()
     val favoriteApi = FavoriteRemoteModule.api()
-
+    val recoverPassApi = RecoverPassRemoteModule.api()
 
 
     val loginApiViewModel: LoginApiViewModel = viewModel(factory = LoginApiViewModelFactory(repository = LoginApiRepository(),
         prefs = prefs
         )
     )
+    val recoverPassApiRepository  = RecoverPassApiRepository(recoverPassApi)
 
     val playListRepository = PlaylistApiRepository(playListApi)
 
@@ -122,6 +129,14 @@ fun AppRoot() {
 
     val homeScreenApiViewModel: HomeScreenApiViewModel = viewModel(
         factory = HomeScreenViewModelFactory(songApiRepository)
+    )
+
+    val recoverPassViewModel: RecoverPassViewModel = viewModel(
+        factory = RecoverPassViewModelFactory(recoverPassApiRepository)
+    )
+
+    val resetPasswordViewModel: ResetPasswordViewModel = viewModel(
+        factory = ResetPasswordViewModelFactory(application)
     )
     val playlistViewModel: PlaylistApiViewModel = viewModel(
         factory = PlaylistApiViewModelFactory(playListRepository)
@@ -173,6 +188,8 @@ fun AppRoot() {
                 registerApiViewModel = registerApiViewModel,
                 loginApiViewModel = loginApiViewModel,
                 uploadApiViewModel = uploadApiViewModel,
+                recoverPassViewModel = recoverPassViewModel,
+                resetPasswordViewModel = resetPasswordViewModel,
                 userArtistApiPublicViewModel = userArtistApiPublicViewModel
             )
         }

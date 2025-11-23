@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 
 object RegisterRemoteModule {
 
-    //TODO:CAMBIAR URL DEVTUNELS SIEMPRE LA CAMBIA YA ME PASO :(
+    // TODO: cambiar url al crear ruta devtunels
     private const val REGISTER_URL = "https://3rx2vqh0-8082.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {

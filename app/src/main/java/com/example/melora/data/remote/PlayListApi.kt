@@ -64,10 +64,8 @@ interface PlayListApi {
     ): List<PlaylistDto>
 
 
-    // ------------------------------
     // 7. ACTUALIZAR PLAYLIST
     // PUT /api-v1/playlists/update/{id}
-    // ------------------------------
     @PUT("api-v1/playlists/update/{id}")
     suspend fun updatePlaylist(
         @Path("id") id: Long,

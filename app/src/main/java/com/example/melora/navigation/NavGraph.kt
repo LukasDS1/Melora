@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -34,6 +35,8 @@ fun AppNavGraph(
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
     uploadApiViewModel: UploadApiViewModel,
+    recoverPassViewModel: RecoverPassViewModel,
+    resetPasswordViewModel: ResetPasswordViewModel,
     userArtistApiPublicViewModel: UserArtistApiPublicViewModel
 ) {
 
@@ -76,6 +79,10 @@ fun AppNavGraph(
             popUpTo(Route.Login.path) { inclusive = false }
             launchSingleTop = true
         }
+    }
+
+    val goResetPassword: () -> Unit = {
+        navController.navigate(Route.resetPassword.path) { launchSingleTop = true }
     }
 
     val goSearch = {
@@ -122,12 +129,18 @@ fun AppNavGraph(
         navController.navigate(Route.MyProfile.path) { launchSingleTop = true }
     }
 
+    val goRecoverPass = {
+        navController.navigate(Route.RecoverPass.path) { launchSingleTop = true }
+    }
+
     val hideBars = currentRoute in listOf(
         Route.Login.path,
         Route.Register.path,
         Route.UploadScreenForm.path,
         Route.editProfile.path,
-        Route.Player.path
+        Route.Player.path,
+        Route.RecoverPass.path,
+        Route.resetPassword.path
     )
 
     // ======================= UI + NavHost ======================
@@ -164,7 +177,8 @@ fun AppNavGraph(
                 LoginScreenVm(
                     vm = loginApiViewModel,
                     onLoginOk = goHome,
-                    onGoRegister = goRegister
+                    onGoRegister = goRegister,
+                    goRecover = goRecoverPass
                 )
             }
 
@@ -186,6 +200,25 @@ fun AppNavGraph(
                     }
                 )
             }
+
+            composable(Route.RecoverPass.path) {
+                RecoverPassScreenVm(
+                    vm = recoverPassViewModel,
+                    onBackToLogin = goLogin,
+                    onGoToResetPassword = goResetPassword
+                )
+            }
+
+            composable(
+                route = Route.resetPassword.path,
+                arguments = listOf(navArgument("token") { type = NavType.StringType })
+            ) {
+                ResetPasswordScreenVm(
+                    vm = resetPasswordViewModel,
+                    onBackToLogin = { navController.navigate(Route.Login.path) }
+                )
+            }
+
 
             // =================== RESTO IGUAL ====================
             composable(Route.UploadScreenForm.path) {
