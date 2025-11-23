@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object FavoriteRemoteModule {
 
-    private const val BASE_URL = "https://l6k80b0k-8084.brs.devtunnels.ms/"
+    private const val BASE_URL = "https://gj8gpd59-8084.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.NONE

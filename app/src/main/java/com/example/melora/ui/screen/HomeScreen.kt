@@ -29,12 +29,11 @@ import com.example.melora.R
 import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.ui.theme.Lato
 import com.example.melora.ui.theme.Resaltado
-import com.example.melora.viewmodel.HomeScreenViewModel
-import java.util.Base64
+import com.example.melora.viewmodel.HomeScreenApiViewModel
 
 @Composable
 fun HomeScreenVm(
-    vm: HomeScreenViewModel,
+    vm: HomeScreenApiViewModel,
     goPlayer: (Long) -> Unit
 ) {
     val songs by vm.songs.collectAsStateWithLifecycle()

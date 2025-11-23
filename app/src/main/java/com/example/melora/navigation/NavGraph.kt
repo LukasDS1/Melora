@@ -22,16 +22,15 @@ import com.example.melora.viewmodel.*
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    uploadViewModel: UploadViewModel,
+//    uploadViewModel: UploadViewModel,
     searchViewModel: SearchViewModel,
-    authViewModel: AuthViewModel,
     artistModel: ArtistProfileViewModel,
     musicPlayerViewModel: MusicPlayerViewModel,
     favoriteModel: FavoriteApiViewModel,
     banViewModel: BanViewModel,
     editProfileViewModel: EditProfileViewModel,
     playlistApiViewModel: PlaylistApiViewModel,
-    homeScreenViewModel: HomeScreenViewModel,
+    homeScreenApiViewModel: HomeScreenApiViewModel,
     registerApiViewModel: RegisterApiViewModel,
     loginApiViewModel: LoginApiViewModel,
     uploadApiViewModel: UploadApiViewModel,
@@ -181,7 +180,7 @@ fun AppNavGraph(
             // =================== HOME =======================
             composable(Route.Home.path) {
                 HomeScreenVm(
-                    vm = homeScreenViewModel,
+                    vm = homeScreenApiViewModel,
                     goPlayer = { id ->
                         navController.navigate("player/$id") { launchSingleTop = true }
                     }

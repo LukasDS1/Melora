@@ -2,15 +2,13 @@ package com.example.melora.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.melora.data.local.song.SongDetailed
 import com.example.melora.data.remote.dto.SongDetailedDto
 import com.example.melora.data.repository.SongApiRepository
-import com.example.melora.data.repository.SongRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HomeScreenViewModel(
+class HomeScreenApiViewModel(
     private val repository: SongApiRepository
 ) : ViewModel() {
 
