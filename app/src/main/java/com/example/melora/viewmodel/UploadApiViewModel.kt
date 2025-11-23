@@ -8,6 +8,7 @@
     import com.example.melora.data.remote.dto.UploadMusicDto
     import com.example.melora.data.repository.UploadApiRepository
     import com.example.melora.domain.validation.songCoverArtValidation
+    import com.example.melora.domain.validation.songNameValidation
     import com.example.melora.domain.validation.songValidation
     import kotlinx.coroutines.flow.MutableStateFlow
     import kotlinx.coroutines.flow.StateFlow
@@ -54,7 +55,7 @@
             _uiState.update {
                 it.copy(
                     songName = value,
-                    songNameError = if (value.isBlank()) "Song name cannot be empty" else null
+                    songNameError = songNameValidation(value)
                 )
             }
             recomputeCanSubmit()
