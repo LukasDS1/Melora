@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object SongRemoteModule {
 
-    private const val BASE_URL = "https://gj8gpd59-8084.brs.devtunnels.ms/"
+    private const val BASE_URL = "https://3rx2vqh0-8084.brs.devtunnels.ms/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.NONE

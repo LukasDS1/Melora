@@ -193,6 +193,7 @@ fun AppNavGraph(
                     UploadScreenVm(
                         vm = uploadApiViewModel,
                         onGoSuccess = goSucces,
+                        onGoHome = goHome,
                         userId = userId!!
                     )
                 } else {

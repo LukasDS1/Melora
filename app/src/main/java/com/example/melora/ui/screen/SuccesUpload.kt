@@ -33,7 +33,7 @@ fun SuccesUpload(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(PrimaryBg)
+            .background(MaterialTheme.colorScheme.primary)
     ) {
         ElevatedCard(
             modifier = Modifier.padding(24.dp).wrapContentHeight().fillMaxWidth().align(Alignment.Center),
