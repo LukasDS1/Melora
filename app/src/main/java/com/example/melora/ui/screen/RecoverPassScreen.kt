@@ -50,14 +50,14 @@ import com.example.melora.R
 fun RecoverPassScreenVm(
     vm: RecoverPassViewModel,
     onBackToLogin: () -> Unit,
-    onGoToResetPassword: (String) -> Unit
+    onGoToResetPassword: () -> Unit
 ) {
     val state by vm.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.success) {
         if (state.success) {
             vm.clearResult()
-            onGoToResetPassword("")
+            onGoToResetPassword()
         }
     }
 
@@ -70,7 +70,10 @@ fun RecoverPassScreenVm(
         errorMessage = state.errorMessage,
         onEmailChange = vm::onEmailChange,
         onSubmit = vm::submit,
-        onBackToLogin = onBackToLogin
+        onBackToLogin = {
+            vm.clearResult()
+            onBackToLogin()
+        }
     )
 }
 
@@ -95,11 +98,13 @@ fun RecoverPassScreen(
         contentAlignment = Alignment.Center
     ) {
 
-        //
+
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.TopCenter)
                 .padding(top = 50.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -108,21 +113,22 @@ fun RecoverPassScreen(
                 tint = Color.White,
                 modifier = Modifier.size(48.dp)
             )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
                 Text(
                     text = "Forgot your password?",
                     style = MaterialTheme.typography.headlineLarge,
                     fontFamily = Lato,
                     color = Color.White,
+                    textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Let’s get you a new one.",
                     style = MaterialTheme.typography.labelLarge,
                     fontFamily = Lato,
                     color = Color.White,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -153,10 +159,10 @@ fun RecoverPassScreen(
                     text = "Recover password",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Resaltado,
-                    textAlign = TextAlign.Left,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 30.dp, start = 15.dp),
+                        .padding(top = 30.dp),
                     fontFamily = PlayfairDisplay
                 )
 

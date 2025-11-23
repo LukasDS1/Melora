@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.melora.data.repository.RecoverPassApiRepository
+import com.example.melora.domain.validation.validateConfirmPassword
+import com.example.melora.domain.validation.validatePassword
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -35,8 +37,38 @@ class ResetPasswordViewModel(
     val uiState: StateFlow<ResetPasswordUiState> = _uiState
 
     fun onTokenChange(value: String) {
-        _uiState.update { it.copy(token = value, tokenError = validateToken(value)) }
+        _uiState.update { it.copy(token = value, tokenError = validateTokenNotNull(value)) }
         recomputeCanSubmit()
+
+        if (value.length >= 4) validateTokenOnline(value)
+    }
+
+    private fun validateTokenOnline(token: String) {
+        viewModelScope.launch {
+            try {
+                val res = repository.validateToken(token)
+
+                if (res.isSuccessful) {
+                    _uiState.update {
+                        it.copy(
+                            tokenError = null
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            tokenError = "Invalid token or expired"
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+                _uiState.update {
+                    it.copy(tokenError = "Error validating token")
+                }
+            }
+
+            recomputeCanSubmit()
+        }
     }
 
     fun onPasswordChange(value: String) {
@@ -49,21 +81,30 @@ class ResetPasswordViewModel(
         recomputeCanSubmit()
     }
 
-    private fun validateToken(t: String): String? {
-        if (t.isBlank()) return "Introduce el token"
-        return null
+    fun onConfirmPasswordChange(value: String) {
+        _uiState.update {
+            it.copy(
+                confirmPassword = value,
+                confirmPasswordError = validateConfirmPassword(it.password, value)
+            )
+        }
+        recomputeCanSubmit()
     }
 
-    private fun validatePassword(pw: String): String? {
-        if (pw.isBlank()) return "La contraseña no puede estar vacía"
-        if (pw.length < 6) return "Mínimo 6 caracteres"
+    private fun validateTokenNotNull(t: String): String? {
+        if (t.isBlank()) return "Write token"
         return null
     }
 
     private fun recomputeCanSubmit() {
         val s = _uiState.value
-        val noErrors = s.tokenError == null && s.passwordError == null
-        val filled = s.token.isNotBlank() && s.password.isNotBlank()
+        val noErrors = s.tokenError == null &&
+                s.passwordError == null &&
+                s.confirmPasswordError == null
+
+        val filled = s.token.isNotBlank() &&
+                s.password.isNotBlank() &&
+                s.confirmPassword.isNotBlank()
 
         _uiState.update { it.copy(canSubmit = noErrors && filled) }
     }
@@ -71,21 +112,6 @@ class ResetPasswordViewModel(
     fun submit() {
         val s = _uiState.value
         if (!s.canSubmit || s.isSubmitting) return
-
-        // VALIDACIONES
-        val tokenErr = validateToken(s.token)
-        val pwErr = validatePassword(s.password)
-
-        if (tokenErr != null || pwErr != null) {
-            _uiState.update {
-                it.copy(
-                    tokenError = tokenErr,
-                    passwordError = pwErr,
-                    canSubmit = false
-                )
-            }
-            return
-        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }

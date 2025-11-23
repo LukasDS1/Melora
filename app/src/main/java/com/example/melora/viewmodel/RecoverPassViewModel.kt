@@ -25,10 +25,9 @@ data class RecoverPassUiState(
 )
 
 class RecoverPassViewModel(
-    private val app: Application
-): AndroidViewModel(app)  {
+    private val repository: RecoverPassApiRepository
+): ViewModel()  {
 
-    private val repository = RecoverPassApiRepository()
 
     private val _uiState = MutableStateFlow(RecoverPassUiState())
     val uiState: StateFlow<RecoverPassUiState> = _uiState
@@ -58,9 +57,7 @@ class RecoverPassViewModel(
             _uiState.update { it.copy(isSubmitting = true) }
 
             try {
-                val response = repository.recoverPassword(
-                    email = s.email.trim()
-                )
+                val response = repository.recoverPassword(email = s.email.trim())
 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!

@@ -81,8 +81,8 @@ fun AppNavGraph(
         }
     }
 
-    val goResetPassword: (String) -> Unit = { token ->
-        navController.navigate("reset_password/$token") { launchSingleTop = true }
+    val goResetPassword: () -> Unit = {
+        navController.navigate(Route.resetPassword.path) { launchSingleTop = true }
     }
 
     val goSearch = {
@@ -205,21 +205,15 @@ fun AppNavGraph(
                 RecoverPassScreenVm(
                     vm = recoverPassViewModel,
                     onBackToLogin = goLogin,
-                    onGoToResetPassword = { token ->
-                        navController.navigate("reset_password/$token")
-                    }
+                    onGoToResetPassword = goResetPassword
                 )
             }
 
             composable(
                 route = Route.resetPassword.path,
                 arguments = listOf(navArgument("token") { type = NavType.StringType })
-            ) { backStackEntry ->
-
-                val token = backStackEntry.arguments?.getString("token") ?: ""
-
+            ) {
                 ResetPasswordScreenVm(
-                    token = token,
                     vm = resetPasswordViewModel,
                     onBackToLogin = { navController.navigate(Route.Login.path) }
                 )
