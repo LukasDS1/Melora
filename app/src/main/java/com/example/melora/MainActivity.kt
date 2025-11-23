@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.melora.data.remote.FavoriteRemoteModule
@@ -31,6 +32,7 @@ import com.example.melora.data.repository.UserArtistApiPublicRepository
 import com.example.melora.data.storage.UserPreferences
 import com.example.melora.navigation.AppNavGraph
 import com.example.melora.ui.system.ApplySystemBars
+import com.example.melora.ui.theme.MeloraTheme
 import com.example.melora.viewmodel.ArtistProfileViewModel
 import com.example.melora.viewmodel.ArtistProfileViewModelFactory
 import com.example.melora.viewmodel.BanViewModel
@@ -58,6 +60,7 @@ import com.example.melora.viewmodel.UserArtistApiPublicViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
@@ -65,7 +68,9 @@ class MainActivity : ComponentActivity() {
             ),
         )
         setContent {
-            AppRoot()
+            MeloraTheme {
+                AppRoot()
+            }
         }
     }
 }

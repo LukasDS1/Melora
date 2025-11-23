@@ -34,7 +34,7 @@ fun AppTopBar(
     onMyProfile: () -> Unit // go Edit profile
 ) {
 
-    val bgContainer = PrimaryBg
+    val bgContainer = MaterialTheme.colorScheme.background
     CenterAlignedTopAppBar(
         modifier = Modifier.clip(shape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)),
         colors = TopAppBarDefaults.topAppBarColors(
